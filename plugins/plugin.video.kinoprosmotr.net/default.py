@@ -25,7 +25,7 @@ from unified_search import UnifiedSearch
 
 class Kinoprosmotr():
     def __init__(self):
-        self.id = 'plugin.video.kinoprosmotr.net'
+        self.id = 'plugin.video.kinoprosmotr.tv'
         self.addon = xbmcaddon.Addon(self.id)
         self.icon = self.addon.getAddonInfo('icon')
         self.path = self.addon.getAddonInfo('path')
@@ -36,7 +36,7 @@ class Kinoprosmotr():
         self.handle = int(sys.argv[1])
         self.params = sys.argv[2]
 
-        self.url = 'http://kinoprosmotr.net'
+        self.url = 'http://kinoprosmotr.tv'
 
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.debug = False
@@ -77,11 +77,11 @@ class Kinoprosmotr():
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        uri = sys.argv[0] + '?mode=%s&url=%s' % ("category", "http://kinoprosmotr.net/serial/")
+        uri = sys.argv[0] + '?mode=%s&url=%s' % ("category", "http://kinoprosmotr.tv/serial/")
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1001), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        uri = sys.argv[0] + '?mode=%s&url=%s' % ("category", "http://kinoprosmotr.net/mult/")
+        uri = sys.argv[0] + '?mode=%s&url=%s' % ("category", "http://kinoprosmotr.tv/mult/")
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1002), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
@@ -304,7 +304,7 @@ class Kinoprosmotr():
         unified_search_results = []
 
         if keyword:
-            url = 'http://kinoprosmotr.net/index.php?do=search'
+            url = 'http://kinoprosmotr.tv/index.php?do=search'
 
             # Advanced search: titles only
             values = {
@@ -328,7 +328,7 @@ class Kinoprosmotr():
             }
 
             headers = {
-                "Referer" : 'http://kinoprosmotr.net/index.php?do=search',
+                "Referer" : 'http://kinoprosmotr.tv/index.php?do=search',
                 "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64; rv:25.0) Gecko/20100101 Firefox/25.0"
             }
 
