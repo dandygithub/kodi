@@ -7,6 +7,7 @@ import os
 import urllib
 import urllib2
 import sys
+import json
 import re
 import xbmc
 import xbmcplugin
@@ -166,7 +167,9 @@ class Kinoprosmotr():
 
             for script in scripts:
                 if('.mp4' in script):
-                    link = script.split('file:"')[-1].split('",')[0]
+                    content = script.split('file:"')[-1].split('",')[0]
+                    content = json.loads(common.fetchPage({"link": content})
+                    link = content["playlist"][0]["file"]
 
             if values:
                 values = values[4].split('&')
