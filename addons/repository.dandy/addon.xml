@@ -7,7 +7,7 @@
 	</extension>
 	<extension point="xbmc.addon.metadata">
 		<summary>Install Add-ons from Dandy add-on repository</summary>
-		<description>Download and install add-ons by from dandy</description>
+		<description>Download and install add-ons by dandy</description>
 		<disclaimer>Add-ons for home usage in Kodi</disclaimer>
 		<platform>all</platform>
 	</extension>
