@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # Writer (c) 2012, MrStealth
-# Rev. 2.0.6
+# Rev. 2.0.8
 # -*- coding: utf-8 -*-
 
 import os
@@ -25,7 +25,7 @@ from unified_search import UnifiedSearch
 
 class Kinoprosmotr():
     def __init__(self):
-        self.id = 'plugin.video.kinoprosmotr.tv'
+        self.id = 'plugin.video.kinoprosmotr.net'
         self.addon = xbmcaddon.Addon(self.id)
         self.icon = self.addon.getAddonInfo('icon')
         self.path = self.addon.getAddonInfo('path')
