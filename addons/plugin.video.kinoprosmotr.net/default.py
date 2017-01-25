@@ -168,7 +168,7 @@ class Kinoprosmotr():
             for script in scripts:
                 if('.mp4' in script):
                     content = script.split('file:"')[-1].split('",')[0]
-                    content = json.loads(common.fetchPage({"link": content})
+                    content = json.loads(common.fetchPage({"link": content}))
                     link = content["playlist"][0]["file"]
 
             if values:
