@@ -1,19 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="repository.dandy" name="Dandy Kodi" version="1.0.0" provider-name="dandy">
-	<extension point="xbmc.addon.repository" name="Dandy Kodi Add-ons Repository">
-		<info compressed="false">https://raw.github.com/dandygithub/kodi/master/addons/addons.xml</info>
-		<checksum>https://raw.github.com/dandygithub/kodi/master/addons/addons.xml.md5</checksum>
-		<datadir zip="true">https://raw.github.com/dandygithub/kodi/master/addons/zip/</datadir>
-	</extension>
-	<extension point="xbmc.addon.metadata">
-		<summary>Install Add-ons from Dandy add-on repository</summary>
-		<description>Download and install add-ons by from dandy</description>
-		<disclaimer>Add-ons for home usage in Kodi</disclaimer>
-		<platform>all</platform>
-	</extension>
-</addon>
-
 <addon id="plugin.video.kinokong.net" name="Kinokong.net (UnifiedSearch)" version="1.0.7" provider-name="MrStealth, dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -30,7 +16,6 @@
     <platform>all</platform>
   </extension>
 </addon>
-</addons>
 
 <addon id="plugin.video.kinoprosmotr.net" name="Kinoprosmotr.net (UnifiedSearch)" version="2.0.7" provider-name="MrStealth, dandy">
   <requires>
@@ -48,3 +33,18 @@
     <platform>all</platform>
   </extension>
 </addon>
+
+<addon id="repository.dandy" name="Dandy Kodi" version="1.0.0" provider-name="dandy">
+	<extension point="xbmc.addon.repository" name="Dandy Kodi Add-ons Repository">
+		<info compressed="false">https://raw.github.com/dandygithub/kodi/master/addons/addons.xml</info>
+		<checksum>https://raw.github.com/dandygithub/kodi/master/addons/addons.xml.md5</checksum>
+		<datadir zip="true">https://raw.github.com/dandygithub/kodi/master/addons/zip/</datadir>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary>Install Add-ons from Dandy add-on repository</summary>
+		<description>Download and install add-ons by from dandy</description>
+		<disclaimer>Add-ons for home usage in Kodi</disclaimer>
+		<platform>all</platform>
+	</extension>
+</addon>
+</addons>
