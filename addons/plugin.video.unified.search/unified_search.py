@@ -90,8 +90,8 @@ class UnifiedSearch():
         	cursor = con.cursor()
 	        cursor.execute("SELECT addonID FROM disabled")
         	return [x[0] for x in cursor.fetchall()]
-	except OperationalError:
-	        print "OperationalError!"
+	except:
+	        print "Error get disabled addons!!!"
 		return []
 
     def notify(self, header, msg):

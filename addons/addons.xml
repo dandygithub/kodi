@@ -34,7 +34,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.unified.search" name="Unified search" version="2.0.2" provider-name="mrstealth">
+<addon id="plugin.video.unified.search" name="Unified search" version="2.1.0" provider-name="mrstealth, dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0" />
     <import addon="script.module.xbmc.helpers" version="2.0.0"/>
