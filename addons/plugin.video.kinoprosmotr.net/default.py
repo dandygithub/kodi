@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # Writer (c) 2012, MrStealth
-# Rev. 2.0.8
+# Rev. 2.0.9
 # -*- coding: utf-8 -*-
 
 import os
@@ -160,6 +160,7 @@ class Kinoprosmotr():
             movie = common.parseDOM(response["content"], "div", attrs={"class": "full_movie"})
             values = common.parseDOM(movie, "param", ret="value")
             link = None
+            values = None
 
 
             scripts = common.parseDOM(response['content'], 'script')
@@ -169,13 +170,10 @@ class Kinoprosmotr():
                     link2 = script.split('file:"')[-1].split('",')[0]
                     content2 = common.fetchPage({"link": link2})
                     link = content2["content"].split('"file":"')[-1].split('"}')[0]
+                if('"pl":"' in script):
+                    link2 = script.split('"pl":"')[-1].split('",')[0]
+                    values = common.fetchPage({"link": link2})
 
-            if values:
-                values = values[4].split('&')
-
-                for value in values:
-                    if 'file' in value:
-                        link = value.replace('amp;file=', '').replace(' ', '')
             if not values and not link:
                 self.showErrorMessage('No media source (YouTube trailer)')
                 return False
@@ -191,9 +189,9 @@ class Kinoprosmotr():
             image = self.url+image
 
 
-            year = infos[2].split('</span>')[-1]
+            year = infos[2].split('</span>')[-1].strip()
 
-            title = "%s (%s)" % (self.encode(common.parseDOM(infos[0], "strong")[0]), year)
+            title = "%s (%s)" % (self.encode(common.parseDOM(infos[0], "h1")[0]), year)
             genres = self.encode((', ').join(common.parseDOM(infos[4], "a")))
             desc = common.stripTags(self.encode(description[0].split('<br>')[-1]))
 
@@ -210,9 +208,8 @@ class Kinoprosmotr():
 
             else:
                 print "This is a season"
-                url = urllib.unquote_plus(values[2].replace('amp;pl=', ''))
 
-                response = common.fetchPage({"link": url})
+                response = values
 
                 if response["status"] == 200:
                     response = eval(response["content"])
