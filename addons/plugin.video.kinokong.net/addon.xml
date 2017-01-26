@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.kinokong.net" name="Kinokong.net (UnifiedSearch)" version="1.0.7" provider-name="MrStealth, dandy">
+<addon id="plugin.video.kinokong.net" name="Kinokong.net (UnifiedSearch)" version="1.1.0" provider-name="MrStealth, dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.0.0"/>
     <import addon="script.module.translit" version="2.0.0"/>
-    <import addon="plugin.video.unified.search" version="2.0.1"/>
+    <import addon="plugin.video.unified.search" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
     <provides>video</provides>
