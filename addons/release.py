@@ -17,4 +17,4 @@ for directory in os.listdir("."):
             if not os.path.isfile(archive):
                 print "Release new version of %s" % name
                 print "Create ZIP archive %s" % archive
-                os.system("7z a -r %s %s" %(archive, directory))
+                os.system("7z a %s %s" %(archive, directory))
