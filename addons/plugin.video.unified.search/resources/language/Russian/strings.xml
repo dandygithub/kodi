@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+    <string id="1000">Поиск</string>
+    <string id="1001">Результаты предыдущего поиска</string>
+    <string id="1002">История поисковых запросов</string>
+    <string id="1003">Сбросить результаты поиска</string>
+
+    <string id="2000">Идет поиск ...</string>
+    <string id="2001">К сожалению, поиск не дал никаких результатов</string>
+    <string id="2002">Поиск завершен</string>
+</strings>
