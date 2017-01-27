@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # Writer (c) 2014-2016, MrStealth, dandy
-# Rev. 1.0.7
+# Rev. 1.1.1
 # -*- coding: utf-8 -*-
 
 import os
@@ -277,15 +277,15 @@ class Kinokong():
                 keyword = kbd.getText()
         return keyword
 
-    def search(self, keyword, unified):
-        self.showErrorMessage('Not yet implemented')
+    #def search(self, keyword, unified):
+    #    self.showErrorMessage('Not yet implemented')
 
     def search(self, keyword, unified):
         keyword = translit.rus(keyword) if unified else self.getUserInput()
         unified_search_results = []
 
         if keyword:
-            url = 'http://kinokong.biz/index.php?do=search'
+            url = 'http://kinokong.cc/index.php?do=search'
 
 
 
@@ -294,7 +294,7 @@ class Kinokong():
                 "beforeafter":  "after",
                 "catlist[]":    0,
                 "do" :          "search",
-                "full_search":  1,
+                "full_search":  0,
                 "replyless":    0,
                 "replylimit":   0,
                 "resorder":     "desc",
@@ -310,8 +310,8 @@ class Kinokong():
             }
 
             headers = {
-                "Host" : "kinokong.biz",
-                "Referer" : 'http://kinokong.biz/index.php?do=search',
+                "Host" : "kinokong.cc",
+                "Referer" : 'http://kinokong.cc/index.php?do=search',
                 "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0"
             }
 
