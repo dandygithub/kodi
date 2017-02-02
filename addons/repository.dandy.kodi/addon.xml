@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.0.7" provider-name="dandy">
+<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.0.8" provider-name="dandy">
         <requires>
                 <import addon="xbmc.addon" version="12.0.0"/>
         </requires>
