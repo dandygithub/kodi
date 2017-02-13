@@ -5,6 +5,7 @@
 
 import os
 import urllib
+import urllib2
 import sys
 import socket
 import json
@@ -62,7 +63,6 @@ class Seasonvar():
 
         mode = params['mode'] if 'mode' in params else None
         url = urllib.unquote_plus(params['url']) if 'url' in params else None
-        page = params['page'] if 'page' in params else 1
 
         keyword = params['keyword'] if 'keyword' in params else None
         unified = params['unified'] if 'unified' in params else None
@@ -81,18 +81,32 @@ class Seasonvar():
         item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(2000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getCategoryItems(self.url)
+        self.getItems(self.url, 0)
 
         xbmc.executebuiltin('Container.SetViewMode(52)')
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def getCategoryItems(self, url):
-        print "*** Get category items %s" % url
-        page_url = "%s/" % (url)
-        response = common.fetchPage({"link": page_url})
+    def getItems(self, url, kind):
+        print "*** Get items from %s" % url
+        url_ = "%s/" % (url)
+        response = None
+        if kind == 0:
+            url_ = url_ + 'ajax.php?mode=new'
+            values = {}
+            headers = {
+                "Host" : "seasonvar.ru",
+                "Connection" : "keep-alive",
+                "X-Requested-With" : "XMLHttpRequest",
+                "Referer" : url_,
+                "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0"
+            }
+            request = urllib2.Request(url_, urllib.urlencode(values), headers)
+            response = urllib2.urlopen(request).read()            
+            
+        #response = common.fetchPage({"link": page_url})
 
-        if response["status"] == 200:
-            items = common.parseDOM(response["content"], "div", attrs={"class": "news-block"})
+        if response:
+            items = common.parseDOM(response, "div", attrs={"class": "news-block"})
             for item in items:
                 titlediv = common.parseDOM(item, "div", attrs={"class": "news-right"})
                 title = common.parseDOM(titlediv, "b")[0]
@@ -196,27 +210,48 @@ class Seasonvar():
         unified_search_results = []
         
         if keyword:
-            url = self.url +  '/search?q='+unicode(keyword)+'&x=0&y=0'
+            url = self.url + '/autocomplete.php?query=' + unicode(keyword)       
+            #url = self.url + '/autocomplete.php?query=' + keyword       
             response = common.fetchPage({"link": url})
-            searchitems = common.parseDOM(response["content"], 'div', attrs={'class': 'searchResult'})
-            for searchitem in searchitems:
-                urldiv = common.parseDOM(searchitem, "div", attrs={"class": "searchPoster"})
-                url = self.url + common.parseDOM(urldiv, "a", ret="href")[0]
-                image = common.parseDOM(urldiv, "img", ret="src")[0]
-                titlediv = common.parseDOM(searchitem, "div", attrs={"class": "searchContent"})
-                title = common.parseDOM(titlediv, "a")[0]
-                seasondiv = common.parseDOM(titlediv, "div", attrs={'class': 'searchSeason'})
-                if seasondiv:
-                    title = title + ' [COLOR=FF00FFF0][' + seasondiv[0] + '][/COLOR]'                  
-            
-                if unified:
-                    self.log("Perform unified search and return results")
-                    unified_search_results.append({'title': title, 'url': url, 'image': image, 'plugin': self.id})
-                else:
-                    uri = sys.argv[0] + '?mode=show&url=%s&wm=0' % url
-                    item = xbmcgui.ListItem(title, thumbnailImage=image)
-                    xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+            count = 1
+            s = json.loads(response["content"])
+            count = len(s['suggestions'])
+            if count < 1: return False
 
+            for i in range(0, count):
+                title = s['suggestions'][i].encode('utf-8')
+                surl = s['data'][i]
+                if surl.find('.html') > -1:
+                    url = self.url + '/' + s['data'][i]
+                    if unified:
+                        self.log("Perform unified search and return results")
+                        unified_search_results.append({'title': title, 'url': url, 'image': self.icon, 'plugin': self.id})
+                    else:
+                        uri = sys.argv[0] + '?mode=show&url=%s&wm=0' % url
+                        item = xbmcgui.ListItem(title, thumbnailImage=self.icon)
+                        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+#            url = self.url +  '/search?q=' + unicode(keyword)
+#            response = common.fetchPage({"link": url})
+#            searchitems = common.parseDOM(response["content"], 'div', attrs={'class': 'searchResult'})
+#            for searchitem in searchitems:
+#                urldiv = common.parseDOM(searchitem, "div", attrs={"class": "searchPoster"})
+#                url = self.url + common.parseDOM(urldiv, "a", ret="href")[0]
+#                image = common.parseDOM(urldiv, "img", ret="src")[0]
+#                titlediv = common.parseDOM(searchitem, "div", attrs={"class": "searchContent"})
+#                title = common.parseDOM(titlediv, "a")[0]
+#                seasondiv = common.parseDOM(titlediv, "div", attrs={'class': 'searchSeason'})
+#                if seasondiv:
+#                    title = title + ' [COLOR=FF00FFF0][' + seasondiv[0] + '][/COLOR]'                  
+#            
+#                if unified:
+#                    self.log("Perform unified search and return results")
+#                    unified_search_results.append({'title': title, 'url': url, 'image': image, 'plugin': self.id})
+#                else:
+#                    uri = sys.argv[0] + '?mode=show&url=%s&wm=0' % url
+#                    item = xbmcgui.ListItem(title, thumbnailImage=image)
+#                    xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+#
             if unified:
                 UnifiedSearch().collect(unified_search_results)
             else: 
