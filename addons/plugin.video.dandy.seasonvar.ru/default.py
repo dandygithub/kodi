@@ -80,13 +80,14 @@ class Seasonvar():
 
         keyword = params['keyword'] if 'keyword' in params else None
         unified = params['unified'] if 'unified' in params else None
+	wm = params['wm'] if 'wm' in params else "0"
 
         if mode == 'play':
             self.playItem(url)
         if mode == 'search':
             self.search(keyword, unified)
         if mode == 'show':
-            self.getFilmInfo(url, (params['wm'] == "1"))
+            self.getFilmInfo(url, (wm == "1"))
         if mode == 'filter':
             self.filter()
         elif mode is None:
