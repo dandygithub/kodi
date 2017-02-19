@@ -36,7 +36,7 @@ class UnifiedSearch():
         while db_index > 0:
             db_name = 'Addons%d.db' % db_index
             db_path = os.path.join(database, db_name)
-                self.log("db_path - %s" % (db_path))
+            self.log("db_path - %s" % (db_path))
             db_index -= 1
             if xbmcvfs.exists(db_path):
                 self.addon_db = db_path
@@ -100,19 +100,19 @@ class UnifiedSearch():
 
     def get_disabled_addons(self):
         try:
-        	con = sqlite3.connect(self.addon_db)
-        	cursor = con.cursor()
-                cursor.execute('SELECT idVersion FROM version')
-                db_version = cursor.fetchone()
-                self.log("db_version - %d" % (db_version))
-                if db_version >= 27:
-                    cursor.execute("SELECT addonID FROM installed WHERE enabled = 0")
-                else:
-	        cursor.execute("SELECT addonID FROM disabled")
-        	return [x[0] for x in cursor.fetchall()]
-	except:
-	        self.log("Error get disabled addons!!!")
-		return []
+            con = sqlite3.connect(self.addon_db)
+            cursor = con.cursor()
+            cursor.execute('SELECT idVersion FROM version')
+            db_version = cursor.fetchone()
+            self.log("db_version - %d" % (db_version))
+            if db_version >= 27:
+                cursor.execute("SELECT addonID FROM installed WHERE enabled = 0")
+            else:
+                cursor.execute("SELECT addonID FROM disabled")
+            return [x[0] for x in cursor.fetchall()]
+        except:
+            self.log("Error get disabled addons!!!")
+            return []
 
     def notify(self, header, msg):
         xbmc.executebuiltin("XBMC.Notification(%s,%s,%s)" % ('UnifiedSearch', self.language(2002).encode('utf-8'), '1000'))
