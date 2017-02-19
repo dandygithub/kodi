@@ -21,10 +21,10 @@ common = XbmcHelpers
 import Translit as translit
 translit = translit.Translit()
 
-from search_db import SearchDB
-from result_db import ResultDB
+from resources.lib.search_db import SearchDB
+from resources.lib.result_db import ResultDB
 
-from unified_search import UnifiedSearch
+from resources.lib.unified_search import UnifiedSearch
 
 # TODO:
 # 1) Allow to lookup the whitespaced strings <A> <B> => "A+B"
@@ -101,7 +101,8 @@ class UnifiedSearchPlugin():
         item = xbmcgui.ListItem("[COLOR=FFFF4000]%s[/COLOR]" % self.language(1003), iconImage=self.warning_icon)
         xbmcplugin.addDirectoryItem(self.handle, self.xpath + '?mode=reset', item, False)
 
-        xbmc.executebuiltin('Container.SetViewMode(50)')
+        #xbmc.executebuiltin('Container.SetViewMode(50)')
+        xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def search(self, keyword):
@@ -151,7 +152,8 @@ class UnifiedSearchPlugin():
                 item.setProperty('IsPlayable', 'false')
                 xbmcplugin.addDirectoryItem(self.handle, '', item, False)
 
-        xbmc.executebuiltin('Container.SetViewMode(50)')
+        #xbmc.executebuiltin('Container.SetViewMode(50)')
+        xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def previous_results(self):
@@ -169,7 +171,8 @@ class UnifiedSearchPlugin():
             item.setProperty('IsPlayable', 'false')
             xbmcplugin.addDirectoryItem(self.handle, '', item, False)
 
-        xbmc.executebuiltin('Container.SetViewMode(50)')
+        #xbmc.executebuiltin('Container.SetViewMode(50)')
+        xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def activate(self, plugin, url, playable):
