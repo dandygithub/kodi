@@ -7,11 +7,17 @@
     <string id="2000">Поиск</string>
     <string id="2001">К сожалению, поиск по сайту не дал никаких результатов.</string>
 
+    <string id="3000">Фильтр</string>
+
+    <string id="4000">Жанры</string>
+    <string id="4001">Страны</string>
+
     <string id="5000">Сезон</string>
     <string id="5001">Серия</string>
     <string id="5002">смотреть онлайн</string>
     <string id="5003">онлайн</string>
     <string id="5004">сериал</string>
 
-    <string id="9000">следующая страница >></string>
+    <string id="9000">следующая страница (%s) >>></string>
+    <string id="9001">в начало >>></string>
 </strings>
