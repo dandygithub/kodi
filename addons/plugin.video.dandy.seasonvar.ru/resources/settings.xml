@@ -1,10 +1,11 @@
 <settings>
-  <setting id="translit" type="bool" label="Translit" default="true" />
-  <setting id="unified_search" type="bool" label="Unified search" default="true" />
-  <setting id="begin_render_type" type="select" label="Begin render type" values="new|popular|newest|bydate" />
-  <setting id="load_thumbnails" type="bool" label="Load thumbnails" default="false" />
-  <setting id="new_method_search" type="bool" label="New method search" default="false" />
+  <setting id="translit" type="bool" label="Translit" default="true"/>
+  <setting id="unified_search" type="bool" label="Unified search" default="true"/>
+  <setting id="begin_render_type" type="labelenum" label="Begin render type" values="new|popular|newest|bydate" default="new"/>
+  <setting id="load_thumbnails" type="bool" label="Load thumbnails" default="false"/>
+  <setting id="new_search_method" type="bool" label="New search method" default="true"/>
+  <setting id="quality" type="labelenum" label="Video quality" enable="!eq(2,)" values="sd|hd" default="sd"/>
   <setting type="sep"/>
-  <setting id="login" type="text" label="Login" />
-  <setting id="password" type="text" label="Password" option="hidden" />
+  <setting id="login" type="text" label="Login" default=""/>
+  <setting id="password" type="text" label="Password" enable="!eq(-1,)" option="hidden" default=""/>
 </settings>
