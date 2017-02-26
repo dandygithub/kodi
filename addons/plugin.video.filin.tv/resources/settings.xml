@@ -1,0 +1,15 @@
+<settings>
+  <setting id="translit" type="bool" label="Enable translit search" default="true" />
+<setting label=6001 type="labelenum" id="seasonsViewMode" values="List|Big List|Media Info|Media Info 2|Fanart|Fanart 2" default="Media Info"/>
+<setting label=6002 type="labelenum" id="episodsViewMode" values="List|Big List|Media Info|Media Info 2|Fanart|Fanart 2" default="Big List"/>
+</settings>
+
+
+<!--
+50=List
+51=Big List
+52=Media Info
+54=Media Info 2
+57=Fanart 1 (My Personal Favourite)
+59=Fanart 2
+--> 

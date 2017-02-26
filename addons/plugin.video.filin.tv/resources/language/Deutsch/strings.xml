@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+  <string id="1000">Отечественный</string>
+  <string id="1001">Детектив</string>
+  <string id="1002">Мелодрама</string>
+  <string id="1003">Боевик</string>
+  <string id="1004">Фантастика</string>
+  <string id="1005">Криминал</string>
+  <string id="1006">Комедия</string>
+  <string id="1007">Теле-шоу</string>
+  <string id="1008">Мультфильм</string>
+  <string id="1009">Приключения</string>
+  <string id="1010">Фентези</string>
+  <string id="1011">Ужасы</string>
+  <string id="1012">Драма</string>
+  <string id="1013">Исторический</string>
+  <string id="1014">Триллер</string>
+  <string id="1015">Мистика</string>
+  <string id="1016">Спорт</string>
+  <string id="1017">Мюзикл</string>
+  <string id="1018">Документальный</string>
+  <string id="1019">Война</string>
+
+  <string id="2000">Категории</string>
+  <string id="2001">Жанры (последние поступления)</string>
+  <string id="2002">Поиск</string>
+  <string id="2003">Мои фавориты</string>
+
+  <string id="3000">[следующая страница] >></string>
+  <string id="3001">Добавить в мои фавориты</string>
+  <string id="3002">Список фаворитов пуст</string>
+  <string id="3003">Успешно добавлен в список фаворитов</string>
+  <string id="3004">Удалить из моих фаворитов</string>
+  <string id="3005">Успешно удалён из списка моих фаворитов</string>
+  <string id="3006">Очистить список фаворитов</string>
+  <string id="3007">Продолжить?</string>
+
+  <string id="5000">смотреть онлайн</string>
+  <string id="5001">онлайн</string>
+
+  <string id="6001">Отображение списка сериалов (Вид)</string>
+  <string id="6002">Отображение списка серий (Вид)</string>
+
+</strings>
