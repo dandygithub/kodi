@@ -354,7 +354,7 @@ class Seasonvar():
         response = common.fetchPage({"link": url, "cookie": self.getCookies()})
         image = common.parseDOM(response["content"], 'link', attrs={'rel': 'image_src'}, ret='href')[0] if common.parseDOM(response["content"], 'link', attrs={'rel': 'image_src'}, ret='href') else None
         description = common.parseDOM(response["content"], 'meta', attrs={'name': 'description'}, ret='content')[0] if common.parseDOM(response["content"], 'meta', attrs={'name': 'description'}, ret='content') else ''
-        response = common.fetchPage({"link": self.getURLPlayList(url, response["content"]), "cookie": self.getCookies(), "cookie": self.getCookies()})
+        response = common.fetchPage({"link": self.getURLPlayList(url, response["content"], 0), "cookie": self.getCookies()})
         json_playlist = json.loads(response["content"])
         playlist = json_playlist['playlist']
         i = 0
