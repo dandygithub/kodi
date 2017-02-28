@@ -1,0 +1,3 @@
+﻿<settings>
+    <setting id="translit" type="bool" label="Translit" default="true" />
+</settings>
