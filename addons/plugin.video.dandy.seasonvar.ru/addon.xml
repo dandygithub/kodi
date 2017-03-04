@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.dandy.seasonvar.ru" name="seasonvar.ru (UnifiedSearch)" version="1.4.4" provider-name="dandy, MrStealth">
+<addon id="plugin.video.dandy.seasonvar.ru" name="seasonvar.ru (UnifiedSearch)" version="1.4.5" provider-name="dandy, MrStealth">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.0.0"/>

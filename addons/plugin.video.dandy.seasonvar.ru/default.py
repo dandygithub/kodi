@@ -479,10 +479,7 @@ class Seasonvar():
         keyword = None
 
         if kbd.isConfirmed():
-            if self.addon.getSetting('translit') == 'true':
-                keyword = translit.rus(kbd.getText())
-            else:
-                keyword = kbd.getText()
+            keyword = kbd.getText()
         return keyword
 
     def newSearchMethod(self, keyword, unified, unified_search_results):
@@ -512,8 +509,9 @@ class Seasonvar():
         print "*** search for keyword %s " % keyword
         
         keyword_ = keyword if keyword else self.getUserInput()
-        keyword_ = translit.rus(keyword_) if ((not keyword) and keyword_) else keyword_
-        keyword_ if isinstance(keyword_, unicode) else unicode(keyword_)
+        if keyword_: 
+            keyword_ = translit.rus(keyword_) if (self.addon.getSetting('translit') == 'true') else keyword_
+            keyword_ if isinstance(keyword_, unicode) else unicode(keyword_)
         
         unified_search_results = []
         
