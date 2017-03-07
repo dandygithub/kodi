@@ -65,7 +65,10 @@ class UnifiedSearchPlugin():
         params = common.getParameters(self.params)
         mode = params['mode'] if 'mode' in params else None
         keyword = params['keyword'] if 'keyword' in params else None
-        search_id = int(params['search_id']) if('search_id' in params and params['search_id'] != 'None') else None
+           
+        search_id = int(params['search_id']) if('search_id' in params) else None
+        if search_id == -1:
+            search_id = self.search_id
 
         url = params['url'] if 'url' in params else None
         plugin = params['plugin'] if 'plugin' in params else None
@@ -93,7 +96,7 @@ class UnifiedSearchPlugin():
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         item = xbmcgui.ListItem("%s" % self.language(1001), iconImage=self.folder_icon)
-        xbmcplugin.addDirectoryItem(self.handle, "%s?mode=show&search_id=%s" % (self.xpath, self.search_id), item, True)
+        xbmcplugin.addDirectoryItem(self.handle, "%s?mode=show&search_id=-1" % (self.xpath), item, True)
 
         item = xbmcgui.ListItem("%s" % self.language(1002), iconImage=self.folder_icon)
         xbmcplugin.addDirectoryItem(self.handle, "%s?mode=previous" % self.xpath, item, True)
@@ -117,10 +120,7 @@ class UnifiedSearchPlugin():
 
             for i, plugin in enumerate(self.supported_addons):
                 script = "special://home/addons/%s/default.py" % plugin
-                xbmc.executebuiltin("XBMC.RunScript(%s, %d, mode=search&keyword=%s&unified=True)" % (script, self.handle, keyword), False)
-
-            # INFO: None means show please wait ...
-            # self.show(None)
+                xbmc.executebuiltin("XBMC.RunScript(%s, %d, mode=search&keyword=%s&unified=True)" % (script, self.handle, keyword), True)
 
             # print len(self.supported_addons)
             self.notify(self.language(1000).encode('utf-8'), self.language(2000).encode('utf-8'))
