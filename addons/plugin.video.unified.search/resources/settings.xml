@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <setting id="debug" type="bool" label="Enable debug" defaulf="false"/>
+    <setting id="timeout" type="number" label="Timeout (sec)" default="30"/>
 </settings>

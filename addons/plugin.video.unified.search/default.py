@@ -29,6 +29,8 @@ from resources.lib.unified_search import UnifiedSearch
 # TODO:
 # 1) Allow to lookup the whitespaced strings <A> <B> => "A+B"
 
+#consts
+CHECK_PERIOD = 3000
 
 class UnifiedSearchPlugin():
     def __init__(self):
@@ -50,6 +52,7 @@ class UnifiedSearchPlugin():
         self.latest_search_id = self.search_db.get_latest_search_id()
         self.search_id = self.latest_search_id if self.latest_search_id else 0
         self.debug = self.addon.getSetting("debug") == 'true'
+        self.timeout = int(self.addon.getSetting("timeout"))
 
         # Custom icons
         self.search_icon = os.path.join(self.path, 'resources/icons/search.png')
@@ -84,6 +87,8 @@ class UnifiedSearchPlugin():
             self.activate(plugin, url, playable)
         if mode == 'reset':
             self.reset()
+        if mode == 'collect':
+            self.collect(self.searchParamsToList(params))
         elif mode is None:
             self.menu()
 
@@ -122,9 +127,36 @@ class UnifiedSearchPlugin():
                 script = "special://home/addons/%s/default.py" % plugin
                 xbmc.executebuiltin("XBMC.RunScript(%s, %d, mode=search&keyword=%s&unified=True)" % (script, self.handle, keyword), True)
 
-            # print len(self.supported_addons)
             self.notify(self.language(1000).encode('utf-8'), self.language(2000).encode('utf-8'))
-            # xbmcplugin.endOfDirectory(self.handle, False)
+
+            checkEnd = False
+            timeout_ = 0
+            while (checkEnd == False):
+                xbmc.sleep(CHECK_PERIOD) 
+                timeout_ += CHECK_PERIOD
+                try: 
+                    counter = self.search_db.get_counter(self.search_id)
+                except: 
+                    pass
+                if (counter and (len(self.supported_addons) == counter)) or (timeout_ > self.timeout*1000):
+                    self.log("ALL DONE => %s of %d done" % (counter, len(self.supported_addons)))
+                    checkEnd = True;
+
+            self.notify("Search", "Done")
+            self.show(self.search_id)
+            #xbmc.executebuiltin('Container.Update(%s)' % "plugin://%s/?mode=show&search_id=%d" % (self.id, search_id))
+
+    def searchParamsToList(self, params):
+       searchList = []
+       searchList.append({'title': params['title'] if 'title' in params else None, 
+                          'url': params['url'] if 'url' in params else None, 
+                          'image': params['image'] if 'image' in params else None, 
+                          'plugin': params['id'] if 'id' in params else None 
+                         })
+       return searchList
+
+    def collect(self, searchList):
+        UnifiedSearch().collect(searchList)
 
     def show(self, search_id):
         self.log("Show results on separate page for search_id")

@@ -50,10 +50,6 @@ class UnifiedSearch():
     def collect(self, results):
         # INFO: Update counter and compare with a number of supported_addons
         search_id = self.search_db.get_latest_search_id()
-        counter = self.search_db.update_counter(search_id)
-
-        self.log("Search counter => %d" % (counter))
-        # xbmc.sleep(100)
 
         if results:
             for result in results:
@@ -62,25 +58,28 @@ class UnifiedSearch():
                 else:
                     self.result_db.create(search_id, result['title'].lstrip(), result['url'], result['image'], result['plugin'])
 
-            if len(self.supported_addons) == counter:
-                self.log("ALL DONE => %s of %d done" % (counter, len(self.supported_addons)))
-                self.notify("Search", "Done")
+#            if len(self.supported_addons) == counter:
+#                self.log("ALL DONE => %s of %d done" % (counter, len(self.supported_addons)))
+#                self.notify("Search", "Done")
 
                 # xbmc.executebuiltin('XBMC.ReplaceWindow(10025, %s, return)' % "plugin://%s/?mode=show&search_id=%d" % (self.id, search_id))
-                xbmc.executebuiltin('Container.Update(%s)' % "plugin://%s/?mode=show&search_id=%d" % (self.id, search_id))
+#                xbmc.executebuiltin('Container.Update(%s)' % "plugin://%s/?mode=show&search_id=%d" % (self.id, search_id))
 
-            else:
+#            else:
                 # self.log("Wait and do nothing => %s of %d done" % (counter, len(self.supported_addons)))
-                return True
+#                return True
 
-        else:
-            if len(self.supported_addons) == counter:
-                self.notify("Search", "Done")
+#        else:
+#            if len(self.supported_addons) == counter:
+#                self.notify("Search", "Done")
                 # INFO:  Fix for ERROR: Control 50 in window 10025 has been asked to focus, but it can't.
-                xbmc.executebuiltin('Container.Update(%s)' % "plugin://%s/?mode=show&search_id=%d" % (self.id, search_id))
-            else:
-              self.log("!!! Nothing found !!!")
-              return True
+#                xbmc.executebuiltin('Container.Update(%s)' % "plugin://%s/?mode=show&search_id=%d" % (self.id, search_id))
+#            else:
+#              self.log("!!! Nothing found !!!")
+#              return True
+
+        counter = self.search_db.update_counter(search_id)
+        self.log("Search counter => %d" % (counter))
 
     def get_supported_addons(self):
         disabled_addons = self.get_disabled_addons()

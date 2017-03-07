@@ -75,6 +75,10 @@ class SearchDB:
 
         return self.cursor.fetchone()[0]
 
+    def get_counter(self, search_id):
+        self.execute("SELECT MAX(counter) FROM searches WHERE id=%d" % search_id)
+        return self.cursor.fetchone()[0]
+
     def all(self):
         self.execute("SELECT * FROM searches ORDER BY id DESC")
         return [{'id': x[0], 'keyword': x[1], 'counter': x[2]} for x in self.cursor.fetchall()]
