@@ -17,11 +17,11 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.filin.tv" name="[B][COLOR CFFFFFFF]Filin.tv[/COLOR][/B]" version="2.1.0" provider-name="mrstealth, dandy">
+<addon id="plugin.video.filin.tv" name="Filin.tv (UnifiedSearch)" version="2.2.0" provider-name="mrstealth, dandy">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
-        <import addon="script.module.xbmc.helpers" version="1.0.0"/>
-        <import addon="script.module.translit" version="1.0.0"/>
+        <import addon="script.module.xbmc.helpers" version="2.0.0"/>
+        <import addon="script.module.translit" version="2.0.1"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>video</provides>

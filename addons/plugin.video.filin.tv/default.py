@@ -1,8 +1,9 @@
 #!/usr/bin/python
-# Writer (c) 2012, MrStealth, dandy
-# Rev. 2.1.0
+# Writer (c) 2012-2017, MrStealth, dandy
+# Rev. 2.2.0
 # -*- coding: utf-8 -*-
 
+import os
 import urllib, re, sys
 import xbmc, xbmcplugin,xbmcgui,xbmcaddon
 import HTMLParser
@@ -15,13 +16,23 @@ common = XbmcHelpers
 BASE_URL = 'http://www.filin.tv'
 pluginhandle = int(sys.argv[1])
 
-Addon = xbmcaddon.Addon(id='plugin.video.filin.tv')
+ID = 'plugin.video.filin.tv'
+Addon = xbmcaddon.Addon(id=ID)
 language      = Addon.getLocalizedString
 addon_icon    = Addon.getAddonInfo('icon')
 addon_path    = Addon.getAddonInfo('path')
 
 import Translit as translit
 translit = translit.Translit(encoding='cp1251')
+
+# UnifiedSearch
+use_unified = True
+try:
+    sys.path.append(os.path.dirname(__file__)+ '/../plugin.video.unified.search')
+    from unified_search import UnifiedSearch
+except: 
+    use_unified = False
+    pass
 
 VIEW_MODES = {
     "List" : '50',
@@ -150,52 +161,67 @@ def calculateRating(x):
     return xbmc_rating
 
 # *** UI functions ***
-def search():
-    kbd = xbmc.Keyboard()
-    kbd.setDefault('')
-    kbd.setHeading(language(2002))
-    kbd.doModal()
-    keyword=''
+def search(keyword, unified, transpar = None):
 
-    if kbd.isConfirmed():
-      keyword = kbd.getText()
+    if unified and (use_unified == False):
+        return
 
-    if Addon.getSetting('translit') == 'true':
-      keyword = translit.rus(kbd.getText())
+    if (not keyword):
+        kbd = xbmc.Keyboard()
+        kbd.setDefault('')
+        kbd.setHeading(language(2002))
+        kbd.doModal()
+        keyword=''
+        if kbd.isConfirmed():
+            keyword = kbd.getText()
 
-    path = "/do=search"
+    transpar = Addon.getSetting('translit') if transpar == None else transpar
+    if transpar and (transpar == 'true'):
+        keyword = translit.rus(keyword)
+
+    path = "/"
 
     # Advanced search: titles only
-    values = {
-      'beforeafter' : 'after',
-      'catlist[]' : '0',
-      'do' : 'search',
-      'full_search' : '1',
-      'replyless' : '0',
-      'replylimit' : '0',
-      'resorder' : 'desc',
-      'result_from' : '1',
-      'result_num' : '30',
-      'search_start' : '1',
-      'searchdate' : '0',
-      'searchuser' : '',
-      'showposts' : '0',
-      'sortby' : 'date',
-      'subaction' : 'search',
-      'titleonly' : '3'
+#    values = {
+#      'beforeafter' : 'after',
+#      'catlist[]' : '0',
+#      'do' : 'search',
+#      'full_search' : '1',
+#      'replyless' : '0',
+#      'replylimit' : '0',
+#      'resorder' : 'desc',
+#      'result_from' : '1',
+#      'result_num' : '30',
+#      'search_start' : '1',
+#      'searchdate' : '0',
+#      'searchuser' : '',
+#      'showposts' : '0',
+#      'sortby' : 'date',
+#      'subaction' : 'search',
+#      'titleonly' : '3'
+#   }
+
+    headers = {
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Connection": "keep-alive",
+        "Host": "filin.tv",
+        "Origin": "http://filin.tv",
+        "Referer": "http://filin.tv/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"
     }
+
+    values = {
+        'do' : 'search',
+        'subaction' : 'search',
+    }
+
     try:
-        # Apple TV
+        values['story'] = keyword.encode('cp1251')
+    except UnicodeDecodeError:
         values['story'] = keyword
 
-        data = urllib.urlencode(values)
-        req = Request(BASE_URL+path, data)
-    except UnicodeEncodeError:
-        # Desktop
-        values['story'] = keyword.encode('cp1251')
-
-        data = urllib.urlencode(values)
-        req = Request(BASE_URL+path, data)
+    data = urllib.urlencode(values)
+    req = Request(BASE_URL+path, data, headers)
 
     try:
         response = urlopen(req)
@@ -207,15 +233,18 @@ def search():
             print 'The server couldn\'t fulfill the request.'
             print 'Error code: ', e.code
     else:
+        unified_search_results = []
+
         response = response.read()
         content = common.parseDOM(response, "div", attrs = { "id":"dle-content" })
         blocks = common.parseDOM(content, "div", attrs = { "class":"block" })
 
         if len(blocks) > 1:
-            result = common.parseDOM(content, "span", attrs = { "class":"sresult" })[0]
-            item = xbmcgui.ListItem(colorize(unescape(result, 'cp1251'), 'FF00FFF0'))
-            item.setProperty('IsPlayable', 'false')
-            xbmcplugin.addDirectoryItem(pluginhandle, '', item, False)
+            if (not unified):
+                result = common.parseDOM(content, "span", attrs = { "class":"sresult" })[0]
+                item = xbmcgui.ListItem(colorize(unescape(result, 'cp1251'), 'FF00FFF0'))
+                item.setProperty('IsPlayable', 'false')
+                xbmcplugin.addDirectoryItem(pluginhandle, '', item, False)
 
             mainf = common.parseDOM(content, "div", attrs = { "class":"mainf" })
             titles = common.parseDOM(mainf, "a")
@@ -225,21 +254,28 @@ def search():
                 title = beatify_title(titles[i])
                 uri = sys.argv[0] + '?mode=SHOW&url=' + links[i] + "&thumbnail="
 
-                item = xbmcgui.ListItem(title)
+                if unified:
+                    unified_search_results.append({'title': title, 'url': links[i], 'image': addon_icon, 'plugin': ID})
+                else:
+                    item = xbmcgui.ListItem(title)
+       
+                    # TODO: move to "addFavorite" function
+                    script = "special://home/addons/plugin.video.filin.tv/contextmenuactions.py"
+                    params = "add|%s"%links[i] + "|%s"%title
+                    runner = "XBMC.RunScript(" + str(script)+ ", " + params + ")"
+                    item.addContextMenuItems([(localize(language(3001)), runner)])
 
-                # TODO: move to "addFavorite" function
-                script = "special://home/addons/plugin.video.filin.tv/contextmenuactions.py"
-                params = "add|%s"%links[i] + "|%s"%title
-                runner = "XBMC.RunScript(" + str(script)+ ", " + params + ")"
-                item.addContextMenuItems([(localize(language(3001)), runner)])
-                xbmcplugin.addDirectoryItem(pluginhandle, uri, item, True)
+                    xbmcplugin.addDirectoryItem(pluginhandle, uri, item, True)
         else:
-            item = xbmcgui.ListItem(colorize(language(2004), 'FFFF4000'))
-            item.setProperty('IsPlayable', 'false')
-            xbmcplugin.addDirectoryItem(pluginhandle, '', item, False)
+            if (not unified):
+                item = xbmcgui.ListItem(colorize(language(2004), 'FFFF4000'))
+                item.setProperty('IsPlayable', 'false')
+                xbmcplugin.addDirectoryItem(pluginhandle, '', item, False)
 
-
-    xbmcplugin.endOfDirectory(pluginhandle, True)
+        if unified:
+            UnifiedSearch().collect(unified_search_results)
+        else: 
+            xbmcplugin.endOfDirectory(pluginhandle, True)
 
 
 def getCategories(url):
@@ -247,18 +283,17 @@ def getCategories(url):
 
     if result["status"] == 200:
         content = common.parseDOM(result["content"], "div", attrs = { "class":"mcont" })
-        categories = common.parseDOM(content, "option", ret="value")
-        descriptions = common.parseDOM(content, "option")
+        categories = common.parseDOM(content, "a", ret="href")
+        descriptions = common.parseDOM(content, "a")
 
         for i in range(0, len(categories)):
-            uri = sys.argv[0] + '?mode=CATEGORIE&url=' + BASE_URL + '/x.php&categorie=' + categories[i]
+            uri = sys.argv[0] + '?url=' + BASE_URL + categories[i]
             title = unescape(descriptions[i], 'cp1251')
 
             item = xbmcgui.ListItem(title)
             xbmcplugin.addDirectoryItem(pluginhandle, uri, item, True)
 
     xbmcplugin.endOfDirectory(pluginhandle, True)
-
 
 def getCategoryItems(url, categorie, page):
     print "*** getCategoryItems"
@@ -300,7 +335,6 @@ def getCategoryItems(url, categorie, page):
             xbmcplugin.addDirectoryItem(pluginhandle, uri, item, True)
 
         xbmcplugin.endOfDirectory(pluginhandle, True)
-
 
 def listGenres():
     genres = [
@@ -377,7 +411,7 @@ def getRecentItems(url):
         xbmcItem('', colorize(localize('['+language(2002)+']'), "FF00FF00"), 'SEARCH')
         xbmcItem('', colorize(localize(language(2003)), "FF00FFF0"), 'FAVORITES')
         xbmcItem('', colorize(localize(language(2000)), "FF00FFF0"), 'CATEGORIES')
-        xbmcItem('', colorize(localize(language(2001)), "FF00FFF0"), 'GENRES')
+#        xbmcItem('', colorize(localize(language(2001)), "FF00FFF0"), 'GENRES')
 
     getItems(url)
 
@@ -448,8 +482,52 @@ def getItems(url):
 
     xbmcplugin.endOfDirectory(pluginhandle, True)
 
+def selectQuality(url, index, title):
+    url_ = url
+    index_ = index
+    if (url_.find('_[') > -1):
+        qualities = url_[url_.find('_[')+2:url_.find('].mp4')]
+        qlist = qualities.split(',')
+        if (index_ == None): 
+            if bestquality == "true":
+                index_ = 0
+            else: 
+                qualities = url[url.find('_[')+2:url.find('].mp4')]
+                qlist = qualities.split(',')
+                if (qlist.count > 1) and (qlist[1] > ""): 
+                    dialog = xbmcgui.Dialog()
+                    index_ = dialog.select(title, qlist)
+                    if int(index_) < 0:
+                        index_ = 0    
+                else:
+                    index_ = 0 
+        url_ = url_.replace('[' + qualities + ']', qlist[int(index_)])
+    return index_, url_
 
-def showItem(url, thumbnail):
+def showSerial(content, url, image):
+    for i, season in enumerate(content):
+        title = season['comment']
+        uri = sys.argv[0] + '?mode=show&url=' + url + '&season=' + str(i) 
+        item = xbmcgui.ListItem(title, thumbnailImage=image)
+        xbmcplugin.addDirectoryItem(pluginhandle, uri, item, True)
+
+def showSeason(content, title, genre, image, desc):
+    index = None
+    for episode in content:
+        title = ('%s') % (episode['comment'])
+        url = episode['file']
+        # select quality
+        index, url = selectQuality(url, index, "") 
+
+        uri = sys.argv[0] + '?mode=play&url=%s' % url
+
+        item = xbmcgui.ListItem(title, thumbnailImage=image)
+        info = {"Title": title, 'genre' : genre, "Plot": desc, "overlay": xbmcgui.ICON_OVERLAY_WATCHED, "playCount": 0}
+        item.setInfo( type='Video', infoLabels=info)
+        item.setProperty('IsPlayable', 'true')
+        xbmcplugin.addDirectoryItem(pluginhandle, uri, item, False)
+
+def showItem(url, thumbnail, season = None):
     content = common.fetchPage({"link": url})["content"]
     mainf = common.parseDOM(content, "div", attrs = { "class":"categ" })
     block = common.parseDOM(content, "div", attrs = { "class":"ssc" })[0]
@@ -468,7 +546,6 @@ def showItem(url, thumbnail):
     if playlist:
         response = common.fetchPage({"link":playlist})["content"]
 
-
         try:
           playlist = json.loads(response)['playlist']
         except ValueError:
@@ -477,54 +554,13 @@ def showItem(url, thumbnail):
           response = response.replace('\r', '').replace('\t', '').replace('\r\n', '')
           playlist = json.loads(response)['playlist']
 
-        if 'playlist' in playlist[0]:
+        if ('playlist' in playlist[0]) and (season == None):
             print "*** This is a playlist with several seasons"
-
-            for season in playlist:
-                title = season['comment']
-                episods = season['playlist']
-                index = None
-
-                for episode in episods:
-                    title = ('%s (%s)') % (episode['comment'], season['comment'])
-                    url = episode['file']
-
-                    # select quality
-                    if url.find('_[') > -1:
-                        qualities = url[url.find('_[')+2:url.find('].mp4')]
-                        qlist = qualities.split(',')
-                        if index == None:
-                            if (qlist.count > 1) and (qlist[1] > ""): 
-                                dialog = xbmcgui.Dialog()
-                                index = dialog.select(season['comment'], qlist)
-                                if int(index) < 0:
-                                    index = 0    
-                            else:
-                                index = 0 
-                        url = url.replace('[' + qualities + ']', qlist[int(index)])
-
-                    uri = sys.argv[0] + '?mode=play&url=%s' % url
-
-                    item = xbmcgui.ListItem(title, thumbnailImage=image)
-                    info = {"Title": title, 'genre' : genre, "Plot": desc, "overlay": xbmcgui.ICON_OVERLAY_WATCHED, "playCount": 0}
-
-                    item.setInfo( type='Video', infoLabels=info)
-                    item.setProperty('IsPlayable', 'true')
-                    xbmcplugin.addDirectoryItem(pluginhandle, uri, item, False)
+            showSerial(playlist, url, image)            
         else:
             print "*** This is a playlist with one season"
-
-            for episode in playlist:
-                title = episode['comment']
-                url = episode['file']
-                uri = sys.argv[0] + '?mode=play&url=%s' % url
-
-                item = xbmcgui.ListItem(title, thumbnailImage=image)
-                info = {"Title": title, 'genre' : genre, "Plot": desc, "overlay": xbmcgui.ICON_OVERLAY_WATCHED, "playCount": 0}
-
-                item.setInfo( type='Video', infoLabels=info)
-                item.setProperty('IsPlayable', 'true')
-                xbmcplugin.addDirectoryItem(pluginhandle, uri, item, False)
+            content = playlist if (season == None) else playlist[int(season)]['playlist']
+            showSeason(content, title, genre, image, desc) 
 
     try:
         mode = VIEW_MODES[Addon.getSetting('episodsViewMode')]
@@ -552,6 +588,9 @@ mode=None
 categorie=None
 thumbnail=None
 page=None
+season=None
+
+bestquality = Addon.getSetting('quality') if Addon.getSetting('quality') else "false"
 
 try:
     mode=params['mode'].upper()
@@ -568,7 +607,15 @@ except: pass
 try:
     page=params['page']
 except: pass
+try:
+    season=params['season']
+except: pass
 
+keyword = params['keyword'] if 'keyword' in params else None
+unified = params['unified'] if 'unified' in params else None
+transpar = params['translit'] if 'translit' in params else None
+if translit == None:
+    translit = Addon.getSetting('translit')
 
 if mode == 'RNEXT':
     getRecentItems(url)
@@ -579,17 +626,17 @@ elif mode == 'CATEGORIE':
 elif mode == 'CNEXT':
     getCategoryItems(url, categorie, page)
 elif mode == 'SHOW':
-    showItem(url,thumbnail)
+    showItem(url,thumbnail,season)
 elif mode == 'PLAY':
     playItem(url)
 elif mode == 'GENRES':
-    listGenres();
+    listGenres()
 elif mode == 'SEARCH':
-    search();
+    search(keyword, unified, transpar)
 elif mode == 'FAVORITES':
-    listFavorites();
+    listFavorites()
 elif mode == 'RESET':
-    resetFavorites();
+    resetFavorites()
 elif mode == None:
     url = BASE_URL if url == None else url
     getRecentItems(url)
