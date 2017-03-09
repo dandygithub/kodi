@@ -339,8 +339,6 @@ class Kinoprosmotr():
             search_item_prev = common.parseDOM(containers, "div", attrs={"class": "search_item_prev"})
             search_item_inner = common.parseDOM(containers, "div", attrs={"class": "search_item_inner"})
 
-            print containers
-
             descriptions = common.parseDOM(search_item_inner, "div")
 
             header = common.parseDOM(search_item_inner, "h3")
