@@ -1,5 +1,24 @@
 import os
 import xml.etree.ElementTree as XML
+import md5
+
+def _save_file(data, file):
+    try:
+        # write data to the file
+        open(file, "w").write(data)
+    except Exception, e:
+        # oops
+        print "An error occurred saving %s file!\n%s" % ( file, e, )
+
+def _generate_md5_file(archive):
+    try:
+        # create a new md5 hash
+        m = md5.new(open(archive).read()).hexdigest()
+        # save file
+        _save_file(m, file = archive + ".md5")
+    except Exception, e:
+        # oops
+        print "An error occurred creating " + archive + " md5 file!\n%s" % ( e, )
 
 for directory in os.listdir("."):
     if not directory.startswith('.'):
@@ -18,3 +37,5 @@ for directory in os.listdir("."):
                 print "Release new version of %s" % name
                 print "Create ZIP archive %s" % archive
                 os.system("7z a %s %s" %(archive, directory))
+                if os.path.isfile(archive):
+                    _generate_md5_file(archive)    
