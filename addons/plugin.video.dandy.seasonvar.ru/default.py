@@ -518,7 +518,7 @@ class Seasonvar():
         
         keyword_ = keyword if keyword else self.getUserInput()
         if keyword_: 
-            keyword_ = self.USTranslit(keyword_) if unified else keyword_
+            keyword_ = self.USTranslit(keyword_, transpar) if unified else keyword_
             keyword_ if isinstance(keyword_, unicode) else unicode(keyword_)
         else:
            return 
