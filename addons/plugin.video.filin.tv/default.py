@@ -161,25 +161,33 @@ def calculateRating(x):
     return xbmc_rating
 
 # *** UI functions ***
+
+def getUserInput():
+    kbd = xbmc.Keyboard()
+    kbd.setDefault('')
+    kbd.setHeading(self.language(2002))
+    kbd.doModal()
+    keyword = None
+
+    if kbd.isConfirmed():
+        if self.addon.getSetting('translit') == 'true':
+            keyword = translit.rus(kbd.getText())
+        else:
+            keyword = kbd.getText()
+
+    return keyword
+
+def USTranslit(keyword, transpar):
+    return translit.rus(keyword) if (transpar == None) or (transpar == "true") else keyword
+
 def search(keyword, unified, transpar = None):
 
     if unified and (use_unified == False):
         return
 
-    if (not keyword):
-        kbd = xbmc.Keyboard()
-        kbd.setDefault('')
-        kbd.setHeading(language(2002))
-        kbd.doModal()
-        keyword=''
-        if kbd.isConfirmed():
-            keyword = kbd.getText()
-
-    transpar = Addon.getSetting('translit') if transpar == None else transpar
-    if transpar and (transpar == 'true'):
-        keyword = translit.rus(keyword)
-
-    path = "/"
+    keyword = USTranslit(keyword, transpar) if unified else getUserInput()
+    if not keyword:
+        return
 
     # Advanced search: titles only
 #    values = {
@@ -221,7 +229,7 @@ def search(keyword, unified, transpar = None):
         values['story'] = keyword
 
     data = urllib.urlencode(values)
-    req = Request(BASE_URL+path, data, headers)
+    req = Request(BASE_URL+'/', data, headers)
 
     try:
         response = urlopen(req)
@@ -614,8 +622,6 @@ except: pass
 keyword = params['keyword'] if 'keyword' in params else None
 unified = params['unified'] if 'unified' in params else None
 transpar = params['translit'] if 'translit' in params else None
-if translit == None:
-    translit = Addon.getSetting('translit')
 
 if mode == 'RNEXT':
     getRecentItems(url)

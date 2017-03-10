@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.dandy.seasonvar.ru" name="seasonvar.ru (UnifiedSearch)" version="1.4.5" provider-name="dandy, MrStealth">
+<addon id="plugin.video.dandy.seasonvar.ru" name="seasonvar.ru (UnifiedSearch)" version="1.4.6" provider-name="dandy, MrStealth">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.0.0"/>
     <import addon="script.module.translit" version="2.0.1"/>
-    <import addon="plugin.video.unified.search" version="2.2.1"/>
+    <import addon="plugin.video.unified.search" version="2.3.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
     <provides>video</provides>
@@ -17,7 +17,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.filin.tv" name="Filin.tv (UnifiedSearch)" version="2.2.0" provider-name="mrstealth, dandy">
+<addon id="plugin.video.filin.tv" name="Filin.tv (UnifiedSearch)" version="2.2.1" provider-name="mrstealth, dandy">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.xbmc.helpers" version="2.0.0"/>

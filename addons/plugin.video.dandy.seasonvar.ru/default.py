@@ -139,6 +139,7 @@ class Seasonvar():
 
         keyword = params['keyword'] if 'keyword' in params else None
         unified = params['unified'] if 'unified' in params else None
+        transpar = params['translit'] if 'translit' in params else None
 
         withMSeason = params['wm'] if 'wm' in params else "1"
         idPlaylist = int(params['idpl']) if 'idpl' in params else 0
@@ -152,7 +153,7 @@ class Seasonvar():
         if mode == 'play':
             self.playItem(url)
         if mode == 'search':
-            self.search(keyword, unified)
+            self.search(keyword, unified, transpar)
         if mode == 'show':
             self.getFilmInfo(url, (withMSeason == "1"))
         if mode == 'filter':
@@ -471,6 +472,9 @@ class Seasonvar():
         item = xbmcgui.ListItem(path=url)
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
+    def USTranslit(self, keyword, transpar):
+        return translit.rus(keyword) if (transpar == None) or (transpar == "true") else keyword
+
     def getUserInput(self):
         kbd = xbmc.Keyboard()
         kbd.setDefault('')
@@ -479,7 +483,11 @@ class Seasonvar():
         keyword = None
 
         if kbd.isConfirmed():
-            keyword = kbd.getText()
+            if self.addon.getSetting('translit') == 'true':
+                keyword = translit.rus(kbd.getText())
+            else:
+                keyword = kbd.getText()
+
         return keyword
 
     def newSearchMethod(self, keyword, unified, unified_search_results):
@@ -505,13 +513,15 @@ class Seasonvar():
                 item = xbmcgui.ListItem(title, thumbnailImage=image)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-    def search(self, keyword, unified):
+    def search(self, keyword, unified, transpar = None):
         print "*** search for keyword %s " % keyword
         
         keyword_ = keyword if keyword else self.getUserInput()
         if keyword_: 
-            keyword_ = translit.rus(keyword_) if (self.addon.getSetting('translit') == 'true') else keyword_
+            keyword_ = self.USTranslit(keyword_) if unified else keyword_
             keyword_ if isinstance(keyword_, unicode) else unicode(keyword_)
+        else:
+           return 
         
         unified_search_results = []
         
