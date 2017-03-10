@@ -170,7 +170,7 @@ def getUserInput():
     keyword = None
 
     if kbd.isConfirmed():
-        if self.addon.getSetting('translit') == 'true':
+        if Addon.getSetting('translit') == 'true':
             keyword = translit.rus(kbd.getText())
         else:
             keyword = kbd.getText()
