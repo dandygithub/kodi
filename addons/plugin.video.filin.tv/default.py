@@ -165,7 +165,7 @@ def calculateRating(x):
 def getUserInput():
     kbd = xbmc.Keyboard()
     kbd.setDefault('')
-    kbd.setHeading(self.language(2002))
+    kbd.setHeading(language(2002))
     kbd.doModal()
     keyword = None
 
