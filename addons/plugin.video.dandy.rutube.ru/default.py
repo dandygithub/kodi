@@ -186,7 +186,6 @@ class RuTube():
             form = urllib.urlencode(values)
             encoded_kwargs = urllib.urlencode(values.items())
             argStr = "?%s" %(encoded_kwargs)
-            xbmc.log("url=" + url + argStr)
             request = urllib2.Request(url + argStr, "", headers)
             request.get_method = lambda: 'GET'
             response = urllib2.urlopen(request)
@@ -266,13 +265,6 @@ class RuTube():
 
     def listItems(self, ictlg, films=False):
         self.log("-listItems:")
-
-        #if films == False:
-        #    xbmcplugin.setContent(self.handle, 'Episodes')
-        #    self.log('Episodes')
-        #else:
-        #    xbmcplugin.setContent(self.handle, 'Movies')
-        #    self.log('Movies')
         
         for ctUrl, ctIcon, ctFolder, ctLabels in ictlg:
             ctTitle = ctLabels['title']
@@ -492,9 +484,6 @@ class RuTube():
         netloc = ''.join((user,colon1,pass_,at,host,colon2,port))
         return urlparse.urlunsplit((scheme,netloc,path,query,fragment))
     
-    def dbg_log(self, line):
-        if self.debug: xbmc.log(line)
-    
     def get_url(self, url, data = None, cookie = None, save_cookie = False, referrer = None):
         self.dbg_log('-get_url:' + '\n')
         self.dbg_log('- url:'+  url + '\n')
@@ -535,11 +524,9 @@ class RuTube():
                 response = urllib2.urlopen(request)
                 resp = response.read()
             except:
-                if self.usevpn == 'true':
-                    (c, resp) = self.xvpngate(url, 'Ru')
-                else:
                     c = 1
                     resp = 'Unsupported region'
+                    showErrorMessage(resp)
                
             if not c:
                 jsonDict = json.loads(resp)
@@ -551,6 +538,9 @@ class RuTube():
             return link
         else: 
             return None
+
+    def dbg_log(self, line):
+        if self.debug: xbmc.log(line)
 
     def log(self, message):
         if self.debug:
