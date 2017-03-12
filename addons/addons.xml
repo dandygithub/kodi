@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
+<addon id="plugin.video.dandy.rutube.ru" name="RuTube.ru (UnifiedSearch)" version="1.0.0" provider-name="dandy, MrStealth">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.xbmc.helpers" version="2.0.0"/>
+    <import addon="script.module.translit" version="2.0.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Видео от RuTube.ru</summary>
+    <description>Видео от RuTube.ru</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
 <addon id="plugin.video.dandy.seasonvar.ru" name="seasonvar.ru (UnifiedSearch)" version="1.4.7" provider-name="dandy, MrStealth">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -103,7 +117,7 @@
     </extension>
 </addon>
 
-<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.1.6" provider-name="dandy">
+<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.1.7" provider-name="dandy">
         <requires>
                 <import addon="xbmc.addon" version="13.0.0"/>
         </requires>
