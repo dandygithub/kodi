@@ -2,4 +2,6 @@
 <settings>
     <setting id="debug" type="bool" label="Enable debug" defaulf="false"/>
     <setting id="timeout" type="number" label="Timeout (sec)" default="30"/>
+    <setting type="bool" id="united_search" visible="false" default="true" />
+    <setting type="text" id="us_command" visible="false" default="mode=search&keyword=" />
 </settings>

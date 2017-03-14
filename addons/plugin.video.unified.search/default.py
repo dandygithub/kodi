@@ -114,7 +114,12 @@ class UnifiedSearchPlugin():
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def search(self, keyword):
-        keyword = self.get_user_input()
+        external = False
+        if keyword:
+            external = True
+            keyword = urllib.unquote_plus(keyword)
+        else: 
+            keyword = self.get_user_input()
 
         if keyword:
             self.log("Call other add-ons and pass keyword: %s" % keyword)
