@@ -23,7 +23,7 @@ addon_icon    = Addon.getAddonInfo('icon')
 addon_path    = Addon.getAddonInfo('path')
 
 import Translit as translit
-translit = translit.Translit(encoding='cp1251')
+translit = translit.Translit()
 
 # UnifiedSearch
 use_unified = True
@@ -177,15 +177,18 @@ def getUserInput():
 
     return keyword
 
-def USTranslit(keyword, transpar):
-    return translit.rus(keyword) if (transpar == None) or (transpar == "true") else keyword
+def USTranslit(keyword, external, transpar):
+    if external == 'usearch':
+        return urllib.unquote_plus(keyword)
+    else:
+        return translit.rus(keyword) if ((transpar == None) or (transpar == "true")) else keyword
 
-def search(keyword, unified, transpar = None):
+def search(keyword, external, transpar = None):
 
-    if unified and (use_unified == False):
+    if (external == 'unified') and (use_unified == False):
         return
 
-    keyword = USTranslit(keyword, transpar) if unified else getUserInput()
+    keyword = USTranslit(keyword, external, transpar) if (external != None) else getUserInput()
     if not keyword:
         return
 
@@ -247,40 +250,43 @@ def search(keyword, unified, transpar = None):
         content = common.parseDOM(response, "div", attrs = { "id":"dle-content" })
         blocks = common.parseDOM(content, "div", attrs = { "class":"block" })
 
-        if len(blocks) > 1:
-            if (not unified):
-                result = common.parseDOM(content, "span", attrs = { "class":"sresult" })[0]
-                item = xbmcgui.ListItem(colorize(unescape(result, 'cp1251'), 'FF00FFF0'))
-                item.setProperty('IsPlayable', 'false')
-                xbmcplugin.addDirectoryItem(pluginhandle, '', item, False)
+        #if (not unified):
+        #    result = common.parseDOM(content, "span", attrs = { "class":"sresult" })[0]
+        #    item = xbmcgui.ListItem(colorize(unescape(result, 'cp1251'), 'FF00FFF0'))
+        #    item.setProperty('IsPlayable', 'false')
+        #    xbmcplugin.addDirectoryItem(pluginhandle, '', item, False)
 
-            mainf = common.parseDOM(content, "div", attrs = { "class":"mainf" })
-            titles = common.parseDOM(mainf, "a")
-            links = common.parseDOM(mainf, "a", ret = "href")
+        mainf = common.parseDOM(content, "div", attrs = { "class":"mainf" })
+        titles = common.parseDOM(mainf, "a")
+        links = common.parseDOM(mainf, "a", ret = "href")
 
-            for i in range(0, len(links)):
-                title = beatify_title(titles[i])
+        lines = 0 
+        for i in range(0, len(links)):
+            title = beatify_title(titles[i])
+            if keyword.decode('utf-8').upper() in title.decode('utf-8').upper(): 
+                lines += 1
+
                 uri = sys.argv[0] + '?mode=SHOW&url=' + links[i] + "&thumbnail="
-
-                if unified:
+ 
+                if (external == 'unified'):
                     unified_search_results.append({'title': title, 'url': links[i], 'image': addon_icon, 'plugin': ID})
                 else:
-                    item = xbmcgui.ListItem(title)
-       
+                    item = xbmcgui.ListItem(title, iconImage=addon_icon, thumbnailImage=addon_icon)
+      
                     # TODO: move to "addFavorite" function
                     script = "special://home/addons/plugin.video.filin.tv/contextmenuactions.py"
                     params = "add|%s"%links[i] + "|%s"%title
                     runner = "XBMC.RunScript(" + str(script)+ ", " + params + ")"
                     item.addContextMenuItems([(localize(language(3001)), runner)])
-
+  
                     xbmcplugin.addDirectoryItem(pluginhandle, uri, item, True)
-        else:
-            if (not unified):
-                item = xbmcgui.ListItem(colorize(language(2004), 'FFFF4000'))
-                item.setProperty('IsPlayable', 'false')
-                xbmcplugin.addDirectoryItem(pluginhandle, '', item, False)
 
-        if unified:
+        if (lines == 0) and (external == None):
+            item = xbmcgui.ListItem(colorize(language(2004), 'FFFF4000'))
+            item.setProperty('IsPlayable', 'false')
+            xbmcplugin.addDirectoryItem(pluginhandle, '', item, False)
+
+        if (external == 'unified'):
             UnifiedSearch().collect(unified_search_results)
         else: 
             xbmcplugin.endOfDirectory(pluginhandle, True)
@@ -620,7 +626,9 @@ try:
 except: pass
 
 keyword = params['keyword'] if 'keyword' in params else None
-unified = params['unified'] if 'unified' in params else None
+external = 'unified' if 'unified' in params else None
+if external == None:
+    external = 'usearch' if 'usearch' in params else None    
 transpar = params['translit'] if 'translit' in params else None
 
 if mode == 'RNEXT':
@@ -638,7 +646,7 @@ elif mode == 'PLAY':
 elif mode == 'GENRES':
     listGenres()
 elif mode == 'SEARCH':
-    search(keyword, unified, transpar)
+    search(keyword, external, transpar)
 elif mode == 'FAVORITES':
     listFavorites()
 elif mode == 'RESET':
