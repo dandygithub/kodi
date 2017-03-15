@@ -101,23 +101,29 @@ class RuTube():
         url = urllib.unquote_plus(params['url']) if 'url' in params else None
 
         keyword = params['keyword'] if 'keyword' in params else None
-        unified = params['unified'] if 'unified' in params else None
+        external = 'unified' if 'unified' in params else None
+        if external == None:
+            external = 'usearch' if 'usearch' in params else None    
         page = int(params['page']) if 'page' in params else 1
 
         group = int(params['group']) if 'group' in params else None
         name = params['name'] if 'name' in params else ''
 
-        self.categorie = params['categorie'] if 'categorie' in params else ''
+        self.categorie = params['categorie'] if 'categorie' in params else self.categorie
         self.prev = params['prev'] if 'prev' in params else ''
+
+        tab = int(params['tab']) if 'tab' in params else 0
  
         if mode == 'search':
-            self.search(keyword, unified, page)
+            self.search(keyword, external, page)
         elif mode == 'group':
             self.getGroupItems(group)
         elif mode == 'tabs':
             self.tabs(url)
+        elif mode == 'subtabs':
+            self.subTabs(url)
         elif mode == 'list':
-            self.getList(url)
+            self.getList(url, tab)
         elif mode == 'show':
             self.show(url)
         elif mode == 'play':
@@ -148,10 +154,10 @@ class RuTube():
                 keyword = kbd.getText()
         return keyword
 
-    def search(self, keyword, unified, page = 1):
+    def search(self, keyword, external, page = 1):
         if page == 1:
-            keyword = keyword if unified or keyword else self.getUserInput()
-            keyword = translit.rus(keyword) if unified else keyword 
+            keyword = keyword if (external != None) or keyword else self.getUserInput()
+            keyword = translit.rus(keyword) if (external == 'unified') else urllib.unquote_plus(keyword)
         else:
             keyword = urllib.unquote_plus(keyword)
 
@@ -193,7 +199,7 @@ class RuTube():
 
             for i, result in enumerate(data['results']):
                 image = result['thumbnail_url']
-                if unified:
+                if (external == 'unified'):
                     unified_search_results.append({'title': result['title'], 'url': 'https://rutube.ru/video/%s/?ref=search' % result['id'], 'image': image, 'plugin': self.id})
                 else:  
                     uri = sys.argv[0] + '?mode=play&url=https://rutube.ru/video/%s/?ref=search' % result['id']
@@ -202,13 +208,13 @@ class RuTube():
                     item.setInfo(type='Video', infoLabels={'title': result['title']})
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
-            if (not unified) and (data['has_next'] == True):
+            if (external == None) and (data['has_next'] == True):
                 uri = sys.argv[0] + '?mode=%s&keyword=%s&page=%s' % ('search', keyword, str(page + 1))
                 item = xbmcgui.ListItem('[COLOR=FFFFD700]' + self.language(2000) % (str(page+1)) + '[/COLOR]', thumbnailImage=self.inext, iconImage=self.inext)
                 item.setInfo(type='Video', infoLabels={'title': '<NEXT PAGE>'})
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-            if unified:
+            if (external == 'unified'):
                 UnifiedSearch().collect(unified_search_results)
             else: 
                 xbmc.executebuiltin('Container.SetViewMode(50)')
@@ -244,6 +250,12 @@ class RuTube():
                 image = self.icon      
             return image 
 
+    def getCategorie(self, data, categorie):
+        if '/feeds/' in data:
+            return data.split('/feeds/')[-1].split('/')[0]
+        else:
+            return categorie
+
     def getGroupItems(self, group):
         response = common.fetchPage({"link": self.url})
         content = response["content"].split('<div class="sub-header">')[-1].split('</body>')[0]
@@ -253,7 +265,7 @@ class RuTube():
         urls   = common.parseDOM(groupitems, "a", attrs={"class": "sub-header-row-list-link "}, ret="href")
                 
         for i, title in enumerate(titles):
-            categorie = urls[i].split('/feeds/')[-1].split('/?')[0]  
+            categorie = self.getCategorie(urls[i], self.categorie)
             uri = sys.argv[0] + '?mode=tabs&url=%s&categorie=%s' % (self.url + urls[i], categorie)
             image = self.getCategorieImage(self.url + urls[i], categorie) 
             item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
@@ -291,58 +303,96 @@ class RuTube():
             if (not main) or (i in SELECTED_MAIN_TABS):
                 name = tab['name']
                 url = tab['url']
-                params = '?mode=list&url=' + QT(url)
+                params = '?mode=subtabs&url=' + QT(url)
                 if '/feeds/' + self.categorie + '/popular/' not in url:
-                    ct_cat.append((params, self.getCategorieImage(url, self.categorie, False), True, {'title': name}))
+                    ct_cat.append((params, self.getCategorieImage(url, self.getCategorie(url, self.categorie), False), True, {'title': name}))
         self.listItems(ct_cat, True)
-        
-    def getList(self, url):
+
+    def subTabs(self, url, main = False):
+        self.log("-subTabs:")
+        self.log("--url: %s"%url)
+        ct_list = []
+
+        response = common.fetchPage({"link": url})
+        content = response["content"]
+        subtabs = common.parseDOM(content, "span", attrs={"class": "showcase-widget-name-text"})
+
+        if (len(subtabs) == 0):
+            self.getList(url) 
+        else:        
+            for i, subtab in enumerate(subtabs):
+                name = subtab
+                params = '?mode=list&url=%s&tab=%s'%(QT(url), str(i))
+                ct_list.append((params, self.getCategorieImage(url, self.getCategorie(url, self.categorie), False), True, {'title': name}))
+
+            self.listItems(ct_list, True)
+
+    def getList(self, url, tab = 0):
         self.log("-getList:")
         self.log("--url: %s"%url)
         ct_list = []
         
-        if 1:
-            response = self.get_url(url)
-            jtdata = re.compile("initialData.resultsOfActiveTabResources\[(.*?)\] = '{(.*?)}';").findall(response)[0][1].decode('unicode-escape')
+        response = self.get_url(url)
+        
+        if self.prev == 'list':
+            jts = make_dict_from_tree(xml.etree.ElementTree.fromstring(response))['root']
+            results = jts['results']['list-item']
+        else: 
+            jtdata = re.compile("initialData.resultsOfActiveTabResources\[(.*?)\] = '{(.*?)}';").findall(response)[tab][1].decode('unicode-escape')
             jts = json.loads('{'+jtdata+'}')
-            for res in jts['results']:
-                name = ''
-                url = ''
-                pic = ''
-                plot = ''
+            results = jts['results']
+
+        for res in results:
+            name = ''
+            url = ''
+            pic = ''
+            plot = ''
+            try:
+                name = res['object']['name']
+                pic = res['object']['picture']
+                url = res['object']['absolute_url']
+                plot = res['object']['description']
+            except:
                 try:
-                    name = res['object']['name']
-                    pic = res['object']['picture']
-                    url = res['object']['absolute_url']
-                    plot = res['object']['description']
-                except:
+                    name = res['title']
+                    pic = res['picture_url']
+                    url = res['video_url']
+                    plot = res['description']
+                except: 
                     try:
                         name = res['title']
-                        pic = res['picture_url']
-                        url = res['video_url']
+                        pic = res['picture']
+                        url = self.url + res['target']
                         plot = res['description']
                     except: pass
     
-                if pic == '':
-                    try: pic = res['thumbnail_url']
-                    except: pass
-                if plot == '':
-                    try: plot = res['short_description']
-                    except: pass
+            if pic == '' or pic == None:
+                try: pic = res['thumbnail_url']
+                except: pass
+            if plot == '' or plot == None:
+                try: plot = res['short_description']
+                except: pass
                 
-                self.log("-m_list-name: %s"%name)
-                self.log("-m_list-pic: %s"%pic)
-                self.log("-m_list-url: %s"%url)
-                
-                if url and name:
-                    if (url.find('rutube.ru/video') > -1 or url.find('play/embed') > -1) and url.find('person') < 0 :
-                        mode = 'play&name=%s&icon=%s&prev=list'%(name, QT(pic))
-                        folder = False
-                    else:
-                        mode = 'show'
-                        folder = True
-                    params = '?mode=%s&url=%s'%(mode, QT(url))
-                    ct_list.append((params, pic, folder, {'title': name, 'plot':plot}))
+            self.log("-m_list-name: %s"%name)
+            self.log("-m_list-pic: %s"%pic)
+            self.log("-m_list-url: %s"%url)
+
+            if url and name:
+                if (url.find('rutube.ru/video') > -1 or url.find('play/embed') > -1) and url.find('person') < 0 :
+                    mode = 'play&name=%s&icon=%s&prev=list'%(name, QT(pic))
+                    folder = False
+                else:
+                    mode = 'show'
+                    folder = True
+                params = '?mode=%s&url=%s'%(mode, QT(url))
+                ct_list.append((params, pic, folder, {'title': name, 'plot':plot}))
+
+        try: next = str(jts['has_next']).capitalize()
+        except: next = ''
+            
+        if next == 'True':
+            params = '?mode=%s&prev=list&url=%s&tab=%s'%('list', QT(jts['next']), str(tab))
+            ct_list.append((params, self.inext, True, {'title': '[COLOR=FFFFD700]' + self.language(2001) + '[/COLOR]'}))
         
         self.listItems(ct_list, True)
         
@@ -371,12 +421,18 @@ class RuTube():
             except: pass
             
             
-            try: jtdata = re.compile("initialData.resultsOfActiveTabResources\[(.*?)\] = '{(.*?)}';").findall(response)[0][1].decode('unicode-escape').replace("\n", " ")
-            except:
-                try: jtdata = re.compile("initialData.personVideoTab = JSON.parse\('{(.*?)}'\);").findall(response)[0].decode('unicode-escape').replace("\n", " ")
-                except: jtdata = html_unescape(re.compile('data-value="{(.*?)}">').findall(response)[0].decode('unicode-escape')).replace("\n", " ")
+            div = common.parseDOM(response, "div", attrs={"id": "page-object"}, ret="data-value")
+            if div:
+                judata = html_unescape(div[0].decode('unicode-escape')).replace("\n", " ")
+                judata = ' '.join(judata.split())
+            else:
+                try: jtdata = re.compile("initialData.resultsOfActiveTabResources\[(.*?)\] = '{(.*?)}';").findall(response)[0][1].decode('unicode-escape').replace("\n", " ")
+                except:
+                    try: jtdata = re.compile("initialData.personVideoTab = JSON.parse\('{(.*?)}'\);").findall(response)[0].decode('unicode-escape').replace("\n", " ")
+                    except: jtdata = html_unescape(re.compile('data-value="{(.*?)}">').findall(response)[0].decode('unicode-escape')).replace("\n", " ")
     
-            judata = '{'+jtdata+'}'
+                judata = '{'+jtdata+'}'
+
             jts = json.loads(judata)
             results = jts['results']
     
@@ -555,14 +611,14 @@ def UQT(url): return urllib.unquote_plus(url)
 
 def html_escape(text):
     text = text.replace("&", "&amp;")
-    text = text.replace(">", ">")
-    text = text.replace("<", "<")
+    text = text.replace(">", "&gt;")
+    text = text.replace("<", "&lt;")
     text = text.replace('"', "&quot;")
     text = text.replace("'", "&apos;")
     return text
 
 def html_unescape(text):
-    return text.replace("&amp;", "&").replace(">", ">").replace("<", "<").replace("&quot;", '"').replace("&apos;", "'")
+    return text.replace("&amp;", "&").replace("&gt;", ">").replace("&lt;", "<").replace("&quot;", '"').replace("&apos;", "'")
  
 def make_dict_from_tree(element_tree):
 
@@ -595,7 +651,7 @@ def error(message):
 
 def showErrorMessage(msg):
     xbmc.log(msg.encode('utf-8'))
-    xbmc.executebuiltin("XBMC.Notification(%s %s, %s)" % ("ERROR:", msg.encode('utf-8'), str(10 * 1000)))
+    xbmc.executebuiltin("XBMC.Notification(%s, %s, %s)" % ("ERROR:", msg.encode('utf-8'), str(10 * 1000)))
 
 def encode(string):
     return string.decode('cp1251').encode('utf-8')
