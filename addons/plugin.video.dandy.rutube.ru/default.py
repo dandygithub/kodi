@@ -38,6 +38,17 @@ socket.setdefaulttimeout(120)
 #const
 SELECTED_GROUPS = (0, 2)
 SELECTED_MAIN_TABS = (0, 1, 2, 3)
+QUALITY_TYPES = (("lq", 0, 1000000), ("mq", 1000001, 1500000), ("hq", 1500001, 2000000), ("hd", 2000001, 99999999))
+
+#EXTM3U
+#EXT-X-STREAM-INF:PROGRAM-ID=1, BANDWIDTH=698000, CODECS="avc1.42c015, mp4a.40.5"
+#http://video-1-101.rutube.ru/hls-vod/XIlMXrdnc_4u_tybeCnWSw/1489590308/122/0x500003970be00fb4/265a274360dd40ecb5579ced68d7580a.mp4.m3u8?i=512x288_698
+#EXT-X-STREAM-INF:PROGRAM-ID=1, BANDWIDTH=1299000, CODECS="avc1.4d401e, mp4a.40.5"
+#http://video-1-101.rutube.ru/hls-vod/HT87paLmteEyCprimFUCwA/1489590308/124/0x500003970b8829c4/6bb45bffe33b4308b45fd2932236cbff.mp4.m3u8?i=640x360_1299
+#EXT-X-STREAM-INF:PROGRAM-ID=1, BANDWIDTH=1997000, CODECS="avc1.4d401f, mp4a.40.5"
+#http://video-1-101.rutube.ru/hls-vod/EaDpUG1QPo_mQMxbhw9Mvw/1489590308/124/0x500003970b90123b/ec392beb7200457aab7e434811911c7d.mp4.m3u8?i=896x504_1997
+#EXT-X-STREAM-INF:PROGRAM-ID=1, BANDWIDTH=3591000, CODECS="avc1.64001f, mp4a.40.5"
+#http://video-1-101.rutube.ru/hls-vod/f0x5PZRgROGZUppis5_a8g/1489590308/122/0x500003970bd81942/f828922310e745fd80da425193db2dec.mp4.m3u8?i=1280x720_3591
 
 class RuTube():
 
@@ -59,6 +70,10 @@ class RuTube():
 
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.debug = False
+
+        self.quality = self.addon.getSetting('quality')
+        if not self.quality:
+            self.quality = 'auto'
 
         self.prev = ''
         self.categorie = ''
@@ -308,7 +323,7 @@ class RuTube():
                     ct_cat.append((params, self.getCategorieImage(url, self.getCategorie(url, self.categorie), False), True, {'title': name}))
         self.listItems(ct_cat, True)
 
-    def subTabs(self, url, main = False):
+    def subTabs(self, url):
         self.log("-subTabs:")
         self.log("--url: %s"%url)
         ct_list = []
@@ -364,7 +379,14 @@ class RuTube():
                         pic = res['picture']
                         url = self.url + res['target']
                         plot = res['description']
-                    except: pass
+
+                    except:
+                        try:
+                            name = res['video']['title']
+                            pic = res['video']['thumbnail_url']
+                            url = res['video']['video_url']
+                            plot = res['video']['description']
+                        except: pass
     
             if pic == '' or pic == None:
                 try: pic = res['thumbnail_url']
@@ -483,6 +505,48 @@ class RuTube():
 
         self.listItems(ct_show, True)
 
+    def selectQuality(self, url, data):
+        if (self.quality == 'auto') or (not ('#EXTM3U' in data)):
+            return url
+        else:
+          bands = re.compile("BANDWIDTH=.*?, CODECS").findall(data)            
+          urls = re.compile("http:\/\/.*?\n").findall(data)
+          qlist = [] 
+          index = -1
+          for i, band in enumerate(bands):
+             for qitem in QUALITY_TYPES:
+                 band_ = band.split('BANDWIDTH=')[-1].split(', CODECS')[0] 
+                 if (int(band_) >= qitem[1]) and (int(band_) <= qitem[2]):
+                     qlist.append(qitem[0].upper())
+          if (qlist.count > 1):
+              if (self.quality == 'select'): 
+                  dialog = xbmcgui.Dialog()
+                  index = dialog.select(self.language(3000), qlist)
+                  if int(index) < 0:
+                      index = -2
+              else:
+                 for j, qitem in enumerate(qlist):
+                     if (qitem[0].upper() == self.quality.upper()):
+                         index = j
+          else:
+              index = -1
+          if index == -1:
+              return url
+          elif index == -2:
+              return ""
+          else:
+              return urls[index].replace("\n", "")
+
+#EXTM3U
+#EXT-X-STREAM-INF:PROGRAM-ID=1, BANDWIDTH=698000, CODECS="avc1.42c015, mp4a.40.5"
+#http://video-1-101.rutube.ru/hls-vod/XIlMXrdnc_4u_tybeCnWSw/1489590308/122/0x500003970be00fb4/265a274360dd40ecb5579ced68d7580a.mp4.m3u8?i=512x288_698
+#EXT-X-STREAM-INF:PROGRAM-ID=1, BANDWIDTH=1299000, CODECS="avc1.4d401e, mp4a.40.5"
+#http://video-1-101.rutube.ru/hls-vod/HT87paLmteEyCprimFUCwA/1489590308/124/0x500003970b8829c4/6bb45bffe33b4308b45fd2932236cbff.mp4.m3u8?i=640x360_1299
+#EXT-X-STREAM-INF:PROGRAM-ID=1, BANDWIDTH=1997000, CODECS="avc1.4d401f, mp4a.40.5"
+#http://video-1-101.rutube.ru/hls-vod/EaDpUG1QPo_mQMxbhw9Mvw/1489590308/124/0x500003970b90123b/ec392beb7200457aab7e434811911c7d.mp4.m3u8?i=896x504_1997
+#EXT-X-STREAM-INF:PROGRAM-ID=1, BANDWIDTH=3591000, CODECS="avc1.64001f, mp4a.40.5"
+#http://video-1-101.rutube.ru/hls-vod/f0x5PZRgROGZUppis5_a8g/1489590308/122/0x500003970bd81942/f828922310e745fd80da425193db2dec.mp4.m3u8?i=1280x720_3591
+    
     def play(self, url, name):
         self.log("-play:")
         
@@ -493,6 +557,11 @@ class RuTube():
             if not uri.startswith('http'): uri = 'http:' + uri
             uri = UQT(uri)
             self.dbg_log('- uri: '+  uri + '\n')
+
+            data = self.get_url(uri)
+            uri = self.selectQuality(uri, data)
+            if (uri == ""):
+                return
             
             if 1:
                 item = xbmcgui.ListItem(name, path = uri, iconImage=self.icon, thumbnailImage=self.icon)
