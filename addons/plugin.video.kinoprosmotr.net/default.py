@@ -17,7 +17,7 @@ common = XbmcHelpers
 
 
 import Translit as translit
-translit = translit.Translit(encoding='cp1251')
+translit = translit.Translit()
 
 # FIXME: Find a better way for module import
 sys.path.append(os.path.join(os.path.dirname(__file__), "../plugin.video.unified.search"))
@@ -53,12 +53,14 @@ class Kinoprosmotr():
         page = params['page'] if 'page' in params else 1
 
         keyword = params['keyword'] if 'keyword' in params else None
-        unified = params['unified'] if 'unified' in params else None
+        external = 'unified' if 'unified' in params else None
+        if external == None:
+            external = 'usearch' if 'usearch' in params else None    
 
         if mode == 'play':
             self.playItem(url)
         if mode == 'search':
-            self.search(keyword, unified)
+            self.search(keyword, external)
         if mode == 'genres':
             self.listGenres(url)
         if mode == 'show':
@@ -298,8 +300,10 @@ class Kinoprosmotr():
                 keyword = kbd.getText()
         return keyword
 
-    def search(self, keyword, unified):
-        keyword = translit.rus(keyword) if unified else self.getUserInput()
+    def search(self, keyword, external):
+        keyword = keyword if (external != None) else self.getUserInput()
+        keyword = translit.rus(keyword) if (external == 'unified') else urllib.unquote_plus(keyword)
+
         unified_search_results = []
 
         if keyword:
@@ -321,7 +325,7 @@ class Kinoprosmotr():
                 "searchuser": "",
                 "showposts": "0",
                 "sortby": "date",
-                "story": keyword,
+                "story": self.decode(keyword),
                 "subaction": "search",
                 "titleonly": "3"
             }
@@ -348,7 +352,7 @@ class Kinoprosmotr():
             links = common.parseDOM(header, "a", ret="href")
             images = common.parseDOM(search_item_prev, "img", ret="src")
 
-            if unified:
+            if (external == 'unified'):
                 self.log("Perform unified search and return results")
                 for i, title in enumerate(titles):
                     image = self.url + images[i]
@@ -390,6 +394,8 @@ class Kinoprosmotr():
     def encode(self, string):
         return string.decode('cp1251').encode('utf-8')
 
+    def decode(self, string):
+        return string.decode('utf-8').encode('cp1251')
 
 class URLParser():
     def parse(self, string):

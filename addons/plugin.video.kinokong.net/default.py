@@ -1,6 +1,6 @@
 #!/usr/bin/python
-# Writer (c) 2014-2016, MrStealth, dandy
-# Rev. 1.1.1
+# Writer (c) 2014-2017, MrStealth, dandy
+# Rev. 1.2.0
 # -*- coding: utf-8 -*-
 
 import os
@@ -18,7 +18,7 @@ common = XbmcHelpers
 
 
 import Translit as translit
-translit = translit.Translit(encoding='cp1251')
+translit = translit.Translit()
 
 socket.setdefaulttimeout(120)
 
@@ -44,7 +44,7 @@ class Kinokong():
         self.handle = int(sys.argv[1])
         self.params = sys.argv[2]
 
-        self.url = 'http://kinokong.biz'
+        self.url = 'http://kinokong.cc'
 
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.debug = False
@@ -61,12 +61,14 @@ class Kinokong():
         page = params['page'] if 'page' in params else 1
 
         keyword = params['keyword'] if 'keyword' in params else None
-        unified = params['unified'] if 'unified' in params else None
+        external = 'unified' if 'unified' in params else None
+        if external == None:
+            external = 'usearch' if 'usearch' in params else None    
 
         if mode == 'play':
             self.playItem(url)
         if mode == 'search':
-            self.search(keyword, unified)
+            self.search(keyword, external)
         if mode == 'genres':
             self.listGenres(url)
         if mode == 'show':
@@ -85,7 +87,7 @@ class Kinokong():
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getCategoryItems('http://kinokong.biz/films/novinki', 1)
+        self.getCategoryItems('http://kinokong.cc/films/novinki', 1)
 
         xbmc.executebuiltin('Container.SetViewMode(52)')
         xbmcplugin.endOfDirectory(self.handle, True)
@@ -233,12 +235,12 @@ class Kinokong():
         genres = common.parseDOM(menu, "li")
 
         links = [
-          'http://kinokong.biz/films',
-          'http://kinokong.biz/films/novinki',
-          'http://kinokong.biz/serial',
-          'http://kinokong.biz/multfilm',
-          'http://kinokong.biz/anime',
-          'http://kinokong.biz/dokumentalnyy'
+          'http://kinokong.cc/films',
+          'http://kinokong.cc/films/novinki',
+          'http://kinokong.cc/serial',
+          'http://kinokong.cc/multfilm',
+          'http://kinokong.cc/anime',
+          'http://kinokong.cc/dokumentalnyy'
         ]
 
         for i, genre in enumerate(genres[:-1]):
@@ -280,14 +282,13 @@ class Kinokong():
     #def search(self, keyword, unified):
     #    self.showErrorMessage('Not yet implemented')
 
-    def search(self, keyword, unified):
-        keyword = translit.rus(keyword) if unified else self.getUserInput()
+    def search(self, keyword, external):
+        keyword = keyword if (external != None) else self.getUserInput()
+        keyword = translit.rus(keyword) if (external == 'unified') else urllib.unquote_plus(keyword)
         unified_search_results = []
 
         if keyword:
             url = 'http://kinokong.cc/index.php?do=search'
-
-
 
             # Advanced search: titles only
             values = {
@@ -304,7 +305,7 @@ class Kinokong():
                 "searchuser":   "",
                 "showposts":    0,
                 "sortby":       "date",
-                "story" :       keyword,
+                "story" :       self.decode(keyword),
                 "subaction":    "search",
                 "titleonly":    0
             }
@@ -329,7 +330,7 @@ class Kinokong():
 
             descs = common.parseDOM(items, "i")
 
-            if unified:
+            if (external == 'unified'):
                 self.log("Perform unified search and return results")
 
                 for i, title in enumerate(titles):
@@ -371,6 +372,8 @@ class Kinokong():
     def encode(self, string):
         return string.decode('cp1251').encode('utf-8')
 
+    def decode(self, string):
+        return string.decode('utf-8').encode('cp1251')
 
 # class URLParser():
 #     def parse(self, string):
