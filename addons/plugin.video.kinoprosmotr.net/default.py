@@ -19,9 +19,13 @@ common = XbmcHelpers
 import Translit as translit
 translit = translit.Translit()
 
-# FIXME: Find a better way for module import
-sys.path.append(os.path.join(os.path.dirname(__file__), "../plugin.video.unified.search"))
-from unified_search import UnifiedSearch
+# UnifiedSearch module
+try:
+    sys.path.append(os.path.dirname(__file__)+ '/../plugin.video.unified.search')
+    from unified_search import UnifiedSearch
+except:
+    pass
+#    xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("Warning", 'Please install UnifiedSearch add-on!', str(10 * 1000)))
 
 class Kinoprosmotr():
     def __init__(self):

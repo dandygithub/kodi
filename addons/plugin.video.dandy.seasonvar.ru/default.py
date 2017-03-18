@@ -36,7 +36,8 @@ try:
     sys.path.append(os.path.dirname(__file__)+ '/../plugin.video.unified.search')
     from unified_search import UnifiedSearch
 except:
-    xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("Warning", 'Please install UnifiedSearch add-on!', str(10 * 1000)))
+    pass
+# xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("Warning", 'Please install UnifiedSearch add-on!', str(10 * 1000)))
 
 # Filter consts
 FILTER_TYPE_GENRES = 0
