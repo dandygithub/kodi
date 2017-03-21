@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Writer (c) 2014-2017, dandy, MrStealth
-# Rev. 1.4.0
+# Rev. 1.5.0
 # Licence: GPL v.3: http://www.gnu.org/copyleft/gpl.html
 
 import os
@@ -36,7 +36,8 @@ try:
     sys.path.append(os.path.dirname(__file__)+ '/../plugin.video.unified.search')
     from unified_search import UnifiedSearch
 except:
-    xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("Warning", 'Please install UnifiedSearch add-on!', str(10 * 1000)))
+    pass
+# xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("Warning", 'Please install UnifiedSearch add-on!', str(10 * 1000)))
 
 # Filter consts
 FILTER_TYPE_GENRES = 0
@@ -138,7 +139,9 @@ class Seasonvar():
         url = urllib.unquote_plus(params['url']) if 'url' in params else None
 
         keyword = params['keyword'] if 'keyword' in params else None
-        unified = params['unified'] if 'unified' in params else None
+        external = 'unified' if 'unified' in params else None
+        if external == None:
+            external = 'usearch' if 'usearch' in params else None    
         transpar = params['translit'] if 'translit' in params else None
 
         withMSeason = params['wm'] if 'wm' in params else "1"
@@ -153,7 +156,7 @@ class Seasonvar():
         if mode == 'play':
             self.playItem(url)
         if mode == 'search':
-            self.search(keyword, unified, transpar)
+            self.search(keyword, external, transpar)
         if mode == 'show':
             self.getFilmInfo(url, (withMSeason == "1"))
         if mode == 'filter':
@@ -490,7 +493,7 @@ class Seasonvar():
 
         return keyword
 
-    def newSearchMethod(self, keyword, unified, unified_search_results):
+    def newSearchMethod(self, keyword, external, unified_search_results):
         url = self.url +  '/search?q=' + keyword
         response = common.fetchPage({"link": url})
         data =  response["content"].split('<div class="center-title">')[-1].split('</body>')[0]           
@@ -505,7 +508,7 @@ class Seasonvar():
             if seasondiv:
                 title = title + ' [COLOR=FF00FFF0][' + seasondiv[0] + '][/COLOR]'                  
             
-            if unified:
+            if (external == 'unified'):
                 self.log("Perform unified search and return results")
                 unified_search_results.append({'title': title, 'url': url, 'image': image, 'plugin': self.id})
             else:
@@ -513,12 +516,12 @@ class Seasonvar():
                 item = xbmcgui.ListItem(title, thumbnailImage=image)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-    def search(self, keyword, unified, transpar = None):
+    def search(self, keyword, external, transpar = None):
         print "*** search for keyword %s " % keyword
         
         keyword_ = keyword if keyword else self.getUserInput()
         if keyword_: 
-            keyword_ = self.USTranslit(keyword_, transpar) if unified else keyword_
+            keyword_ = self.USTranslit(keyword_, transpar) if (external == 'unified') else urllib.unquote_plus(keyword)
             keyword_ if isinstance(keyword_, unicode) else unicode(keyword_)
         else:
            return 
@@ -527,7 +530,7 @@ class Seasonvar():
         
         if keyword_:
             if self.new_search_method and (self.new_search_method == "true"):
-                self.newSearchMethod(keyword_, unified, unified_search_results)
+                self.newSearchMethod(keyword_, external, unified_search_results)
             else:
                 url = self.url + '/autocomplete.php?query=' + keyword_       
                 response = common.fetchPage({"link": url})
@@ -541,7 +544,7 @@ class Seasonvar():
                     surl = s['data'][i]
                     if surl.find('.html') > -1:
                         url = self.url + '/' + s['data'][i]
-                        if unified:
+                        if (external == 'unified'):
                             self.log("Perform unified search and return results")
                             unified_search_results.append({'title': title, 'url': url, 'image': self.icon, 'plugin': self.id})
                         else:
@@ -549,7 +552,7 @@ class Seasonvar():
                             item = xbmcgui.ListItem(title, thumbnailImage=self.icon)
                             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-            if unified:
+            if (external == 'unified'):
                 UnifiedSearch().collect(unified_search_results)
             else: 
                 xbmc.executebuiltin('Container.SetViewMode(50)')

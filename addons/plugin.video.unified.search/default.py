@@ -1,6 +1,6 @@
 #!/usr/bin/python
-# Writer (c) 2012, MrStealth
-# Rev. 1.1.1
+# Writer (c) 2012-2017, MrStealth
+# Rev. 2.4.0
 # License: Attribution-NonCommercial-ShareAlike 3.0 Unported (CC BY-NC-SA 3.0)
 # -*- coding: utf-8 -*-
 
@@ -148,7 +148,7 @@ class UnifiedSearchPlugin():
                     checkEnd = True;
 
             self.notify("Search", "Done")
-            self.show(self.search_id)
+            self.show(self.search_id, external)
             #xbmc.executebuiltin('Container.Update(%s)' % "plugin://%s/?mode=show&search_id=%d" % (self.id, search_id))
 
     def searchParamsToList(self, params):
@@ -163,7 +163,7 @@ class UnifiedSearchPlugin():
     def collect(self, searchList):
         UnifiedSearch().collect(searchList)
 
-    def show(self, search_id):
+    def show(self, search_id, external = False):
         self.log("Show results on separate page for search_id")
         results = self.result_db.find_by_search_id(search_id) if search_id else []
 
@@ -180,14 +180,15 @@ class UnifiedSearchPlugin():
                     item = xbmcgui.ListItem("%s (%s)" % (item['title'], item['plugin'].replace('plugin.video.', '')), thumbnailImage=image)
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
         else:
-            if search_id or search_id == 0:
-                item = xbmcgui.ListItem("[COLOR=FFFF4000]%s[/COLOR]" % self.language(2001))
-                item.setProperty('IsPlayable', 'false')
-                xbmcplugin.addDirectoryItem(self.handle, '', item, False)
-            else:
-                item = xbmcgui.ListItem(self.language(2000))
-                item.setProperty('IsPlayable', 'false')
-                xbmcplugin.addDirectoryItem(self.handle, '', item, False)
+            if external == False:
+                if search_id or search_id == 0:
+                    item = xbmcgui.ListItem("[COLOR=FFFF4000]%s[/COLOR]" % self.language(2001))
+                    item.setProperty('IsPlayable', 'false')
+                    xbmcplugin.addDirectoryItem(self.handle, '', item, False)
+                else:
+                    item = xbmcgui.ListItem(self.language(2000))
+                    item.setProperty('IsPlayable', 'false')
+                    xbmcplugin.addDirectoryItem(self.handle, '', item, False)
 
         #xbmc.executebuiltin('Container.SetViewMode(50)')
         xbmcplugin.setContent(self.handle, 'files')
