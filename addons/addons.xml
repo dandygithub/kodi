@@ -48,6 +48,23 @@
     </extension>
 </addon>
 
+<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="2.0.0" provider-name="MrStealth, dandy">
+    <requires>
+        <import addon="xbmc.python" version="2.1.0"/>
+        <import addon="script.module.xbmc.helpers" version="2.0.0"/>
+        <import addon="script.module.translit" version="2.0.1"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">>
+        <provides>video</provides>
+    </extension>
+    <extension point= "xbmc.addon.metadata">
+        <summary>Hdrezka.tv</summary>
+        <description>HDREZKA.TV - Фильмы, мультфильмы и сериалы в высоком качестве 720</description>
+        <description>For personal use only</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+
 <addon id="plugin.video.kinokong.net" name="Kinokong.net (UnifiedSearch)" version="1.1.3" provider-name="MrStealth, dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -117,7 +134,7 @@
     </extension>
 </addon>
 
-<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.1.7" provider-name="dandy">
+<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.1.8" provider-name="dandy">
         <requires>
                 <import addon="xbmc.addon" version="13.0.0"/>
         </requires>
