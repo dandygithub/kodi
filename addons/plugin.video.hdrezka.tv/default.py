@@ -114,7 +114,6 @@ class HdrezkaTV():
             item = xbmcgui.ListItem(title, thumbnailImage=self.icon)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def sub_categories(self, category_id):
@@ -179,7 +178,7 @@ class HdrezkaTV():
             item = xbmcgui.ListItem(self.language(1004), iconImage=self.inext)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        xbmc.executebuiltin('Container.SetViewMode(52)')
+        xbmcplugin.setContent(self.handle, 'movies')
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def show(self, url):
@@ -214,6 +213,7 @@ class HdrezkaTV():
                 uri = sys.argv[0] + '?mode=play_episode&url=%s&urlm=%s&post_id=%s&season_id=%s&episode_id=%s&title=%s&image=%s' % (url_episode, url, ids[i], seasons[i], episodes[i], title, image)
                 item = xbmcgui.ListItem(title, iconImage=image)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+            xbmcplugin.setContent(self.handle, 'episodes')
         else:
             try:
                 link = self.get_video_link(url, post_id)
@@ -241,6 +241,8 @@ class HdrezkaTV():
                     item.setInfo(type='Video', infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
                     item.setProperty('IsPlayable', 'true')
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
+
+                xbmcplugin.setContent(self.handle, 'files')
 
         xbmcplugin.endOfDirectory(self.handle, True)
 
@@ -515,6 +517,7 @@ class HdrezkaTV():
                 item.setProperty('IsPlayable', 'true')
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
  
+            xbmcplugin.setContent(self.handle, 'files')
             xbmcplugin.endOfDirectory(self.handle, True)
 
 
