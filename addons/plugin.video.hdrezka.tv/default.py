@@ -98,7 +98,6 @@ class HdrezkaTV():
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         self.index('http://hdrezka.me/films', 1)
-        xbmcplugin.endOfDirectory(self.handle, True)
 
     def categories(self):
         response = common.fetchPage({"link": self.url})
@@ -156,24 +155,19 @@ class HdrezkaTV():
 
         links = common.parseDOM(link_containers, "a", ret='href')
         titles = common.parseDOM(link_containers, "a")
-        images = common.parseDOM(items, "img", ret='src')
+        divcovers = common.parseDOM(items, "div", attrs={"class": "b-content__inline_item-cover"})
 
         country_years = common.parseDOM(link_containers, "div")
         items_count = 0
 
-        print len(titles)
-        print len(images)
-        print len(country_years)
-
         for i, title in enumerate(titles):
             items_count += 1
 
-            # print post_ids[i]
             infos = self.get_item_description(url, post_ids[i])
 
             country_year = country_years[i].split(',')[0].replace('.', '').replace('-', '').replace(' ', '')
             title = "%s [COLOR=55FFFFFF](%s)[/COLOR]" % (title, country_year)
-            image = self.url+images[i]
+            image = common.parseDOM(divcovers[i], "img", ret='src')[0]
 
             uri = sys.argv[0] + '?mode=show&url=%s' % links[i]
             item = xbmcgui.ListItem(title, iconImage=image)
