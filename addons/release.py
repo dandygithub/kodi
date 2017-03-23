@@ -31,6 +31,7 @@ for directory in os.listdir("."):
 
             os.system("copy /Y %s %s" %(os.path.join(fulldir, "icon.png"), zip_dir))
             os.system("copy /Y %s %s" %(os.path.join(fulldir, "fanart.jpg"), zip_dir))
+            os.system("copy /Y %s %s" %(os.path.join(fulldir, "changelog.txt"), zip_dir))
 
             # Get plugin name and version from addon.xml
             addon = XML.parse('%s/addon.xml' % directory).getroot()
