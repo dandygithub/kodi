@@ -25,8 +25,12 @@ for directory in os.listdir("."):
         if 'plugin' in directory or 'script' in directory or 'repository' in directory or 'skin' in directory:
             # Create plugin directory if not exist
             zip_dir = os.path.join(os.getcwd(), 'zip', directory)
+            fulldir = os.path.join(os.getcwd(), directory)
             if not os.path.exists(zip_dir):
                 os.makedirs(zip_dir)
+
+            os.system("copy /Y %s %s" %(os.path.join(fulldir, "icon.png"), zip_dir))
+            os.system("copy /Y %s %s" %(os.path.join(fulldir, "fanart.jpg"), zip_dir))
 
             # Get plugin name and version from addon.xml
             addon = XML.parse('%s/addon.xml' % directory).getroot()
