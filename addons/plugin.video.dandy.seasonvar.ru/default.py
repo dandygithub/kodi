@@ -138,7 +138,7 @@ class Seasonvar():
         mode = params['mode'] if 'mode' in params else None
         url = urllib.unquote_plus(params['url']) if 'url' in params else None
 
-        keyword = params['keyword'] if 'keyword' in params else None
+        keyword = urllib.unquote_plus(params['keyword']) if 'keyword' in params else None
         external = 'unified' if 'unified' in params else None
         if external == None:
             external = 'usearch' if 'usearch' in params else None    
@@ -521,8 +521,8 @@ class Seasonvar():
         
         keyword_ = keyword if keyword else self.getUserInput()
         if keyword_: 
-            keyword_ = self.USTranslit(keyword_, transpar) if (external == 'unified') else urllib.unquote_plus(keyword)
-            keyword_ if isinstance(keyword_, unicode) else unicode(keyword_)
+            keyword_ = self.USTranslit(keyword_, transpar) if (external == 'unified') else keyword_
+            keyword_ = keyword_ if isinstance(keyword_, unicode) else unicode(keyword_)
         else:
            return 
         
