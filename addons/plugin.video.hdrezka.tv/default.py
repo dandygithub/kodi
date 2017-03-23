@@ -1,26 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#/*
-# *  Copyright (C) 2011 MrStealth
-# *
-# *  This Program is free software; you can redistribute it and/or modify
-# *  it under the terms of the GNU General Public License as published by
-# *  the Free Software Foundation; either version 2, or (at your option)
-# *  any later version.
-# *
-# *  This Program is distributed in the hope that it will be useful,
-# *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-# *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# *  GNU General Public License for more details.
-# *
-# *  You should have received a copy of the GNU General Public License
-# *  along with this program; see the file COPYING.  If not, write to
-# *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-# *  http://www.gnu.org/copyleft/gpl.html
-# */
 #
-# Writer (c) 2012, MrStealth
-# Rev. 1.0.1
+# Writer (c) 2012-2017, MrStealth, dandy
+# Rev. 2.0.0
 
 import os, urllib, urllib2, sys #, socket, cookielib, errno
 import xbmc, xbmcplugin,xbmcgui,xbmcaddon
@@ -52,6 +34,8 @@ class HdrezkaTV():
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.handle = int(sys.argv[1])
         self.url = 'http://hdrezka.me'
+
+        self.quality = self.addon.getSetting('quality')
 
     def main(self):
         params = common.getParameters(sys.argv[2])
@@ -114,6 +98,7 @@ class HdrezkaTV():
             item = xbmcgui.ListItem(title, thumbnailImage=self.icon)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
+        xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def sub_categories(self, category_id):
@@ -133,7 +118,7 @@ class HdrezkaTV():
             item = xbmcgui.ListItem(title, thumbnailImage=self.icon)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-
+        xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
 
 
@@ -171,7 +156,11 @@ class HdrezkaTV():
             uri = sys.argv[0] + '?mode=show&url=%s' % links[i]
             item = xbmcgui.ListItem(title, iconImage=image)
             item.setInfo(type='Video', infoLabels={'title': title, 'genre': country_years[i], 'plot': infos['description'], 'rating': infos['rating']})
-            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+            if (self.quality != 'select') and (not ('/series/' in url)) and (not ('/show/' in url)):
+                item.setProperty('IsPlayable', 'true')
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
+            else:
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         if not items_count < 16:
             uri = sys.argv[0] + '?mode=%s&url=%s&page=%s' % ("index", url, str(int(page) + 1))
@@ -180,6 +169,20 @@ class HdrezkaTV():
 
         xbmcplugin.setContent(self.handle, 'movies')
         xbmcplugin.endOfDirectory(self.handle, True)
+
+    def selectQuality(self, links, title, image):
+        if self.quality != 'select': 
+            self.play(links[self.quality])
+        else:
+            list = sorted(links.iteritems(), key=itemgetter(0))
+            for quality, link in list:
+                print "quality: %s link %s" % (quality, link)
+                film_title = "%s (%s)" % (title, quality)
+                uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote(link)
+                item = xbmcgui.ListItem(film_title, iconImage=image)
+                item.setInfo(type='Video', infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
+                item.setProperty('IsPlayable', 'true')
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
     def show(self, url):
         print "Get video %s" % url
@@ -206,14 +209,14 @@ class HdrezkaTV():
             print "This is a season"
             videoplayer = common.parseDOM(content, 'div', attrs={'id': 'videoplayer'})
             iframe = common.parseDOM(content, 'iframe', ret='src')[0]
-
             for i, title in enumerate(titles):
                 title = "%s (%s %s)" % (title, self.language(1005), seasons[i])
                 url_episode = iframe.split("?")[0] + "?nocontrols=1&season=%s&episode=%s" % (seasons[i], episodes[i])
                 uri = sys.argv[0] + '?mode=play_episode&url=%s&urlm=%s&post_id=%s&season_id=%s&episode_id=%s&title=%s&image=%s' % (url_episode, url, ids[i], seasons[i], episodes[i], title, image)
                 item = xbmcgui.ListItem(title, iconImage=image)
-                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-            xbmcplugin.setContent(self.handle, 'episodes')
+                if self.quality != 'select':
+                    item.setProperty('IsPlayable', 'true')
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, True if self.quality == 'select' else False)
         else:
             try:
                 link = self.get_video_link(url, post_id)
@@ -228,24 +231,11 @@ class HdrezkaTV():
                 print "GET LINK FROM IFRAME"
                 videoplayer = common.parseDOM(content, 'div', attrs={'id': 'videoplayer'})
                 iframe = common.parseDOM(content, 'iframe', ret='src')[0]
-
                 links = self.get_video_link_from_iframe(iframe, url)
+                self.selectQuality(links, title, image)
 
-                list = sorted(links.iteritems(), key=itemgetter(0))
-                for quality, link in list:
-                    print "quality: %s link %s" % (quality, link)
-                    film_title = "%s (%s)" % (title, quality)
-
-                    uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote(link)
-                    item = xbmcgui.ListItem(film_title, iconImage=image)
-                    item.setInfo(type='Video', infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
-                    item.setProperty('IsPlayable', 'true')
-                    xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
-
-                xbmcplugin.setContent(self.handle, 'files')
-
+        xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
-
 
     def get_item_description(self, referer, post_id):
         url = 'http://hdrezka.me/engine/ajax/quick_content.php'
@@ -484,7 +474,7 @@ class HdrezkaTV():
             if (external == 'unified'):
                 UnifiedSearch().collect(unified_search_results)
             else:
-                xbmc.executebuiltin('Container.SetViewMode(52)')
+                xbmcplugin.setContent(self.handle, 'movies')
                 xbmcplugin.endOfDirectory(self.handle, True)
         else:
             self.menu()
@@ -498,26 +488,14 @@ class HdrezkaTV():
         try:
             url = self.get_seaons_link(referer, post_id, season_id, episode_id)
 
-            print url
             item = xbmcgui.ListItem(path = url)
             xbmcplugin.setResolvedUrl(self.handle, True, item)
 
         except:
             print "GET LINK FROM IFRAME"
             links = self.get_video_link_from_iframe(url, referer)
-
-            list = sorted(links.iteritems(), key=itemgetter(0))
-            for quality, link in list:
-                print "quality: %s link %s" % (quality, link)
-                film_title = "%s (%s)" % (title, quality)
-
-                uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote(link)
-                item = xbmcgui.ListItem(film_title, iconImage=image)
-                item.setInfo(type='Video', infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
-                item.setProperty('IsPlayable', 'true')
-                xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
- 
-            xbmcplugin.setContent(self.handle, 'files')
+            self.selectQuality(links, title, image)
+            xbmcplugin.setContent(self.handle, 'episodes')
             xbmcplugin.endOfDirectory(self.handle, True)
 
 
