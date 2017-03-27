@@ -88,10 +88,7 @@ class Kinokong():
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getCategoryItems('http://kinokong.cc/films/novinki', 1)
-
-        xbmc.executebuiltin('Container.SetViewMode(52)')
-        xbmcplugin.endOfDirectory(self.handle, True)
+        self.getCategoryItems('http://kinokong.cc/films/novinki-kino', 1)
 
     def getCategoryItems(self, url, page):
         print "*** Get category items %s" % url
@@ -120,7 +117,7 @@ class Kinokong():
                 genres_cont = common.parseDOM(items[i], "em")
                 genres = common.parseDOM(genres_cont, "a")
                 genre = self.encode(', '.join(genres))
-                description = self.encode(descs[i])
+                description = self.strip(self.encode(descs[i]))
 
                 uri = sys.argv[0] + '?mode=show&url=%s' % (links[i])
 		self.log("image: %s"  % image)
@@ -135,7 +132,7 @@ class Kinokong():
             item = xbmcgui.ListItem(self.language(9000), thumbnailImage=self.inext, iconImage=self.inext)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        xbmc.executebuiltin('Container.SetViewMode(52)')
+        xbmcplugin.setContent(self.handle, 'movies')
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def getFilmInfo(self, url):
@@ -187,7 +184,7 @@ class Kinokong():
                 item.setProperty('IsPlayable', 'true')
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
-            xbmc.executebuiltin('Container.SetViewMode(52)')
+            xbmcplugin.setContent(self.handle, 'files')
 
         else:
             response = common.fetchPage({"link": playlist})
@@ -224,7 +221,7 @@ class Kinokong():
                     item.setProperty('IsPlayable', 'true')
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
-            xbmc.executebuiltin('Container.SetViewMode(51)')
+            xbmcplugin.setContent(self.handle, 'episodes')
 
         xbmcplugin.endOfDirectory(self.handle, True)
 
@@ -252,6 +249,7 @@ class Kinokong():
             item = xbmcgui.ListItem(self.encode(title), iconImage=self.icon)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
+        xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def getPlaylist(self, url):
@@ -347,7 +345,7 @@ class Kinokong():
                     item = xbmcgui.ListItem(self.encode(self.strip(title)), thumbnailImage=image)
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-                xbmc.executebuiltin('Container.SetViewMode(50)')
+                xbmcplugin.setContent(self.handle, 'files')
                 xbmcplugin.endOfDirectory(self.handle, True)
 
         else:
@@ -375,6 +373,9 @@ class Kinokong():
 
     def decode(self, string):
         return string.decode('utf-8').encode('cp1251')
+
+    def strip(self, string):
+        return common.stripTags(string)
 
 # class URLParser():
 #     def parse(self, string):
