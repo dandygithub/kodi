@@ -21,6 +21,8 @@ try:
 except:
     pass
 
+QUALITY_TYPES = (360, 480, 720, 1080)
+
 class HdrezkaTV():
     def __init__(self):
         self.id = 'plugin.video.hdrezka.tv'
@@ -172,12 +174,15 @@ class HdrezkaTV():
 
     def selectQuality(self, links, title, image):
         if self.quality != 'select': 
-            self.play(links[self.quality])
+            try:
+                self.play(links[int(self.quality[:-1])])
+            except:
+                self.play(links[720])
         else:
             list = sorted(links.iteritems(), key=itemgetter(0))
             for quality, link in list:
                 print "quality: %s link %s" % (quality, link)
-                film_title = "%s (%s)" % (title, quality)
+                film_title = "%s (%s)" % (title, str(quality) + 'p')
                 uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote(link)
                 item = xbmcgui.ListItem(film_title, iconImage=image)
                 item.setInfo(type='Video', infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
@@ -203,7 +208,7 @@ class HdrezkaTV():
         episodes = common.parseDOM(playlist, "li", ret='data-episode_id')
 
         print "POST ID %s " % post_id
-        print "Image %s" % image
+        #print "Image %s" % image
 
         if playlist:
             print "This is a season"
@@ -281,19 +286,21 @@ class HdrezkaTV():
         request = urllib2.Request(url, "", headers)
         request.get_method = lambda: 'GET'
         response = urllib2.urlopen(request).read()
-        
+ 
         purl =  response.split("var window_surl = '")[-1].split("';")[0]
-        params = response.split("var banners_script_clickunder = {")[-1].split("};")[0]
+        params = response.split("var post_method = {")[-1].split("};")[0]
+        mw_key = response.split("var mw_key = '")[-1].split("';")[0] 
+        async_method = response.split("var async_method = '")[-1].split("';")[0] 
 
         data = urllib.urlencode({
             "video_token" : params.split("video_token: '")[-1].split("',")[0],
             "content_type": params.split("content_type: '")[-1].split("',")[0],
-            "mw_key" : params.split("mw_key: '")[-1].split("',")[0],
+            "mw_key" : mw_key,
             "mw_pid": params.split("mw_pid: ")[-1].split(",")[0],
             "p_domain_id" : params.split("p_domain_id: ")[-1].split(",")[0],
             "ad_attr": "0",
             "debug": "false",
-            "detect_true" : response.split("var detect_true = '")[-1].split("';")[0],
+            "async_method":async_method
         })
 
         headers = {
@@ -302,7 +309,8 @@ class HdrezkaTV():
             "Origin": "http://s6.cdnapponline.com",
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
             "Referer": url,
-            "X-Mega-Version": "505",
+            "X-CSRF-Token":"Te+oMHK7iyLrwO/nTt3p8yoC+pW4dtVPeALQp9Z6FhznKEjN3MwXgd40OpXLkKn6n6SUwbTP4uWQqe4KxlARRg==",
+            "X-Format-Token":"B300",
             "X-Requested-With": "XMLHttpRequest"
         }
 
@@ -323,9 +331,8 @@ class HdrezkaTV():
         #{"mans":{"manifest_f4m":"http://streamblast.cc/video/e037e4450736bb38/manifest.f4m?cd=0&expired=1490102271&mw_pid=157&signature=e0a48062dc0a3b63c7ffcd9f2de08ba0","manifest_m3u8":"http://streamblast.cc/video/e037e4450736bb38/index.m3u8?cd=0&expired=1490102271&mw_pid=157&signature=e0a48062dc0a3b63c7ffcd9f2de08ba0","manifest_dash":"http://streamblast.cc/video/e037e4450736bb38/manifest.mpd?cd=0&expired=1490102271&mw_pid=157&signature=e0a48062dc0a3b63c7ffcd9f2de08ba0","manifest_mp4":null}}
         urls = re.compile("http:\/\/.*?\n").findall(response)
         manifest_links = {}
-        manifest_links['360p'] = urls[0].replace("\n", "")
-        manifest_links['480p'] = urls[1].replace("\n", "")
-        manifest_links['720p'] = urls[2].replace("\n", "")
+        for i, url in enumerate(urls):
+            manifest_links[QUALITY_TYPES[i]] = url.replace("\n", "")
 
 #        urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', response)
 #        links = []
