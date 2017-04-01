@@ -216,7 +216,7 @@ class HdrezkaTV():
             iframe = common.parseDOM(content, 'iframe', ret='src')[0]
             for i, title in enumerate(titles):
                 title = "%s (%s %s)" % (title, self.language(1005), seasons[i])
-                url_episode = iframe.split("?")[0] + "?nocontrols=1&season=%s&episode=%s" % (seasons[i], episodes[i])
+                url_episode = iframe.split("?")[0]
                 uri = sys.argv[0] + '?mode=play_episode&url=%s&urlm=%s&post_id=%s&season_id=%s&episode_id=%s&title=%s&image=%s' % (url_episode, url, ids[i], seasons[i], episodes[i], title, image)
                 item = xbmcgui.ListItem(title, iconImage=image)
                 if self.quality != 'select':
@@ -500,7 +500,8 @@ class HdrezkaTV():
 
         except:
             print "GET LINK FROM IFRAME"
-            links = self.get_video_link_from_iframe(url, referer)
+            url_episode = url + "?nocontrols=1&season=%s&episode=%s" % (season_id, episode_id)
+            links = self.get_video_link_from_iframe(url_episode, referer)
             self.selectQuality(links, title, image)
             xbmcplugin.setContent(self.handle, 'episodes')
             xbmcplugin.endOfDirectory(self.handle, True)
