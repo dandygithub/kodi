@@ -3,6 +3,10 @@
     <string id="1000">Поиск</string>
     <string id="1001">К сожалению, поиск по сайту не дал никаких результатов.</string>
     <string id="1002">Использовать транслитерацию при поиске</string>
-    <string id="1003">Жанры</string>
-    <string id="1004">следующая страница ...</string>
+    <string id="1003">Следующая страница ...</string>
+    <string id="1004">Смотреть ></string>
+    <string id="1005">Телепрограмма</string>
+    <string id="1006">Запуск</string>
+
+    <string id="2000">Часовой пояс</string>
 </strings>

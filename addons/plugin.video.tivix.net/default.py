@@ -25,6 +25,8 @@
 import urllib, urllib2, sys, socket
 import xbmc, xbmcgui, xbmcaddon, xbmcplugin
 import XbmcHelpers
+import json
+import datetime, time
 from resources.lib.decoder import decoder
 
 socket.setdefaulttimeout(30)
@@ -38,6 +40,7 @@ class Tivix():
         self.fanart = self.addon.getAddonInfo('fanart')
         self.path = self.addon.getAddonInfo('path')
         self.profile = self.addon.getAddonInfo('profile')
+        self.time_zone = int(self.addon.getSetting('time_zone'))
 
         self.language = self.addon.getLocalizedString
         self.handle = int(sys.argv[1])
@@ -49,80 +52,198 @@ class Tivix():
         mode = params['mode'] if 'mode' in params else None
         url = urllib.unquote_plus(params['url']) if 'url' in params else None
         page = params['page'] if 'page' in params else 1
+        image = urllib.unquote_plus(params['image']) if 'image' in params else self.icon
+        name = urllib.unquote_plus(params['name']) if 'name' in params else None
+        cid = params['cid'] if 'cid' in params else None
 
         if mode == 'play':
             self.play(url)
         if mode == 'show':
-            self.show(url)
+            self.show(url, image, name)
         if mode == 'index':
             self.index(url, page)
+        if mode == 'search':
+            self.search(url)
+        if mode == 'epg':
+            self.epg(cid, name, image)
         elif mode == None:
             self.menu()
 
-
-    def get(self, url):
-        request = urllib2.Request(url)
-        request.add_header('Host', 'iprosto.tv')
-        request.add_header('User-Agent', USER_AGENT)
-        response = urllib2.urlopen(request)
-
-        return response.read()
-
-
     def menu(self):
+        uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", self.url)
+        item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
+        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+        uri = sys.argv[0] + '?mode=%s' % ("epg")
+        item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(1005), thumbnailImage=self.icon)
+        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
         self.genres()
+
+    def parse(self, data, url = '', page = 0, filter = None):
+        content = common.parseDOM(data, "div", attrs={"id": "dle-content"})
+        pagenav = common.parseDOM(data, "div", attrs={"class": "bot-navigation"}) 
+        
+        boxes = common.parseDOM(content, "div", attrs={"class": "all_tv"})
+        links = common.parseDOM(boxes, "a", ret='href')
+        titles = common.parseDOM(boxes, "a", ret='title')
+        if not titles:
+            titles = common.parseDOM(content, "div", attrs={"class": "all_tv"}, ret='title')
+        images = common.parseDOM(boxes, "img", ret='src')
+        items = 0
+
+        for i, title in enumerate(titles):
+            if (not filter) or (title[:len(filter)].upper() == filter.upper()):
+                items += 1
+
+                if links[i] == "http://tivix.co/263-predlozheniya-pozhelaniya-zamechaniya-po-saytu.html":
+                    continue
+
+                image = self.url + images[i]
+
+                uri = sys.argv[0] + '?mode=show&url=%s&name=%s&image=%s' % (links[i], title, image)
+                item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
+                item.setInfo(type='Video', infoLabels={'title': title, 'plot': title})
+                #item.setProperty('IsPlayable', 'true')
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        if pagenav and (not (items < 119)):
+            uri = sys.argv[0] + '?mode=%s&url=%s&page=%s' % ("index", url, str(int(page) + 1))
+            item = xbmcgui.ListItem('%s' % self.language(1003), iconImage=self.icon, thumbnailImage=self.icon)
+            item.setInfo(type='Video', infoLabels={'title': 'ЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯ'})
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        xbmcplugin.addSortMethod(self.handle, xbmcplugin.SORT_METHOD_TITLE)
+        xbmcplugin.setContent(self.handle, 'tvshows')
+        xbmcplugin.endOfDirectory(self.handle, True)
+
 
     def index(self, url, page):
         page_url = self.url if page == 0 else "%s/page/%s/" % (url, str(int(page)))
 
         response = common.fetchPage({"link": page_url})
-        content = common.parseDOM(response["content"], "div", attrs={"id": "dle-content"})
-        pagenav = common.parseDOM(response["content"], "div", attrs={"class": "bot-navigation"}) 
-        
-        boxes = common.parseDOM(content, "div", attrs={"class": "all_tv"})
-        links = common.parseDOM(boxes, "a", ret='href')
-        titles = common.parseDOM(boxes, "a", ret='title')
-        images = common.parseDOM(boxes, "img", ret='src')
-        items = 0
 
-        for i, title in enumerate(titles):
-            items += 1
+        self.parse(response["content"], url, page)
 
-            if links[i] == "http://tivix.co/263-predlozheniya-pozhelaniya-zamechaniya-po-saytu.html":
-                continue
+    def getLocalTime(self, epgstart, epgend):
+        current = False
+        duration = 0
+        epgformat = u'%Y-%m-%d %H:%M:%S'
+        time_ = datetime.datetime(*(time.strptime(epgstart, epgformat)[:6])) + datetime.timedelta(hours = self.time_zone)
+        timeend = datetime.datetime(*(time.strptime(epgend, epgformat)[:6])) + datetime.timedelta(hours = self.time_zone)
+        duration = (timeend - time_).seconds
+        epgtoday = datetime.datetime.today()
+        epgcolor = "FFFFFFFF"
+        if epgtoday > timeend:
+            epgcolor = "55FFFFFF"
+        if (epgtoday >= time_) and (epgtoday < timeend):
+            epgcolor = "FF00FF00"
+            current = True            
+            duration = (timeend - time_).total_seconds()
+        return '{:%H:%M}'.format(time_), epgcolor, current, duration
 
-            image = self.url + images[i]
+    def addEPGItems(self, epgbody, image):
+        currname = ''
+        duration = 0 
+        listItems = [] 
+        for i, epg in enumerate(epgbody): 
+            uri = sys.argv[0] + '?'
+            end_at = epgbody[i+1]['start_at'] if i+1 < len(epgbody) else '2099-01-01 00:00:00' 
+            time, color, current, duration = self.getLocalTime(epg['start_at'], end_at)
+            if current == True:
+                currname = epg['name']           
+            item = xbmcgui.ListItem("[I][COLOR=%s]%s %s[/COLOR][/I]" % (color, time, epg['name']),  iconImage=image, thumbnailImage=image)
+            listItems.append((uri, item, False)) 
+            #xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
+        return currname, duration, listItems
 
-            uri = sys.argv[0] + '?mode=show&url=%s' % links[i]
-            item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
-            item.setInfo(type='Video', infoLabels={'title': title, 'plot': title})
+    def epg(self, cid = None, cname = None, image = ''):
+        currname = ''
+        duration = 0 
+        listItems = [] 
+        url = 'http://schedule.tivix.co/channels/tivix/program/nearest/'
+        headers = {
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Host": "schedule.tivix.co",
+            "Origin": "http://tivix.co",
+            "Referer": "http://tivix.co/chto-seychas-na-tv.html",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"
+        }
+        request = urllib2.Request(url, "", headers)
+        request.get_method = lambda: 'GET'
+        response = urllib2.urlopen(request).read()
+        data = json.loads(response)
+
+#{"167":[{"name":"\u041b\u0435\u0442\u0430\u044e\u0449\u0438\u0435 \u0437\u0432\u0435\u0440\u0438","start_at":"2017-04-01 16:04:00","date":"2017-04-01 00:00:00"},{"name":"\u0410\u043a\u0430\u0434\u0435\u043c\u0438\u044f \u0421\u0442\u0435\u043a\u043b\u044f\u0448\u043a\u0438\u043d\u0430","start_at":"2017-04-01 16:14:00","date":"2017-04-01 00:00:00"},{"name":"\u0421\u0430\u043b\u044e\u0442 \u0442\u0430\u043b\u0430\u043d\u0442\u043e\u0432","start_at":"2017-04-01 16:28:00","date":"2017-04-01 00:00:00"},{"name":"\u0420\u043e\u0434\u0438\u043b\u0441\u044f \u0426\u0430\u0440\u044c","start_at":"2017-04-01 19:34:00","date":"2017-04-01 00:00:00"},{"name":"\u041a\u0440\u0430\u0441\u043d\u0430\u044f \u0428\u0430\u043f\u043e\u0447\u043a\u0430","start_at":"2017-04-01 19:58:00","date":"2017-04-01 00:00:00"}],
+
+        url = 'http://tivix.co/engine/api/getChannelList.php'
+        headers = {
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Host": "tivix.co", 
+            "Referer": "http://tivix.co/chto-seychas-na-tv.html",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
+            "X-Requested-With": "XMLHttpRequest"
+        }
+        request = urllib2.Request(url, "", headers)
+        request.get_method = lambda: 'GET'
+        response = urllib2.urlopen(request).read()
+        channels = json.loads(response)
+
+#{"11":{"title":"\u0421\u0422\u0421","image_url":"http:\/\/tivix.co\/uploads\/posts\/2016-04\/1461317169_sts.png","id":"11","alt_name":"sts","cat":"29,27,24,16,17","tv_link":"https:\/\/tv.mail.ru\/channel\/1112\/73\/"},
+
+        if cname: 
+            #cname_ = cname.decode("utf-8").strip().upper()
+            #cid_ = None
+            #for channelid in channels:
+            #    channelbody = channels[channelid]
+            #    if channelbody['title'].upper()[:len(cname_)] == cname_:
+            #        cid_ = channelid
+            #        break
+            if cid:
+                epgbody = data[cid]
+                currname, duration, listItems = self.addEPGItems(epgbody, image)
+        elif cid: 
+            epgbody = data[cid]
+            currname, duration, listItems = self.addEPGItems(epgbody, image)
+            xbmcplugin.addDirectoryItems(self.handle, listItems)
+        else:
+            for channelid in channels:
+                channelbody = channels[channelid]
+                uri = sys.argv[0] + '?mode=epg&cid=%s&image=%s' % (channelid, channelbody['image_url'])
+                item = xbmcgui.ListItem("%s" % channelbody['title'],  iconImage=channelbody['image_url'], thumbnailImage=channelbody['image_url'])
+                item.setInfo(type='Video', infoLabels={'title': channelbody['title']})
+
+                commands = []
+                uricmd = sys.argv[0] + '?mode=show&url=%s&name=%s&image=%s' % (self.url + "/" + channelid + "-" + channelbody['alt_name'] + ".html", channelbody['title'], channelbody['image_url'])
+                commands.append(('[COLOR=FF00FF00]' + self.language(1006) + '[/COLOR]', "Container.Update(%s)" % (uricmd), ))
+                item.addContextMenuItems(commands)
+
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+            xbmcplugin.addSortMethod(self.handle, xbmcplugin.SORT_METHOD_TITLE)
+        if cname == None:
+            xbmcplugin.setContent(self.handle, 'files')
+            xbmcplugin.endOfDirectory(self.handle, True)
+
+        return currname, duration, listItems
+
+
+    def show(self, link, image, name):
+        response = common.fetchPage({"link": link})
+        cid = link.split(self.url + "/")[-1].split("-")[0]
+        streams = self.getStreamURL(response['content'])
+        if streams:
+            description = self.strip(response['content'].split("<!--dle_image_end-->")[1].split("'<div")[0])
+            #description = common.parseDOM(response['content'], "meta", attrs={"name": "description"}, ret = "content")[0]
+            currname, duration, listItems = self.epg(cid = cid, cname=name, image=image)
+            uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote_plus(streams[0])
+            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(1004),  iconImage=image, thumbnailImage=image)
+            item.setInfo(type='Video', infoLabels={'title': currname if currname != '' else name, 'plot': description})
             item.setProperty('IsPlayable', 'true')
             xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
-
-        if pagenav and not items < 56:
-            uri = sys.argv[0] + '?mode=%s&url=%s&page=%s' % ("index", url, str(int(page) + 1))
-            item = xbmcgui.ListItem('Next page >>', iconImage=self.icon, thumbnailImage=self.icon)
-            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-
-        xbmcplugin.setContent(self.handle, 'tvshows')
-        xbmcplugin.endOfDirectory(self.handle, True)
-
-
-    def show(self, link):
-        streams = self.getStreamURL(link)
-        self.play(streams[0])
-        return
-
-        print "**** STREAMS FOUND %d" % len(streams)
-
-        for i, stream in enumerate(streams):
-            uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote_plus(stream)
-            item = xbmcgui.ListItem("Stream %d" % (i+1), iconImage=self.icon, thumbnailImage=self.icon)
-            item.setProperty('IsPlayable', 'true')
-            xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
-
-        xbmcplugin.setContent(self.handle, 'files')
-        xbmcplugin.endOfDirectory(self.handle, True)
+    
+            xbmcplugin.addDirectoryItems(self.handle, listItems)
+    
+            xbmcplugin.setContent(self.handle, 'files')
+            xbmcplugin.endOfDirectory(self.handle, True)
 
     def genres(self):
         response = common.fetchPage({"link": self.url})
@@ -148,16 +269,21 @@ class Tivix():
         play = decoder(arr[0], arr[1], arr[2], arr[3])
         return play
 
-    def getStreamURL(self, link):
-        response = common.fetchPage({"link": link})
-        data = common.parseDOM(response["content"], "div", attrs={"class": "tab-pane fade", "id": "tab39"})[0].replace('\n', '')
-        data = self.parseObfusc(data)
-        data = self.parseObfusc(data)
-        arrdata = data.split(';eval')
-        data2 = self.parseObfusc(arrdata[2])
-        url = "http://" + data2.split("http://")[-1].split("');")[0].split("'};")[0]
+    def getStreamURL(self,  dataprev):
         streams = []
-        streams.append(url)
+        try:
+            data = common.parseDOM(dataprev, "div", attrs={"class": "tab-pane fade"})[0].replace('\n', '')
+            data = self.parseObfusc(data)
+            data = self.parseObfusc(data)
+            arrdata = data.split(';eval')
+            data = self.parseObfusc(arrdata[2])
+            if "http://" in data:
+                url = "http://" + data.split("http://")[-1].split("');")[0].split("'};")[0]
+            else:
+                url = "rtmp://" + data.split("rtmp://")[-1].split("'};")[0]
+            streams.append(url)
+        except:
+            self.showErrorMessage("The channel is not available")
 
         return streams
 
@@ -171,9 +297,55 @@ class Tivix():
             url += " swfUrl=http://tivix.co/templates/Default/style/uppod.swf"
             url += " pageURL=http://tivix.co"
             url += " swfVfy=true live=true"
-        
-        item = xbmcgui.ListItem(path = url)
-        xbmcplugin.setResolvedUrl(self.handle, True, item)
+
+        try:         
+            item = xbmcgui.ListItem(path = url)
+            xbmcplugin.setResolvedUrl(self.handle, True, item)
+        except:
+            self.showErrorMessage("The channel is not available")
+
+
+    def getUserInput(self):
+        kbd = xbmc.Keyboard()
+        kbd.setDefault('')
+        kbd.setHeading(self.language(4000))
+        kbd.doModal()
+        keyword = None
+
+        if kbd.isConfirmed():
+            if self.addon.getSetting('translit') == 'true':
+                keyword = translit.rus(kbd.getText())
+            else:
+                keyword = kbd.getText()
+        return keyword
+
+    def search(self, url):
+        keyword = self.getUserInput()
+
+        values = {
+            "do": "search",
+            "subaction": "search",
+            "story": keyword
+        }
+
+        headers = {
+            "Host": "tivix.co",
+            "Origin": "http://tivix.co",
+            "Referer": "http://tivix.co/",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.3"
+        }
+
+        request = urllib2.Request(url, urllib.urlencode(values), headers)
+        response = urllib2.urlopen(request).read()
+
+        self.parse(response, filter = keyword.decode('utf-8'))
+
+
+    def strip(self, string):
+        return common.stripTags(string)
+
+    def showErrorMessage(self, msg):
+        xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("ERROR", msg, str(10 * 1000)))
 
 plugin = Tivix()
 plugin.main()
