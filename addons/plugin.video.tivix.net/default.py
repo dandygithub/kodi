@@ -45,6 +45,8 @@ class Tivix():
         self.language = self.addon.getLocalizedString
         self.handle = int(sys.argv[1])
         self.url = 'http://tivix.co'
+        
+        self.epg = self.loadEPG()
 
     def main(self):
         params = common.getParameters(sys.argv[2])
@@ -65,7 +67,7 @@ class Tivix():
         if mode == 'search':
             self.search(url)
         if mode == 'epg':
-            self.epg(cid, name, image)
+            self.getEPG(cid, name, image)
         elif mode == None:
             self.menu()
 
@@ -124,57 +126,7 @@ class Tivix():
 
         self.parse(response["content"], url, page)
 
-    def getLocalTime(self, epgstart, epgend):
-        current = False
-        duration = 0
-        epgformat = u'%Y-%m-%d %H:%M:%S'
-        time_ = datetime.datetime(*(time.strptime(epgstart, epgformat)[:6])) + datetime.timedelta(hours = self.time_zone)
-        timeend = datetime.datetime(*(time.strptime(epgend, epgformat)[:6])) + datetime.timedelta(hours = self.time_zone)
-        duration = (timeend - time_).seconds
-        epgtoday = datetime.datetime.today()
-        epgcolor = "FFFFFFFF"
-        if epgtoday > timeend:
-            epgcolor = "55FFFFFF"
-        if (epgtoday >= time_) and (epgtoday < timeend):
-            epgcolor = "FF00FF00"
-            current = True            
-            duration = (timeend - time_).total_seconds()
-        return '{:%H:%M}'.format(time_), epgcolor, current, duration
-
-    def addEPGItems(self, epgbody, image):
-        currname = ''
-        duration = 0 
-        listItems = [] 
-        for i, epg in enumerate(epgbody): 
-            uri = sys.argv[0] + '?'
-            end_at = epgbody[i+1]['start_at'] if i+1 < len(epgbody) else '2099-01-01 00:00:00' 
-            time, color, current, duration = self.getLocalTime(epg['start_at'], end_at)
-            if current == True:
-                currname = epg['name']           
-            item = xbmcgui.ListItem("[I][COLOR=%s]%s %s[/COLOR][/I]" % (color, time, epg['name']),  iconImage=image, thumbnailImage=image)
-            listItems.append((uri, item, False)) 
-            #xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
-        return currname, duration, listItems
-
-    def epg(self, cid = None, cname = None, image = ''):
-        currname = ''
-        duration = 0 
-        listItems = [] 
-        url = 'http://schedule.tivix.co/channels/tivix/program/nearest/'
-        headers = {
-            "Accept": "application/json, text/javascript, */*; q=0.01",
-            "Host": "schedule.tivix.co",
-            "Origin": "http://tivix.co",
-            "Referer": "http://tivix.co/chto-seychas-na-tv.html",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"
-        }
-        request = urllib2.Request(url, "", headers)
-        request.get_method = lambda: 'GET'
-        response = urllib2.urlopen(request).read()
-        data = json.loads(response)
-
-#{"167":[{"name":"\u041b\u0435\u0442\u0430\u044e\u0449\u0438\u0435 \u0437\u0432\u0435\u0440\u0438","start_at":"2017-04-01 16:04:00","date":"2017-04-01 00:00:00"},{"name":"\u0410\u043a\u0430\u0434\u0435\u043c\u0438\u044f \u0421\u0442\u0435\u043a\u043b\u044f\u0448\u043a\u0438\u043d\u0430","start_at":"2017-04-01 16:14:00","date":"2017-04-01 00:00:00"},{"name":"\u0421\u0430\u043b\u044e\u0442 \u0442\u0430\u043b\u0430\u043d\u0442\u043e\u0432","start_at":"2017-04-01 16:28:00","date":"2017-04-01 00:00:00"},{"name":"\u0420\u043e\u0434\u0438\u043b\u0441\u044f \u0426\u0430\u0440\u044c","start_at":"2017-04-01 19:34:00","date":"2017-04-01 00:00:00"},{"name":"\u041a\u0440\u0430\u0441\u043d\u0430\u044f \u0428\u0430\u043f\u043e\u0447\u043a\u0430","start_at":"2017-04-01 19:58:00","date":"2017-04-01 00:00:00"}],
-
+    def loadEPG(self):
         url = 'http://tivix.co/engine/api/getChannelList.php'
         headers = {
             "Accept": "application/json, text/javascript, */*; q=0.01",
@@ -187,38 +139,88 @@ class Tivix():
         request.get_method = lambda: 'GET'
         response = urllib2.urlopen(request).read()
         channels = json.loads(response)
+#{"11":{"title":"\u0421\u0422\u0421","image_url":"http:\/\/tivix.co\/uploads\/posts\/2016-04\/1461317169_sts.png","id":"11","alt_name":"sts","cat":"29,27,24,16,17","tv_link":"https:\/\/tv.mail.ru\/channel\/1112\/73\/"},        
 
-#{"11":{"title":"\u0421\u0422\u0421","image_url":"http:\/\/tivix.co\/uploads\/posts\/2016-04\/1461317169_sts.png","id":"11","alt_name":"sts","cat":"29,27,24,16,17","tv_link":"https:\/\/tv.mail.ru\/channel\/1112\/73\/"},
+        url = 'http://schedule.tivix.co/channels/tivix/program/nearest/'
+        headers = {
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Host": "schedule.tivix.co",
+            "Origin": "http://tivix.co",
+            "Referer": "http://tivix.co/chto-seychas-na-tv.html",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"
+        }
+        request = urllib2.Request(url, "", headers)
+        request.get_method = lambda: 'GET'
+        response = urllib2.urlopen(request).read()
+        data = json.loads(response)
+#{"167":[{"name":"\u041b\u0435\u0442\u0430\u044e\u0449\u0438\u0435 \u0437\u0432\u0435\u0440\u0438","start_at":"2017-04-01 16:04:00","date":"2017-04-01 00:00:00"},{"name":"\u0410\u043a\u0430\u0434\u0435\u043c\u0438\u044f \u0421\u0442\u0435\u043a\u043b\u044f\u0448\u043a\u0438\u043d\u0430","start_at":"2017-04-01 16:14:00","date":"2017-04-01 00:00:00"},{"name":"\u0421\u0430\u043b\u044e\u0442 \u0442\u0430\u043b\u0430\u043d\u0442\u043e\u0432","start_at":"2017-04-01 16:28:00","date":"2017-04-01 00:00:00"},{"name":"\u0420\u043e\u0434\u0438\u043b\u0441\u044f \u0426\u0430\u0440\u044c","start_at":"2017-04-01 19:34:00","date":"2017-04-01 00:00:00"},{"name":"\u041a\u0440\u0430\u0441\u043d\u0430\u044f \u0428\u0430\u043f\u043e\u0447\u043a\u0430","start_at":"2017-04-01 19:58:00","date":"2017-04-01 00:00:00"}],
 
-        if cname: 
-            #cname_ = cname.decode("utf-8").strip().upper()
-            #cid_ = None
-            #for channelid in channels:
-            #    channelbody = channels[channelid]
-            #    if channelbody['title'].upper()[:len(cname_)] == cname_:
-            #        cid_ = channelid
-            #        break
-            if cid:
-                epgbody = data[cid]
+        for channelid in channels:
+            channels[channelid]["epg"] = data[channelid]
+
+        return channels
+
+    def getLocalTime(self, epgstart, epgend):
+        current = False
+        duration = 0
+        epgformat = u'%Y-%m-%d %H:%M:%S'
+        time_ = datetime.datetime(*(time.strptime(epgstart, epgformat)[:6])) + datetime.timedelta(hours = self.time_zone)
+        timeend = datetime.datetime(*(time.strptime(epgend, epgformat)[:6])) + datetime.timedelta(hours = self.time_zone)
+        epgtoday = datetime.datetime.today()
+        duration = (timeend - epgtoday).seconds
+        epgcolor = "FFFFFFFF"
+        if epgtoday > timeend:
+            epgcolor = "55FFFFFF"
+        if (epgtoday >= time_) and (epgtoday < timeend):
+            epgcolor = "FF00FF00"
+            current = True            
+        return '{:%H:%M}'.format(time_), epgcolor, current, duration
+
+    def addEPGItems(self, epgbody, image):
+        currname = ''
+        currduration = 0 
+        listItems = [] 
+        for i, epg in enumerate(epgbody): 
+            uri = sys.argv[0] + '?'
+            end_at = epgbody[i+1]['start_at'] if i+1 < len(epgbody) else '2099-01-01 00:00:00' 
+            time, color, current, duration = self.getLocalTime(epg['start_at'], end_at)
+            if current == True:
+                currname = epg['name']           
+                currduration = duration
+            item = xbmcgui.ListItem("[I][COLOR=%s]%s %s[/COLOR][/I]" % (color, time, epg['name']),  iconImage=image, thumbnailImage=image)
+            listItems.append((uri, item, False)) 
+        return currname, currduration, listItems
+
+    def getEPG(self, cid = None, cname = None, image = ''):
+        currname = ''
+        duration = 0 
+        listItems = [] 
+        try:
+            if cname: 
+                if cid:
+                    epgbody = self.epg[cid]['epg']
+                    currname, duration, listItems = self.addEPGItems(epgbody, image)
+            elif cid: 
+                epgbody = self.epg[cid]['epg']
                 currname, duration, listItems = self.addEPGItems(epgbody, image)
-        elif cid: 
-            epgbody = data[cid]
-            currname, duration, listItems = self.addEPGItems(epgbody, image)
-            xbmcplugin.addDirectoryItems(self.handle, listItems)
-        else:
-            for channelid in channels:
-                channelbody = channels[channelid]
-                uri = sys.argv[0] + '?mode=epg&cid=%s&image=%s' % (channelid, channelbody['image_url'])
-                item = xbmcgui.ListItem("%s" % channelbody['title'],  iconImage=channelbody['image_url'], thumbnailImage=channelbody['image_url'])
-                item.setInfo(type='Video', infoLabels={'title': channelbody['title']})
+                xbmcplugin.addDirectoryItems(self.handle, listItems)
+            else:
+                for channelid in self.epg:
+                    channelbody = self.epg[channelid]
+                    uri = sys.argv[0] + '?mode=epg&cid=%s&image=%s' % (channelid, channelbody['image_url'])
+                    item = xbmcgui.ListItem("%s" % channelbody['title'],  iconImage=channelbody['image_url'], thumbnailImage=channelbody['image_url'])
+                    item.setInfo(type='Video', infoLabels={'title': channelbody['title']})
+    
+                    commands = []
+                    uricmd = sys.argv[0] + '?mode=show&url=%s&name=%s&image=%s' % (self.url + "/" + channelid + "-" + channelbody['alt_name'] + ".html", channelbody['title'], channelbody['image_url'])
+                    commands.append(('[COLOR=FF00FF00]' + self.language(1006) + '[/COLOR]', "Container.Update(%s)" % (uricmd), ))
+                    item.addContextMenuItems(commands)
 
-                commands = []
-                uricmd = sys.argv[0] + '?mode=show&url=%s&name=%s&image=%s' % (self.url + "/" + channelid + "-" + channelbody['alt_name'] + ".html", channelbody['title'], channelbody['image_url'])
-                commands.append(('[COLOR=FF00FF00]' + self.language(1006) + '[/COLOR]', "Container.Update(%s)" % (uricmd), ))
-                item.addContextMenuItems(commands)
+                    xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-            xbmcplugin.addSortMethod(self.handle, xbmcplugin.SORT_METHOD_TITLE)
+                xbmcplugin.addSortMethod(self.handle, xbmcplugin.SORT_METHOD_TITLE)
+        except:
+            pass
         if cname == None:
             xbmcplugin.setContent(self.handle, 'files')
             xbmcplugin.endOfDirectory(self.handle, True)
@@ -231,12 +233,12 @@ class Tivix():
         cid = link.split(self.url + "/")[-1].split("-")[0]
         streams = self.getStreamURL(response['content'])
         if streams:
-            description = self.strip(response['content'].split("<!--dle_image_end-->")[1].split("'<div")[0])
+            description = self.strip(response['content'].split("<!--dle_image_end-->")[1].split("<div")[0])
             #description = common.parseDOM(response['content'], "meta", attrs={"name": "description"}, ret = "content")[0]
-            currname, duration, listItems = self.epg(cid = cid, cname=name, image=image)
+            currname, duration, listItems = self.getEPG(cid = cid, cname=name, image=image)
             uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote_plus(streams[0])
             item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(1004),  iconImage=image, thumbnailImage=image)
-            item.setInfo(type='Video', infoLabels={'title': currname if currname != '' else name, 'plot': description})
+            item.setInfo(type='Video', infoLabels={'title': currname if currname != '' else name, 'plot': description, 'duration': duration})
             item.setProperty('IsPlayable', 'true')
             xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
     
