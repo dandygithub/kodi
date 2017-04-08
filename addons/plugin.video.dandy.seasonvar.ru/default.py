@@ -346,6 +346,8 @@ class Seasonvar():
                 playlist = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
             else:
                 playlist = self.selectTranslator(content) 
+        elif (kind == 2):
+            playlist = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
         else:
             playlist = content.split('<script>pl[68] = "')[-1].split('";</script>')[0]
         return self.url + playlist   
@@ -379,12 +381,12 @@ class Seasonvar():
         response = common.fetchPage({"link": url, "cookie": self.getCookies()})
         image = common.parseDOM(response["content"], 'link', attrs={'rel': 'image_src'}, ret='href')[0] if common.parseDOM(response["content"], 'link', attrs={'rel': 'image_src'}, ret='href') else None
         description = common.parseDOM(response["content"], 'meta', attrs={'name': 'description'}, ret='content')[0] if common.parseDOM(response["content"], 'meta', attrs={'name': 'description'}, ret='content') else ''
-        response = common.fetchPage({"link": self.getURLPlayList(url, response["content"], 0), "cookie": self.getCookies()})
+        response = common.fetchPage({"link": self.getURLPlayList(url, response["content"], 2), "cookie": self.getCookies()})
         json_playlist = json.loads(response["content"])
         playlist = json_playlist['playlist']
         playlist_ = playlist[idPlaylist]['playlist']
 
-        self.parsePlaylist(url, playlist_, image, description)
+        self.parsePlaylist(url, playlist_, image, description, "")
 
         xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
@@ -406,7 +408,7 @@ class Seasonvar():
             else:    
                 uri = sys.argv[0] + '?mode=play&url=%s' % url
                 item = xbmcgui.ListItem(label=etitle, iconImage=image, thumbnailImage=image)
-                labels = {'title': title + " [" + etitle + "]", 'plot': description, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0}
+                labels = {'title': title + " " + etitle, 'plot': description, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0}
                 item.setInfo(type='Video', infoLabels=labels)
                 item.setProperty('IsPlayable', 'true')
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
