@@ -37,7 +37,6 @@ try:
     from unified_search import UnifiedSearch
 except:
     pass
-# xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("Warning", 'Please install UnifiedSearch add-on!', str(10 * 1000)))
 
 # Filter consts
 FILTER_TYPE_GENRES = 0
@@ -68,6 +67,7 @@ class Seasonvar():
         self.load_thumbnails = self.addon.getSetting('load_thumbnails') if self.addon.getSetting('load_thumbnails') else None
         self.new_search_method = self.addon.getSetting('new_search_method') if self.addon.getSetting('new_search_method') else None
         self.quality = self.addon.getSetting('quality') if self.addon.getSetting('quality') else "sd"
+        self.translator = self.addon.getSetting('translator') if self.addon.getSetting('translator') else "standard"
         
         self.headers = {
                 "Host" : "seasonvar.ru",
@@ -312,10 +312,35 @@ class Seasonvar():
         secure = div.split("'secureMark': '")[-1].split("',")[0]
         return idseason, idserial, secure
 
+#<script>var pl = {'0': "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vnc8cEV9cAn8UoNzDgisBaePDlN4v2M9ygn9y7D937DpICC"};</script>
+# <ul class="pgs-trans">
+#          <li data-click="translate" data-translate="0">Стандартный</li>
+#                <li data-click="translate" data-translate="1">Субтитры</li>
+#      <script>pl[1] = "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vncf2gIf2Eof2gofyQcf2gIf2wof2gofyQTf2gIf2wbf2gofyQTf2gofyQIf2gofyh=8cEV9cAn8UoNzDgisBaePDlN4v2M9ygn9y7D937DpICC";</script>          <li data-click="translate" data-translate="16">BaibaKo</li>
+#      <script>pl[16] = "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vncgZFN7ZF84TLop39IOSMe16pV85hd43MV1vaRPyEVOyEUpcAUpczC";</script>          <li data-click="translate" data-translate="68">Трейлеры</li>
+#      <script>pl[68] = "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vncf2gIf2ETf2gofyQIf2gIf2waf2gIf2wnf2gIf2f=f2gIf2waf2gofyQIf2gofyh=8cEV9cAn8UoNzDgisBaePDlN4v2M9ygn9y7D937DpICC";</script>        <li class="label">Выберите перевод:</li>
+#  </ul>
+
+    def selectTranslator(self, content):
+        playlist0 = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
+        div = common.parseDOM(content, 'ul', attrs={'class': 'pgs-trans'})[0]
+        titles = common.parseDOM(div, 'li', attrs={'data-click': 'translate'})
+        playlists = common.parseDOM(div, 'script')        
+        if len(titles) > 1:
+            dialog = xbmcgui.Dialog()
+            index_ = dialog.select(self.language(6000), titles)
+            if int(index_) < 0:
+                index_ = 0    
+        playlist = playlist0 if index_ == 0 else playlists[index_-1]
+        playlist = playlist.split('] = "')[-1].split('";')[0]
+        return playlist
+
     def getURLPlayListFromContent(self, content, kind):
-        xbmc.log("content=" + repr(content))
         if (kind == 0):
-            playlist = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
+            if self.translator == "standard":
+                playlist = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
+            else:
+                playlist = self.selectTranslator(content) 
         else:
             playlist = content.split('<script>pl[68] = "')[-1].split('";</script>')[0]
         return self.url + playlist   
@@ -593,7 +618,6 @@ class Seasonvar():
         for i, abheader in enumerate(abheaders):
             ab = common.parseDOM(abheader, "span")[0]
             if i == alphaBeta:             
-                xbmc.log("abitem=" + repr(abitems[i])) 
                 filmitems = common.parseDOM(abitems[i], "a")
                 filmlinks = common.parseDOM(abitems[i], "a", ret="href")
                 for j, filmitem in enumerate(filmitems):
