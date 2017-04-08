@@ -281,7 +281,7 @@ class Seasonvar():
                 titleadd = self.strip(common.parseDOM(titlediv, "div", attrs={"class": "rside-ss"})[0].replace('<br>', ','))
                 title = self.strip(title + ' [COLOR=FF00FFF0][' + titleadd + '][/COLOR]')
                 title = ' '.join(title.split()).strip()
-                image = common.parseDOM(item, "img", ret="src")[0]
+                image = common.parseDOM(item, "img", ret="data-src")[0]
                 link = urls[i]
                 uri = sys.argv[0] + '?mode=show&url=%s&wm=0' % (self.url + link)
                 item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
