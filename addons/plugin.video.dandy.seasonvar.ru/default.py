@@ -323,7 +323,10 @@ class Seasonvar():
 
     def selectTranslator(self, content):
         playlist0 = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
-        div = common.parseDOM(content, 'ul', attrs={'class': 'pgs-trans'})[0]
+        try:
+            div = common.parseDOM(content, 'ul', attrs={'class': 'pgs-trans'})[0]
+        except:
+            return playlist0 
         titles = common.parseDOM(div, 'li', attrs={'data-click': 'translate'})
         playlists = common.parseDOM(div, 'script')        
         if len(titles) > 1:
@@ -331,6 +334,8 @@ class Seasonvar():
             index_ = dialog.select(self.language(6000), titles)
             if int(index_) < 0:
                 index_ = 0    
+        else:
+            index_ = 0    
         playlist = playlist0 if index_ == 0 else playlists[index_-1]
         playlist = playlist.split('] = "')[-1].split('";')[0]
         return playlist
