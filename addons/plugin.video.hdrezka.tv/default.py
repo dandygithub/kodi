@@ -286,13 +286,13 @@ class HdrezkaTV():
         request = urllib2.Request(url, "", headers)
         request.get_method = lambda: 'GET'
         response = urllib2.urlopen(request).read()
- 
+
         purl =  response.split("var window_surl = '")[-1].split("';")[0]
         params = response.split("var post_method = {")[-1].split("};")[0]
         mw_key = response.split("var mw_key = '")[-1].split("';")[0] 
-        async_method = response.split("var async_method = '")[-1].split("';")[0] 
+        runner_go = response.split("post_method.runner_go = '")[-1].split("';")[0] 
 
-        data = urllib.urlencode({
+        values = {
             "video_token" : params.split("video_token: '")[-1].split("',")[0],
             "content_type": params.split("content_type: '")[-1].split("',")[0],
             "mw_key" : mw_key,
@@ -300,21 +300,18 @@ class HdrezkaTV():
             "p_domain_id" : params.split("p_domain_id: ")[-1].split(",")[0],
             "ad_attr": "0",
             "debug": "false",
-            "async_method":async_method
-        })
+            "runner_go": runner_go
+        }
 
         headers = {
-            "Host": "s6.cdnapponline.com",
-            "Connection": "keep-alive",
-            "Origin": "http://s6.cdnapponline.com",
-            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
+            "Host": "s4.cdnapponline.com",
+            "Origin": "http://s4.cdnapponline.com",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
             "Referer": url,
-            "X-CSRF-Token":"Te+oMHK7iyLrwO/nTt3p8yoC+pW4dtVPeALQp9Z6FhznKEjN3MwXgd40OpXLkKn6n6SUwbTP4uWQqe4KxlARRg==",
-            "X-Format-Token":"B300",
             "X-Requested-With": "XMLHttpRequest"
         }
 
-        request = urllib2.Request('http://s6.cdnapponline.com' + purl, data, headers)
+        request = urllib2.Request('http://s4.cdnapponline.com' + purl, urllib.urlencode(values), headers)
         response = urllib2.urlopen(request).read()
 
         data = json.loads(response.decode('unicode-escape'))
