@@ -439,8 +439,9 @@ class OnlineLife():
 
                     xbmcplugin.setContent(self.handle, 'movies')
                 else:
-                    item = xbmcgui.ListItem(self.language(2001), iconImage=self.icon, thumbnailImage=self.icon)
-                    xbmcplugin.addDirectoryItem(self.handle, '', item, True)
+                    if external != "usearch": 
+                        item = xbmcgui.ListItem(self.language(2001), iconImage=self.icon, thumbnailImage=self.icon)
+                        xbmcplugin.addDirectoryItem(self.handle, '', item, True)
 
                 xbmcplugin.endOfDirectory(self.handle, True)
         else:
