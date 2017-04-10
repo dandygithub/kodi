@@ -173,12 +173,12 @@ class HdrezkaTV():
         xbmcplugin.setContent(self.handle, 'movies')
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def selectQuality(self, links, title, image):
+    def selectQuality(self, links, title, image, subtitles = None):
         if self.quality != 'select': 
             try:
-                self.play(links[int(self.quality[:-1])])
+                self.play(links[int(self.quality[:-1])], subtitles)
             except:
-                self.play(links[720])
+                self.play(links[720], subtitles)
         else:
             list = sorted(links.iteritems(), key=itemgetter(0))
             for quality, link in list:
@@ -188,6 +188,9 @@ class HdrezkaTV():
                 item = xbmcgui.ListItem(film_title, iconImage=image)
                 item.setInfo(type='Video', infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
                 item.setProperty('IsPlayable', 'true')
+                if subtitles: 
+                    urls = re.compile('http:\/\/.*?\.srt').findall(subtitles)
+                    item.setSubtitles(urls)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
 #<ul id="translators-list" class="b-translators__list"><li title="Kerob (Coldfilm)" class="b-translator__item active" data-translator_id="35">Kerob (Coldfilm)</li><li title="ViruseProject" class="b-translator__item" data-translator_id="47">ViruseProject</li></ul>
@@ -302,7 +305,7 @@ class HdrezkaTV():
                 print "GET LINK FROM IFRAME"
                 videoplayer = common.parseDOM(content, 'div', attrs={'id': 'videoplayer'})
                 iframe = common.parseDOM(content, 'iframe', ret='src')[0]
-                links = self.get_video_link_from_iframe(iframe, url)
+                links, subtitles = self.get_video_link_from_iframe(iframe, url)
                 self.selectQuality(links, title, image)
 
         xbmcplugin.setContent(self.handle, 'episodes')
@@ -352,6 +355,10 @@ class HdrezkaTV():
         request = urllib2.Request(url, "", headers)
         request.get_method = lambda: 'GET'
         response = urllib2.urlopen(request).read()
+
+        subtitles = None
+        if "var subtitles = JSON.stringify(" in response:
+            subtitles = response.split("var subtitles = JSON.stringify(")[-1].split(");")[0]
 
         purl =  response.split("var window_surl = '")[-1].split("';")[0]
         params = response.split("var post_method = {")[-1].split("};")[0]
@@ -414,7 +421,7 @@ class HdrezkaTV():
 #                elif '720':
 #                    manifest_links['720p'] = link.replace("',", '').replace("manifest.f4m", 'index.m3u8')
 
-        return manifest_links
+        return manifest_links, subtitles
 
     def get_video_link(self, referer, post_id):
         url = 'http://hdrezka.me/engine/ajax/getvideo.php'
@@ -549,8 +556,11 @@ class HdrezkaTV():
         else:
             self.menu()
 
-    def play(self, url):
+    def play(self, url, subtitles = None):
         item = xbmcgui.ListItem(path = url)
+        if subtitles:
+            urls = re.compile('http:\/\/.*?\.srt').findall(subtitles)
+            item.setSubtitles(urls)
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
     def play_episode(self, url, referer, post_id, season_id, episode_id, title, image):
@@ -564,8 +574,8 @@ class HdrezkaTV():
         except:
             print "GET LINK FROM IFRAME"
             url_episode = url + "?nocontrols=1&season=%s&episode=%s" % (season_id, episode_id)
-            links = self.get_video_link_from_iframe(url_episode, referer)
-            self.selectQuality(links, title, image)
+            links, subtitles = self.get_video_link_from_iframe(url_episode, referer)
+            self.selectQuality(links, title, image, subtitles)
             xbmcplugin.setContent(self.handle, 'episodes')
             xbmcplugin.endOfDirectory(self.handle, True)
 
