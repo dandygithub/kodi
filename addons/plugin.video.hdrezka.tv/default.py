@@ -38,6 +38,7 @@ class HdrezkaTV():
         self.url = 'http://hdrezka.me'
 
         self.quality = self.addon.getSetting('quality')
+        self.translator = self.addon.getSetting('translator') if self.addon.getSetting('translator') else "default"
 
     def main(self):
         params = common.getParameters(sys.argv[2])
@@ -189,23 +190,89 @@ class HdrezkaTV():
                 item.setProperty('IsPlayable', 'true')
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
+#<ul id="translators-list" class="b-translators__list"><li title="Kerob (Coldfilm)" class="b-translator__item active" data-translator_id="35">Kerob (Coldfilm)</li><li title="ViruseProject" class="b-translator__item" data-translator_id="47">ViruseProject</li></ul>
+
+#http://hdrezka.me/ajax/get_cdn_series/?t=1491681866585
+
+#id:24193
+#translator_id:47
+
+#Host:hdrezka.me
+#Origin:http://hdrezka.me
+#Referer:http://hdrezka.me/series/thriller/24193-v-rozyske-ty-v-rozyske.html
+#User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36
+#X-Requested-With:XMLHttpRequest
+
+#{"success":true,"message":"","seasons":"\u003Cli class=\"b-simple_season__item active\" data-restricted=\"0\" data-tab_id=\"1\"\u003E\u0421\u0435\u0437\u043e\u043d 1\u003C\/li\u003E","episodes":"\u003Cul id=\"simple-episodes-list-1\" class=\"b-simple_episodes__list clearfix\"\u003E\u003Cli class=\"b-simple_episode__item active\" data-restricted=\"0\" data-id=\"24193\" data-season_id=\"1\" data-episode_id=\"1\"\u003E\u0421\u0435\u0440\u0438\u044f 1\u003C\/li\u003E\u003Cli class=\"b-simple_episode__item\" data-restricted=\"0\" data-id=\"24193\" data-season_id=\"1\" data-episode_id=\"2\"\u003E\u0421\u0435\u0440\u0438\u044f 2\u003C\/li\u003E\u003Cli class=\"b-simple_episode__item\" data-restricted=\"0\" data-id=\"24193\" data-season_id=\"1\" data-episode_id=\"3\"\u003E\u0421\u0435\u0440\u0438\u044f 3\u003C\/li\u003E\u003Cli class=\"b-simple_episode__item\" data-restricted=\"0\" data-id=\"24193\" data-season_id=\"1\" data-episode_id=\"4\"\u003E\u0421\u0435\u0440\u0438\u044f 4\u003C\/li\u003E\u003C\/ul\u003E","url":"http:\/\/s4.cdnapponline.com\/serial\/29ae8190e45bed1f9e5adfb1f4fd4dbf\/iframe","player":"\u003Ciframe id=\"cdn-player\" src=\"http:\/\/s4.cdnapponline.com\/serial\/29ae8190e45bed1f9e5adfb1f4fd4dbf\/iframe?nocontrols=1&season=1&episode=1\" name=\"it1491681871\" width=\"640\" height=\"360\" frameborder=\"0\" allowfullscreen webkitallowfullscreen mozallowfullscreen oallowfullscreen msallowfullscreen\u003E\u003C\/iframe\u003E"}
+
+    def selectTranslator(self, content, post_id):
+        iframe0 = common.parseDOM(content, 'iframe', ret='src')[0]
+        try:
+            playlist0 = common.parseDOM(content, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
+        except:
+            playlist0 = ""  
+        try:
+            div = common.parseDOM(content, 'ul', attrs={'id': 'translators-list'})[0]
+        except:
+            return iframe0, playlist0
+        titles = common.parseDOM(div, 'li')
+        ids = common.parseDOM(div, 'li', ret = "data-translator_id")
+        if len(titles) > 1:
+            dialog = xbmcgui.Dialog()
+            index_ = dialog.select(self.language(1006), titles)
+            if int(index_) < 0:
+                index_ = 0    
+        else:
+            index_ = 0    
+        idt = ids[index_]
+
+        headers = {
+            "Host": "hdrezka.me",
+            "Origin": "http://hdrezka.me",
+            "Referer": "http://hdrezka.me/series/thriller/24193-v-rozyske-ty-v-rozyske.html",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
+            "X-Requested-With": "XMLHttpRequest"
+        }
+
+        values = {
+            "id": post_id,
+            "translator_id": idt
+        }
+
+        request = urllib2.Request("http://hdrezka.me/ajax/get_cdn_series/", urllib.urlencode(values), headers)
+        response = urllib2.urlopen(request).read()
+
+        data = json.loads(response)
+        player = data["player"]
+        seasons = data["seasons"]
+        episodes = data["episodes"]
+        iframe = common.parseDOM(player, 'iframe', ret='src')[0]
+        playlist = common.parseDOM(episodes, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
+        return iframe, playlist
+
+#player=u'<iframe id="cdn-player" src="http://s4.cdnapponline.com/serial/df88dab4dcdde657bc7b6142b2c22afc/iframe?nocontrols=1&season=1&episode=1" name="it1491779049" width="640" height="360" frameborder="0" allowfullscreen webkitallowfullscreen mozallowfullscreen oallowfullscreen msallowfullscreen></iframe>'
+#seasons=u'<li class="b-simple_season__item active" data-restricted="0" data-tab_id="1">\u0421\u0435\u0437\u043e\u043d 1</li><li class="b-simple_season__item" data-restricted="0" data-tab_id="3">\u0421\u0435\u0437\u043e\u043d 3</li><li class="b-simple_season__item" data-restricted="0" data-tab_id="4">\u0421\u0435\u0437\u043e\u043d 4</li>'
+#episodes=u'<ul id="simple-episodes-list-1" class="b-simple_episodes__list clearfix"><li class="b-simple_episode__item active" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="1">\u0421\u0435\u0440\u0438\u044f 1</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="2">\u0421\u0435\u0440\u0438\u044f 2</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="3">\u0421\u0435\u0440\u0438\u044f 3</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="4">\u0421\u0435\u0440\u0438\u044f 4</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="5">\u0421\u0435\u0440\u0438\u044f 5</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="6">\u0421\u0435\u0440\u0438\u044f 6</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="7">\u0421\u0435\u0440\u0438\u044f 7</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="8">\u0421\u0435\u0440\u0438\u044f 8</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="9">\u0421\u0435\u0440\u0438\u044f 9</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="10">\u0421\u0435\u0440\u0438\u044f 10</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="11">\u0421\u0435\u0440\u0438\u044f 11</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="12">\u0421\u0435\u0440\u0438\u044f 12</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="13">\u0421\u0435\u0440\u0438\u044f 13</li></ul><ul id="simple-episodes-list-3" class="b-simple_episodes__list clearfix" style="display: none;"><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="1">\u0421\u0435\u0440\u0438\u044f 1</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="2">\u0421\u0435\u0440\u0438\u044f 2</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="3">\u0421\u0435\u0440\u0438\u044f 3</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="4">\u0421\u0435\u0440\u0438\u044f 4</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="5">\u0421\u0435\u0440\u0438\u044f 5</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="6">\u0421\u0435\u0440\u0438\u044f 6</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="7">\u0421\u0435\u0440\u0438\u044f 7</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="8">\u0421\u0435\u0440\u0438\u044f 8</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="9">\u0421\u0435\u0440\u0438\u044f 9</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="10">\u0421\u0435\u0440\u0438\u044f 10</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="11">\u0421\u0435\u0440\u0438\u044f 11</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="12">\u0421\u0435\u0440\u0438\u044f 12</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="13">\u0421\u0435\u0440\u0438\u044f 13</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="14">\u0421\u0435\u0440\u0438\u044f 14</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="15">\u0421\u0435\u0440\u0438\u044f 15</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="16">\u0421\u0435\u0440\u0438\u044f 16</li></ul><ul id="simple-episodes-list-4" class="b-simple_episodes__list clearfix" style="display: none;"><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="1">\u0421\u0435\u0440\u0438\u044f 1</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="2">\u0421\u0435\u0440\u0438\u044f 2</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="3">\u0421\u0435\u0440\u0438\u044f 3</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="4">\u0421\u0435\u0440\u0438\u044f 4</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="5">\u0421\u0435\u0440\u0438\u044f 5</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="6">\u0421\u0435\u0440\u0438\u044f 6</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="7">\u0421\u0435\u0440\u0438\u044f 7</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="8">\u0421\u0435\u0440\u0438\u044f 8</li></ul>'
+
     def show(self, url):
         print "Get video %s" % url
         response = common.fetchPage({"link": url})
 
         content = common.parseDOM(response["content"], "div", attrs={"id": "wrapper"})
         image_container = common.parseDOM(content, "div", attrs={"class": "b-sidecover"})
-
         title = common.parseDOM(content, "h1")[0]
         image = common.parseDOM(image_container, "img", ret='src')[0]
-
-        playlist = common.parseDOM(content, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
         post_id = common.parseDOM(content, "input", attrs={"id": "post_id" }, ret="value")[0]
 
-        titles = common.parseDOM(playlist, "li")
-        ids = common.parseDOM(playlist, "li", ret='data-id')
-        seasons = common.parseDOM(playlist, "li", ret='data-season_id')
-        episodes = common.parseDOM(playlist, "li", ret='data-episode_id')
+        playlist = common.parseDOM(content, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
+        iframe = common.parseDOM(content, 'iframe', ret='src')[0]
+        if playlist:
+            if self.translator == "select":
+                iframe, playlist = self.selectTranslator(content, post_id)
+            titles = common.parseDOM(playlist, "li")
+            ids = common.parseDOM(playlist, "li", ret='data-id')
+            seasons = common.parseDOM(playlist, "li", ret='data-season_id')
+            episodes = common.parseDOM(playlist, "li", ret='data-episode_id')
 
         print "POST ID %s " % post_id
         #print "Image %s" % image
@@ -213,7 +280,6 @@ class HdrezkaTV():
         if playlist:
             print "This is a season"
             videoplayer = common.parseDOM(content, 'div', attrs={'id': 'videoplayer'})
-            iframe = common.parseDOM(content, 'iframe', ret='src')[0]
             for i, title in enumerate(titles):
                 title = "%s (%s %s)" % (title, self.language(1005), seasons[i])
                 url_episode = iframe.split("?")[0]
