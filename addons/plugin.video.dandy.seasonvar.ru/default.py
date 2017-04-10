@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Writer (c) 2014-2017, dandy, MrStealth
-# Rev. 1.5.0
+# Rev. 1.7.0
 # Licence: GPL v.3: http://www.gnu.org/copyleft/gpl.html
 
 import os
@@ -216,7 +216,7 @@ class Seasonvar():
             uri = sys.argv[0] + '?mode=show&url=%s&wm=0' % (self.url + link)
             image = self.getSerialImage(self.url + link)
             item = xbmcgui.ListItem(title_, iconImage=image, thumbnailImage=image)
-            item.setInfo(type='Video', infoLabels={'title': title})
+            item.setInfo(type='Video', infoLabels={'title': title_})
             commands = []
             uricmd = sys.argv[0] + '?mode=search&keyword=%s' % (title)
             commands.append(('[COLOR=FFFFD700]' + self.language(2000) + '[/COLOR]', "Container.Update(%s)" % (uricmd), ))
@@ -279,13 +279,13 @@ class Seasonvar():
                 titlediv = common.parseDOM(item, "div", attrs={"class": "rside-d"})[0]
                 title = common.parseDOM(titlediv, "div", attrs={"class": "rside-t"})[0]
                 titleadd = self.strip(common.parseDOM(titlediv, "div", attrs={"class": "rside-ss"})[0].replace('<br>', ','))
-                title = self.strip(title + ' [COLOR=FF00FFF0][' + titleadd + '][/COLOR]')
-                title = ' '.join(title.split()).strip()
+                title_ = self.strip(title + ' [COLOR=FF00FFF0][' + titleadd + '][/COLOR]')
+                title_ = ' '.join(title_.split()).strip()
                 image = common.parseDOM(item, "img", ret="data-src")[0]
                 link = urls[i]
                 uri = sys.argv[0] + '?mode=show&url=%s&wm=0' % (self.url + link)
-                item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
-                item.setInfo(type='Video', infoLabels={'title': title})
+                item = xbmcgui.ListItem(title_, iconImage=image, thumbnailImage=image)
+                item.setInfo(type='Video', infoLabels={'title': title_})
 
                 commands = []
                 uricmd = sys.argv[0] + '?mode=search&url=%s&keyword=%s' % (self.url, title)                
