@@ -407,10 +407,16 @@ class Seasonvar():
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
             else:    
                 uri = sys.argv[0] + '?mode=play&url=%s' % url
+                try:
+                    subtitle = episode["sub"]
+                except:
+                    subtitle = None 
                 item = xbmcgui.ListItem(label=etitle, iconImage=image, thumbnailImage=image)
                 labels = {'title': title + " " + etitle, 'plot': description, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0}
                 item.setInfo(type='Video', infoLabels=labels)
                 item.setProperty('IsPlayable', 'true')
+                if subtitle:
+                    item.setSubtitles([subtitle])
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
     def getPlaylistByUppod(self, content):
