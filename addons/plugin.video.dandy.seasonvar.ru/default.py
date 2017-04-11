@@ -143,6 +143,7 @@ class Seasonvar():
         if external == None:
             external = 'usearch' if 'usearch' in params else None    
         transpar = params['translit'] if 'translit' in params else None
+        strong = params['strong'] if 'strong' in params else None
 
         withMSeason = params['wm'] if 'wm' in params else "1"
         idPlaylist = int(params['idpl']) if 'idpl' in params else 0
@@ -156,7 +157,7 @@ class Seasonvar():
         if mode == 'play':
             self.playItem(url)
         if mode == 'search':
-            self.search(keyword, external, transpar)
+            self.search(keyword, external, transpar, strong)
         if mode == 'show':
             self.show(url, (withMSeason == "1"))
         if mode == 'filter':
@@ -218,7 +219,7 @@ class Seasonvar():
             item = xbmcgui.ListItem(title_, iconImage=image, thumbnailImage=image)
             item.setInfo(type='Video', infoLabels={'title': title_})
             commands = []
-            uricmd = sys.argv[0] + '?mode=search&keyword=%s' % (title)
+            uricmd = sys.argv[0] + '?mode=search&keyword=%s&strong=1' % (title)
             commands.append(('[COLOR=FFFFD700]' + self.language(2000) + '[/COLOR]', "Container.Update(%s)" % (uricmd), ))
             item.addContextMenuItems(commands)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
@@ -288,7 +289,7 @@ class Seasonvar():
                 item.setInfo(type='Video', infoLabels={'title': title_})
 
                 commands = []
-                uricmd = sys.argv[0] + '?mode=search&url=%s&keyword=%s' % (self.url, title)                
+                uricmd = sys.argv[0] + '?mode=search&url=%s&keyword=%s&strong=1' % (self.url, title)                
                 commands.append(('[COLOR=FFFFD700]' + self.language(2000) + '[/COLOR]', "Container.Update(%s)" % (uricmd), ))
                 item.addContextMenuItems(commands)
 
@@ -453,7 +454,7 @@ class Seasonvar():
         response = common.fetchPage({"link": url, "cookie": self.getCookies()})
         content = response["content"]
         titlemain = common.parseDOM(content, 'title')[0]
-        image = common.parseDOM(content, 'link', attrs={'rel': 'image_src'}, ret='href')[0] if common.parseDOM(response["content"], 'link', attrs={'rel': 'image_src'}, ret='href') else None
+        image = common.parseDOM(content, 'meta', attrs={'property': 'og:image'}, ret='content')[0] if common.parseDOM(content, 'meta', attrs={'property': 'og:image'}, ret='content') else None
         description = common.parseDOM(content, 'meta', attrs={'name': 'description'}, ret='content')[0] if common.parseDOM(response["content"], 'meta', attrs={'name': 'description'}, ret='content') else ''
         multiseason = self.getMultiseasonDiv(content)
 
@@ -515,7 +516,7 @@ class Seasonvar():
 
         return keyword
 
-    def newSearchMethod(self, keyword, external, unified_search_results):
+    def newSearchMethod(self, keyword, external, unified_search_results, strong):
         url = self.url +  '/search?q=' + keyword
         response = common.fetchPage({"link": url})
         data =  response["content"]
@@ -527,19 +528,20 @@ class Seasonvar():
             title = common.parseDOM(titlediv, "a")[0]
             seasons = common.parseDOM(titlediv, "span")
             descr = common.parseDOM(titlediv, "p")[0]
-            if seasons:
-                title = title + ' [COLOR=FF00FFF0][' + seasons[0] + '][/COLOR]'                  
+            if (not strong) or (keyword.decode('utf-8').upper() == title.decode('utf-8').upper()): 
+                if seasons:
+                    title = title + ' [COLOR=FF00FFF0][' + seasons[0] + '][/COLOR]'                  
             
-            if (external == 'unified'):
-                self.log("Perform unified search and return results")
-                unified_search_results.append({'title': title, 'url': url, 'image': image, 'plugin': self.id})
-            else:
-                uri = sys.argv[0] + '?mode=show&url=%s&wm=1' % url
-                item = xbmcgui.ListItem(title, thumbnailImage=image)
-                item.setInfo(type='Video', infoLabels={'title': title, 'plot': descr})
-                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+                if (external == 'unified'):
+                    self.log("Perform unified search and return results")
+                    unified_search_results.append({'title': title, 'url': url, 'image': image, 'plugin': self.id})
+                else:
+                    uri = sys.argv[0] + '?mode=show&url=%s&wm=1' % url
+                    item = xbmcgui.ListItem(title, thumbnailImage=image)
+                    item.setInfo(type='Video', infoLabels={'title': title, 'plot': descr})
+                    xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-    def search(self, keyword, external, transpar = None):
+    def search(self, keyword, external, transpar = None, strong = None):
         print "*** search for keyword %s " % keyword
         
         keyword_ = keyword if keyword else self.getUserInput()
@@ -553,7 +555,7 @@ class Seasonvar():
         
         if keyword_:
             if self.new_search_method and (self.new_search_method == "true"):
-                self.newSearchMethod(keyword_, external, unified_search_results)
+                self.newSearchMethod(keyword_, external, unified_search_results, strong)
             else:
                 url = self.url + '/autocomplete.php?query=' + keyword_       
                 response = common.fetchPage({"link": url})
