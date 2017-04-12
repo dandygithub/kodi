@@ -47,7 +47,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="2.1.1" provider-name="MrStealth, dandy">
+<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="2.1.2" provider-name="MrStealth, dandy">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.xbmc.helpers" version="2.0.0"/>
@@ -58,7 +58,7 @@
     </extension>
     <extension point= "xbmc.addon.metadata">
         <summary>Hdrezka.tv</summary>
-        <description>HDREZKA.TV - Фильмы, мультфильмы и сериалы в высоком качестве 720</description>
+        <description>HDREZKA.TV - Фильмы, мультфильмы и сериалы в высоком качестве</description>
         <description>For personal use only</description>
         <platform>all</platform>
     </extension>

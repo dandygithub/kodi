@@ -232,7 +232,6 @@ class HdrezkaTV():
         headers = {
             "Host": "hdrezka.me",
             "Origin": "http://hdrezka.me",
-            "Referer": "http://hdrezka.me/series/thriller/24193-v-rozyske-ty-v-rozyske.html",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
             "X-Requested-With": "XMLHttpRequest"
         }
@@ -345,7 +344,38 @@ class HdrezkaTV():
 
         return { 'rating' : rating, 'description' : description }
 
+
+    def getKey(self, content):
+        key = ''
+        value = '' 
+        try:  
+            script = content.split("setTimeout(function()")[-1].split("</script>")[0]    
+            key = script.split("['")[-1].split("'] = '")[0]    
+            value = script.split("'] = '")[-1].split("';")[0]    
+        except:
+            pass 
+        return key, value
+
+    def getAccessAttrs(self, content):
+        attrs = {}
+        purl = content.split("var window_surl = '")[-1].split("';")[0]
+        attrs['mw_key'] = content.split("var mw_key = '")[-1].split("';")[0] 
+        attrs['video_token'] = content.split("video_token: '")[-1].split("',")[0] 
+        attrs['mw_pid'] = content.split("mw_pid: ")[-1].split(",")[0] 
+        attrs['p_domain_id'] = content.split("p_domain_id: ")[-1].split(",")[0] 
+        attrs['ad_attr'] = '0'
+        attrs['debug'] = 'false'
+
+        key, value = self.getKey(content) 
+
+        attrs[key] = value
+
+        return purl, attrs
+
+
     def get_video_link_from_iframe(self, url, mainurl):
+
+        playlist_domain = 's4.cdnapponline.com'
 
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
@@ -360,31 +390,19 @@ class HdrezkaTV():
         if "var subtitles = JSON.stringify(" in response:
             subtitles = response.split("var subtitles = JSON.stringify(")[-1].split(");")[0]
 
-        purl =  response.split("var window_surl = '")[-1].split("';")[0]
-        params = response.split("var post_method = {")[-1].split("};")[0]
-        mw_key = response.split("var mw_key = '")[-1].split("';")[0] 
-        runner_go = response.split("post_method.runner_go = '")[-1].split("';")[0] 
-
-        values = {
-            "video_token" : params.split("video_token: '")[-1].split("',")[0],
-            "content_type": params.split("content_type: '")[-1].split("',")[0],
-            "mw_key" : mw_key,
-            "mw_pid": params.split("mw_pid: ")[-1].split(",")[0],
-            "p_domain_id" : params.split("p_domain_id: ")[-1].split(",")[0],
-            "ad_attr": "0",
-            "debug": "false",
-            "runner_go": runner_go
-        }
+        purl, values = self.getAccessAttrs(response)
 
         headers = {
-            "Host": "s4.cdnapponline.com",
-            "Origin": "http://s4.cdnapponline.com",
+            "Host": playlist_domain,
+            "Origin": "http://" + playlist_domain,
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
             "Referer": url,
             "X-Requested-With": "XMLHttpRequest"
         }
 
-        request = urllib2.Request('http://s4.cdnapponline.com' + purl, urllib.urlencode(values), headers)
+        xbmc.log("request=" + repr(values))
+ 
+        request = urllib2.Request('http://' + playlist_domain + purl, urllib.urlencode(values), headers)
         response = urllib2.urlopen(request).read()
 
         data = json.loads(response.decode('unicode-escape'))
@@ -403,23 +421,6 @@ class HdrezkaTV():
         manifest_links = {}
         for i, url in enumerate(urls):
             manifest_links[QUALITY_TYPES[i]] = url.replace("\n", "")
-
-#        urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', response)
-#        links = []
-#        manifest_links = {}
-
-#        for url in urls:
-#            if 'mp4' in url:
-#                links.append(url)
-
-#        for link in links:
-#            if 'manifest' in link:
-#                if '360' in link:
-#                    manifest_links['360p'] = link.replace("',", '').replace("manifest.f4m", 'index.m3u8')
-#                elif '480':
-#                    manifest_links['480p'] = link.replace("',", '').replace("manifest.f4m", 'index.m3u8')
-#                elif '720':
-#                    manifest_links['720p'] = link.replace("',", '').replace("manifest.f4m", 'index.m3u8')
 
         return manifest_links, subtitles
 
