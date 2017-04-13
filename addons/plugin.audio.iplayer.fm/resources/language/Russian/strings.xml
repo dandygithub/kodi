@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+  <string id="1000">Поиск</string>
+  <string id="1001">Настройки поиска</string>
+  <string id="1002">Извините, по вашему запросу ничего не найдено</string>
+  <string id="1003">Использовать транслитерацию при поиске</string>
+
+  <string id="2000">Плейлисты</string>
+  <string id="2001">Извините, по вашему запросу ничего не найдено</string>
+  
+  <string id="3000">Онлайн радиостанции</string>
+  <string id="3001">Чарты радиостанций (Москва)</string>
+  <string id="3002">Чарты радиостанций Санкт-Петербург)</string>
+
+  <string id="4000">Чарты</string>
+  <string id="4001">Русский чарт</string>
+  <string id="4002">Всемирный чарт</string>
+  <string id="4003">Жанры</string>
+  <string id="4004">Случайный плейлист (random)</string>
+
+  <string id="5000">Исполнители</string>
+  <string id="5001">Русские исполнители</string>
+  <string id="5002">Зарубежные исполнители</string>
+
+  <string id="6000">Алфавит</string>
+
+  <string id="7000">Аутентификация</string>
+  <string id="7001">Логин</string>
+  <string id="7002">Пароль</string>
+  <string id="7003">Проверьте ваш логин и пароль в настройках дополнения</string>
+
+  <string id="8000">Скачивание файлов</string>  
+  <string id="8001">Скачать MP3</string>  
+  <string id="8002">Скачивание файла, пожалуйста подождите ...</string>
+  <string id="8003">Папка загрузки</string>  
+
+  <string id="9000">Прочие настройки</string>
+  <string id="9001">Включить проверку доступности потоков</string>
+  <string id="9002">Интервал проверки доступности потоков (час)</string>
+</strings>
