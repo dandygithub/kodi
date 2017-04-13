@@ -1,5 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
+<addon id="context.dandy.contextus" name="Context for United Search" version="1.0.0" provider-name="dandy">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="plugin.video.united.search" version="0.1.6"/>
+  </requires>
+  <extension point="kodi.context.item" library="default.py">
+    <item>
+      <label>32000</label>
+      <visible>Container.Content(tvshows)|Container.Content(movies)|Container.Content(musicvideos)|Container.Content(episodes)</visible>
+    </item>
+  </extension>
+  <extension point="kodi.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">Search title item in United Search</summary>
+    <description lang="en">Search title item in United Search</description>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
+    <forum></forum>
+    <source></source>
+  </extension>
+</addon>
+
 <addon id="plugin.audio.iplayer.fm" name="iPlayer.fm" version="2.1.0" provider-name="mrstealth, dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -181,7 +202,7 @@
     </extension>
 </addon>
 
-<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.1.11" provider-name="dandy">
+<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.1.12" provider-name="dandy">
         <requires>
                 <import addon="xbmc.addon" version="13.0.0"/>
         </requires>

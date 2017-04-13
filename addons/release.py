@@ -22,7 +22,7 @@ def _generate_md5_file(archive):
 
 for directory in os.listdir("."):
     if not directory.startswith('.'):
-        if 'plugin' in directory or 'script' in directory or 'repository' in directory or 'skin' in directory:
+        if 'plugin' in directory or 'script' in directory or 'repository' in directory or 'skin' in directory or 'context' in directory:
             # Create plugin directory if not exist
             zip_dir = os.path.join(os.getcwd(), 'zip', directory)
             fulldir = os.path.join(os.getcwd(), directory)
