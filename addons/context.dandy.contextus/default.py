@@ -18,7 +18,7 @@
 import xbmc
 
 def main():
-    uricmd = "plugin://plugin.video.united.search/?action=search&keyword=%s" % xbmc.getInfoLabel("ListItem.Title").split('[')[0].split('(')[0]
+    uricmd = "plugin://plugin.video.united.search/?action=search&keyword=%s" % xbmc.getInfoLabel("ListItem.Title").split('[')[0].split('(')[0].split('/')[0].strip()
     xbmc.executebuiltin("Container.Update(%s)" % uricmd)
 
 if __name__ == '__main__':
