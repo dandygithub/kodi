@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Writer (c) 2012-2017, MrStealth, dandy
-# Rev. 2.0.0
+# Rev. 2.1.0
 
 import os, urllib, urllib2, sys #, socket, cookielib, errno
 import xbmc, xbmcplugin,xbmcgui,xbmcaddon
@@ -157,7 +157,7 @@ class HdrezkaTV():
             image = common.parseDOM(divcovers[i], "img", ret='src')[0]
 
             uri = sys.argv[0] + '?mode=show&url=%s' % links[i]
-            item = xbmcgui.ListItem(title, iconImage=image)
+            item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
             item.setInfo(type='Video', infoLabels={'title': title, 'genre': country_years[i], 'plot': infos['description'], 'rating': infos['rating']})
             if (self.quality != 'select') and (not ('/series/' in url)) and (not ('/show/' in url)):
                 item.setProperty('IsPlayable', 'true')
@@ -280,13 +280,13 @@ class HdrezkaTV():
         #print "Image %s" % image
 
         if playlist:
-            print "This is a season"
+            #print "This is a season"
             videoplayer = common.parseDOM(content, 'div', attrs={'id': 'videoplayer'})
             for i, title in enumerate(titles):
                 title = "%s (%s %s)" % (title, self.language(1005), seasons[i])
                 url_episode = iframe.split("?")[0]
                 uri = sys.argv[0] + '?mode=play_episode&url=%s&urlm=%s&post_id=%s&season_id=%s&episode_id=%s&title=%s&image=%s' % (url_episode, url, ids[i], seasons[i], episodes[i], title, image)
-                item = xbmcgui.ListItem(title, iconImage=image)
+                item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
                 if self.quality != 'select':
                     item.setProperty('IsPlayable', 'true')
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True if self.quality == 'select' else False)
@@ -295,7 +295,7 @@ class HdrezkaTV():
                 link = self.get_video_link(url, post_id)
 
                 uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote(link)
-                item = xbmcgui.ListItem(title, iconImage=image)
+                item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
                 item.setInfo(type='Video', infoLabels={'title': title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
                 item.setProperty('IsPlayable', 'true')
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
@@ -400,8 +400,6 @@ class HdrezkaTV():
             "X-Requested-With": "XMLHttpRequest"
         }
 
-        xbmc.log("request=" + repr(values))
- 
         request = urllib2.Request('http://' + playlist_domain + purl, urllib.urlencode(values), headers)
         response = urllib2.urlopen(request).read()
 
@@ -495,8 +493,6 @@ class HdrezkaTV():
 
         if keyword:
             print keyword
-            
-            url = 'http://hdrezka.me/index.php?do=search&subaction=search&q=%s' % (keyword)
 
             headers = {
                 'Host': 'hdrezka.me',
@@ -505,7 +501,16 @@ class HdrezkaTV():
                 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
             }
 
-            request = urllib2.Request(url, "", headers)
+            values = {
+                "do": "search",
+                "subaction": "search",
+                "q": unicode(keyword)
+            }
+
+            form = urllib.urlencode(values)
+            encoded_kwargs = urllib.urlencode(values.items())
+            argStr = "/?%s" %(encoded_kwargs)
+            request = urllib2.Request(self.url + argStr, "", headers)
             request.get_method = lambda: 'GET'
             response = urllib2.urlopen(request).read()
 
@@ -536,18 +541,24 @@ class HdrezkaTV():
             for i, videoitem in enumerate(videos):
                 link = common.parseDOM(videoitem, "a", ret='href')[0]
                 title = common.parseDOM(videoitem, "a")[1]
-                image = common.parseDOM(videoitem, "img", ret='src')[0]
-                descriptiondiv = common.parseDOM(videoitem, "div", attrs={"class": "b-content__inline_item-link"})[0]
-                description = common.parseDOM(descriptiondiv, "div")[0]
+                
+                if keyword.decode('utf-8').upper() in title.decode('utf-8').upper(): 
+                    image = common.parseDOM(videoitem, "img", ret='src')[0]
+                    descriptiondiv = common.parseDOM(videoitem, "div", attrs={"class": "b-content__inline_item-link"})[0]
+                    description = common.parseDOM(descriptiondiv, "div")[0]
 
-                if (external == 'unified'):
-                    print "Perform unified search and return results"
-                    unified_search_results.append({'title':  title, 'url': link, 'image': image, 'plugin': self.id})
-                else:
-                    uri = sys.argv[0] + '?mode=show&url=%s' % urllib.quote(link)
-                    item = xbmcgui.ListItem("%s [COLOR=55FFFFFF][%s][/COLOR]" % (title, description), iconImage=image)
-                    item.setInfo(type='Video', infoLabels={'title': title})
-                    xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+                    if (external == 'unified'):
+                        print "Perform unified search and return results"
+                        unified_search_results.append({'title':  title, 'url': link, 'image': image, 'plugin': self.id})
+                    else:
+                        uri = sys.argv[0] + '?mode=show&url=%s' % urllib.quote(link)
+                        item = xbmcgui.ListItem("%s [COLOR=55FFFFFF][%s][/COLOR]" % (title, description), iconImage=image, thumbnailImage=image)
+                        item.setInfo(type='Video', infoLabels={'title': title})
+                        if (self.quality != 'select') and (not ('/series/' in link)) and (not ('/show/' in link)):
+                            item.setProperty('IsPlayable', 'true')
+                            xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
+                        else:
+                            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
             if (external == 'unified'):
                 UnifiedSearch().collect(unified_search_results)
