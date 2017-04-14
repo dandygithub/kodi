@@ -250,12 +250,6 @@ def search(keyword, external, transpar = None):
         content = common.parseDOM(response, "div", attrs = { "id":"dle-content" })
         blocks = common.parseDOM(content, "div", attrs = { "class":"block" })
 
-        #if (not unified):
-        #    result = common.parseDOM(content, "span", attrs = { "class":"sresult" })[0]
-        #    item = xbmcgui.ListItem(colorize(unescape(result, 'cp1251'), 'FF00FFF0'))
-        #    item.setProperty('IsPlayable', 'false')
-        #    xbmcplugin.addDirectoryItem(pluginhandle, '', item, False)
-
         mainf = common.parseDOM(content, "div", attrs = { "class":"mainf" })
         titles = common.parseDOM(mainf, "a")
         links = common.parseDOM(mainf, "a", ret = "href")
@@ -289,6 +283,7 @@ def search(keyword, external, transpar = None):
         if (external == 'unified'):
             UnifiedSearch().collect(unified_search_results)
         else: 
+            xbmcplugin.setContent(pluginhandle, 'movies')
             xbmcplugin.endOfDirectory(pluginhandle, True)
 
 
@@ -307,6 +302,7 @@ def getCategories(url):
             item = xbmcgui.ListItem(title)
             xbmcplugin.addDirectoryItem(pluginhandle, uri, item, True)
 
+    xbmcplugin.setContent(pluginhandle, 'files')
     xbmcplugin.endOfDirectory(pluginhandle, True)
 
 def getCategoryItems(url, categorie, page):
@@ -348,6 +344,7 @@ def getCategoryItems(url, categorie, page):
             item = xbmcgui.ListItem(localize(language(3000)))
             xbmcplugin.addDirectoryItem(pluginhandle, uri, item, True)
 
+        xbmcplugin.setContent(pluginhandle, 'movies')
         xbmcplugin.endOfDirectory(pluginhandle, True)
 
 def listGenres():
@@ -380,6 +377,7 @@ def listGenres():
         item = xbmcgui.ListItem(localize(language(1000+i)))
         xbmcplugin.addDirectoryItem(pluginhandle, uri, item, True)
 
+    xbmcplugin.setContent(pluginhandle, 'files')
     xbmcplugin.endOfDirectory(pluginhandle, True)
 
 
@@ -410,6 +408,7 @@ def listFavorites():
         item.setProperty('IsPlayable', 'true')
         xbmcplugin.addDirectoryItem(pluginhandle, uri, item, True)
 
+    xbmcplugin.setContent(pluginhandle, 'movies')
     xbmcplugin.endOfDirectory(pluginhandle, True)
 
 def resetFavorites():
@@ -494,6 +493,7 @@ def getItems(url):
         print e
         xbmc.executebuiltin('Container.SetViewMode(50)')
 
+    xbmcplugin.setContent(pluginhandle, 'movies')
     xbmcplugin.endOfDirectory(pluginhandle, True)
 
 def selectQuality(url, index, title):
@@ -584,6 +584,7 @@ def showItem(url, thumbnail, season = None):
         print e
         xbmc.executebuiltin('Container.SetViewMode(50)')
 
+    xbmcplugin.setContent(pluginhandle, 'tvshows')
     xbmcplugin.endOfDirectory(pluginhandle, True)
 
 def playItem(url):

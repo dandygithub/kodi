@@ -67,7 +67,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.filin.tv" name="Filin.tv (UnifiedSearch)" version="2.3.0" provider-name="mrstealth, dandy">
+<addon id="plugin.video.filin.tv" name="Filin.tv (UnifiedSearch)" version="2.3.1" provider-name="mrstealth, dandy">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.xbmc.helpers" version="2.0.0"/>
