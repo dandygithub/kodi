@@ -542,23 +542,22 @@ class HdrezkaTV():
                 link = common.parseDOM(videoitem, "a", ret='href')[0]
                 title = common.parseDOM(videoitem, "a")[1]
                 
-                if keyword.decode('utf-8').upper() in title.decode('utf-8').upper(): 
-                    image = common.parseDOM(videoitem, "img", ret='src')[0]
-                    descriptiondiv = common.parseDOM(videoitem, "div", attrs={"class": "b-content__inline_item-link"})[0]
-                    description = common.parseDOM(descriptiondiv, "div")[0]
+                image = common.parseDOM(videoitem, "img", ret='src')[0]
+                descriptiondiv = common.parseDOM(videoitem, "div", attrs={"class": "b-content__inline_item-link"})[0]
+                description = common.parseDOM(descriptiondiv, "div")[0]
 
-                    if (external == 'unified'):
-                        print "Perform unified search and return results"
-                        unified_search_results.append({'title':  title, 'url': link, 'image': image, 'plugin': self.id})
+                if (external == 'unified'):
+                    print "Perform unified search and return results"
+                    unified_search_results.append({'title':  title, 'url': link, 'image': image, 'plugin': self.id})
+                else:
+                    uri = sys.argv[0] + '?mode=show&url=%s' % urllib.quote(link)
+                    item = xbmcgui.ListItem("%s [COLOR=55FFFFFF][%s][/COLOR]" % (title, description), iconImage=image, thumbnailImage=image)
+                    item.setInfo(type='Video', infoLabels={'title': title})
+                    if (self.quality != 'select') and (not ('/series/' in link)) and (not ('/show/' in link)):
+                        item.setProperty('IsPlayable', 'true')
+                        xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
                     else:
-                        uri = sys.argv[0] + '?mode=show&url=%s' % urllib.quote(link)
-                        item = xbmcgui.ListItem("%s [COLOR=55FFFFFF][%s][/COLOR]" % (title, description), iconImage=image, thumbnailImage=image)
-                        item.setInfo(type='Video', infoLabels={'title': title})
-                        if (self.quality != 'select') and (not ('/series/' in link)) and (not ('/show/' in link)):
-                            item.setProperty('IsPlayable', 'true')
-                            xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
-                        else:
-                            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+                        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
             if (external == 'unified'):
                 UnifiedSearch().collect(unified_search_results)
