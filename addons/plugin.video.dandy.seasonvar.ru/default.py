@@ -186,9 +186,10 @@ class Seasonvar():
         if (not self.load_thumbnails) or (self.load_thumbnails == "false"):
             return self.icon
         else:    
-            response = common.fetchPage({"link": url})            
-            image = response["content"].split('<meta property="og:image" content="')[-1].split('">')[0]
-            return image
+            #response = common.fetchPage({"link": url})            
+            #image = response["content"].split('<meta property="og:image" content="')[-1].split('">')[0]
+            image = "http://cdn.seasonvar.ru/oblojka/%s.jpg" % (url.split("serial-")[-1].split("-")[0])
+            return image if image else self.icon
 
     def getItemsByDate(self, page):
         if (not self.contentBegin) or (page == 0):

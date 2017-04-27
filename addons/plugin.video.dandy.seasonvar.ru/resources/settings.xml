@@ -5,7 +5,7 @@
   <setting type="text" id="us_command" visible="false" default="mode=search&keyword=" />
   <setting type="sep"/>
   <setting id="begin_render_type" type="labelenum" label="Begin render type" values="new|popular|newest|bydate" default="new"/>
-  <setting id="load_thumbnails" type="bool" label="Load thumbnails" default="false"/>
+  <setting id="load_thumbnails" type="bool" label="Load thumbnails" default="true"/>
   <setting id="new_search_method" type="bool" label="New search method" default="true"/>
   <setting id="translator" type="labelenum" label="Use translator" values="standard|select" default="standard"/>
   <setting id="quality" type="labelenum" label="Video quality" enable="!eq(2,)" values="sd|hd" default="sd"/>
