@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <setting label="Edit title" type="bool" id="is_edit" default="true"/>
+    <setting label="Edit condition patterns" type="text" id="patterns_edit" default=".*"/>
+</settings>
