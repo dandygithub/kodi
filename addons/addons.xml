@@ -21,7 +21,7 @@
   </extension>
 </addon>
 
-<addon id="context.dandy.mediainfo" name="Media Info" version="1.1.2" provider-name="dandy">
+<addon id="context.dandy.mediainfo" name="Media Info" version="1.1.3" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.simplejson" version="2.0.10"/>
@@ -31,7 +31,7 @@
   <extension point="kodi.context.item" library="default.py">
     <item>
       <label>32000</label>
-      <visible>Container.Content(tvshows)|Container.Content(movies)|Container.Content(musicvideos)</visible>
+      <visible>Container.Content(tvshows)|Container.Content(movies)|Container.Content(musicvideos)|Pvr.HasTVChannels</visible>
     </item>
   </extension>
   <extension point="kodi.addon.metadata">
