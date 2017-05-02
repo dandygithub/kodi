@@ -21,7 +21,7 @@
   </extension>
 </addon>
 
-<addon id="context.dandy.mediainfo" name="Media Info" version="1.1.6" provider-name="dandy">
+<addon id="context.dandy.mediainfo" name="Media Info" version="1.1.7" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.simplejson" version="2.0.10"/>
@@ -35,8 +35,8 @@
   </extension>
   <extension point="kodi.addon.metadata">
     <platform>all</platform>
-    <summary lang="en">Open Media Info current item</summary>
-    <description lang="en">Open Media Info current item</description>
+    <summary lang="en">Open Media Info by current Item</summary>
+    <description lang="en">Open Media Info by current Item</description>
     <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
     <forum></forum>
     <source></source>

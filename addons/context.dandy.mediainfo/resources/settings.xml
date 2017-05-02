@@ -3,4 +3,5 @@
     <setting label="Edit title" type="bool" id="is_edit" default="true"/>
     <setting label="Edit condition patterns" type="text" id="patterns_edit" default=".*"/>
     <setting label="Delete patterns" type="text" id="patterns_delete" default="[(].+?[)],[[].+?[]]"/>
+    <setting label="Always get id from TMDB" type="bool" id="always_from_tmdb" default="true"/>
 </settings>
