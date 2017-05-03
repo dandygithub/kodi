@@ -160,9 +160,12 @@ def get_media_meta_movie_id():
                                  params=params,
                                  cache_days=1)
     except:
-        params = {k: encode_(v) for k, v in params.iteritems() if v}
-        response = tmdb.get_tmdb_data(url="search/%s?%s&" % (get_media_category(), urllib.urlencode(params)),
-                                      cache_days=1)
+        try:
+            params = {k: encode_(v) for k, v in params.iteritems() if v}
+            response = tmdb.get_tmdb_data(url="search/%s?%s&" % (get_media_category(), urllib.urlencode(params)),
+                                          cache_days=1)
+        except:
+            return None
     if response and (not (response == "Empty")):
         if len(response['results']) > 0:
             return select_media(response["results"])
@@ -238,7 +241,7 @@ def main():
         return
 
     if mode == "youtube":
-        xbmc.executebuiltin("RunScript(script.extendedinfo,info=youtubebrowser,id=%s)" % encode_((_title_ + " " + _year_ + " " + _media_type_ if _media_type_ != "none" else "").strip()))
+        xbmc.executebuiltin("RunScript(script.extendedinfo,info=youtubebrowser,id=%s)" % encode_((_title_ + " " + _year_ + " " + (_media_type_ if _media_type_ != "none" else "")).strip()))
     else:
         if check_params():
             xbmc.executebuiltin("RunScript(script.extendedinfo,%s)" % encode_(get_params()))
