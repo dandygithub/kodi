@@ -28,13 +28,14 @@ IS_EDIT = ADDON.getSetting('is_edit') if ADDON.getSetting('is_edit') else "true"
 PATTERNS_FOR_EDIT = ADDON.getSetting('patterns_edit') if ADDON.getSetting('patterns_edit') else ".*"
 PATTERNS_FOR_DELETE = ADDON.getSetting('patterns_delete') if ADDON.getSetting('patterns_delete') else "[(].+?[)],[[].+?[]]"
 ALWAYS_FROM_TMDB = ADDON.getSetting('always_from_tmdb') if ADDON.getSetting('always_from_tmdb') else "false"
+YOUTUBE_MODE = ADDON.getSetting('youtube_mode') if ADDON.getSetting('youtube_mode') else "false"
 
-TYPE_MEDIA_INFO = {"tv": "extendedtvinfo", "person": "extendedactorinfo", "movie": "extendedinfo"}
+TYPE_MEDIA_INFO = {"tv": "extendedtvinfo", "person": "extendedactorinfo", "movie": "extendedinfo", "none": "extendedinfo"}
 
 _title_ = ""
 _year_ = ""
 _movie_id_ = ""
-_media_type_ = "movie"
+_media_type_ = "none"
 _iddb_ = ""
 
 def get_title():
@@ -91,13 +92,31 @@ def get_date_by_tag(item):
         attr = attr.split("-")[0]
     return attr
 
+def get_item_title(item):
+    title = get_attr(item, "title", "<None>")
+    if title == "<None>":
+        title = get_attr(item, "name", "<None>")
+    return title
+
+def select_dialog_type():
+    types = ["Info about Media", "YouTube Videos"]
+    if YOUTUBE_MODE == "true":
+        ret = xbmcgui.Dialog().select("Select dialog type", types)
+        if ret == 1:
+            return "youtube"
+        else:
+            if ret < 0:
+                return "none"
+            else:
+                return "info"
+    else:                
+        return "info"
+
 def select_media(data):
     global _title_, _year_, _media_type_
     media = []
     for item in data:
-        title = get_attr(item, "title", "<None>")
-        if title == "<None>":
-            title = get_attr(item, "name", "<None>")
+        title = get_item_title(item)
         title_orig = get_attr(item, "original_title", title)
         media_type = get_attr(item, "media_type", "movie")
         date = get_date_by_tag(item)
@@ -114,9 +133,7 @@ def select_media(data):
         if ret >= 0:
             _year_ = get_date_by_tag(data[ret])
             _media_type_ = get_attr(data[ret], "media_type", "movie")
-            _title_ = get_attr(data[ret], "title", "<None>")
-            if _title_ == "<None>":
-                _title_ = get_attr(data[ret], "name", "<None>")
+            _title_ = get_item_title(data[ret])
             return str(data[ret]["id"])
         else:
             return None
@@ -124,10 +141,10 @@ def select_media(data):
         return None
 
 def get_media_category():
-    if xbmc.getCondVisibility("Container.Content(tvshows)"):
-        return "tv"
-    else:
-        return "multi"
+#    if xbmc.getCondVisibility("Container.Content(tvshows)"):
+#        return "tv"
+#    else:
+    return "multi"
 
 def get_media_meta_movie_id():
     global _year_, _media_type_
@@ -164,7 +181,7 @@ def get_params():
     if _year_ != "":
         params = params + ",year=%s" % _year_
     if _iddb_  != "":
-        params = params + ",dbid=%s" % xbmc.getInfoLabel("ListItem.DBID")
+        params = params + ",dbid=%s" % _iddb_
     if xbmc.getInfoLabel("ListItem.Property(id)") and (_iddb_  == ""):
         params = params + ",id=%s" % xbmc.getInfoLabel("ListItem.Property(id)")
     elif _movie_id_ != "":
@@ -198,13 +215,27 @@ def show_message(msg):
 def main():
     global _title_, _year_, _movie_id_, _iddb_
     _iddb_ = get_iddb()
+
     if (_iddb_ == "") or (ALWAYS_FROM_TMDB == "true"):
         _title_ = get_media_title()
         _iddb_ = ""
         _year_ = get_media_meta_year()
         _movie_id_ = get_media_meta_movie_id()
-    if check_params():
-        xbmc.executebuiltin("RunScript(script.extendedinfo,%s)" % get_params())
+        if _movie_id_ == None:
+            show_message("Error prepare data - no media")
+            return
+    else:
+        _title_ = get_title()
+
+    mode = select_dialog_type()
+    if mode == "none":
+        return
+
+    if mode == "youtube":
+        xbmc.executebuiltin("RunScript(script.extendedinfo,info=youtubebrowser,id=%s)" % ((_title_ + " " + _year_ + " " + _media_type_ if _media_type_ != "none" else "").strip()))
+    else:
+        if check_params():
+            xbmc.executebuiltin("RunScript(script.extendedinfo,%s)" % get_params())
 
 if __name__ == '__main__':
     main()
