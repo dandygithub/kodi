@@ -193,20 +193,6 @@ class HdrezkaTV():
                     item.setSubtitles(urls)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
-#<ul id="translators-list" class="b-translators__list"><li title="Kerob (Coldfilm)" class="b-translator__item active" data-translator_id="35">Kerob (Coldfilm)</li><li title="ViruseProject" class="b-translator__item" data-translator_id="47">ViruseProject</li></ul>
-
-#http://hdrezka.me/ajax/get_cdn_series/?t=1491681866585
-
-#id:24193
-#translator_id:47
-
-#Host:hdrezka.me
-#Origin:http://hdrezka.me
-#Referer:http://hdrezka.me/series/thriller/24193-v-rozyske-ty-v-rozyske.html
-#User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36
-#X-Requested-With:XMLHttpRequest
-
-#{"success":true,"message":"","seasons":"\u003Cli class=\"b-simple_season__item active\" data-restricted=\"0\" data-tab_id=\"1\"\u003E\u0421\u0435\u0437\u043e\u043d 1\u003C\/li\u003E","episodes":"\u003Cul id=\"simple-episodes-list-1\" class=\"b-simple_episodes__list clearfix\"\u003E\u003Cli class=\"b-simple_episode__item active\" data-restricted=\"0\" data-id=\"24193\" data-season_id=\"1\" data-episode_id=\"1\"\u003E\u0421\u0435\u0440\u0438\u044f 1\u003C\/li\u003E\u003Cli class=\"b-simple_episode__item\" data-restricted=\"0\" data-id=\"24193\" data-season_id=\"1\" data-episode_id=\"2\"\u003E\u0421\u0435\u0440\u0438\u044f 2\u003C\/li\u003E\u003Cli class=\"b-simple_episode__item\" data-restricted=\"0\" data-id=\"24193\" data-season_id=\"1\" data-episode_id=\"3\"\u003E\u0421\u0435\u0440\u0438\u044f 3\u003C\/li\u003E\u003Cli class=\"b-simple_episode__item\" data-restricted=\"0\" data-id=\"24193\" data-season_id=\"1\" data-episode_id=\"4\"\u003E\u0421\u0435\u0440\u0438\u044f 4\u003C\/li\u003E\u003C\/ul\u003E","url":"http:\/\/s4.cdnapponline.com\/serial\/29ae8190e45bed1f9e5adfb1f4fd4dbf\/iframe","player":"\u003Ciframe id=\"cdn-player\" src=\"http:\/\/s4.cdnapponline.com\/serial\/29ae8190e45bed1f9e5adfb1f4fd4dbf\/iframe?nocontrols=1&season=1&episode=1\" name=\"it1491681871\" width=\"640\" height=\"360\" frameborder=\"0\" allowfullscreen webkitallowfullscreen mozallowfullscreen oallowfullscreen msallowfullscreen\u003E\u003C\/iframe\u003E"}
 
     def selectTranslator(self, content, post_id):
         iframe0 = common.parseDOM(content, 'iframe', ret='src')[0]
@@ -252,9 +238,6 @@ class HdrezkaTV():
         playlist = common.parseDOM(episodes, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
         return iframe, playlist
 
-#player=u'<iframe id="cdn-player" src="http://s4.cdnapponline.com/serial/df88dab4dcdde657bc7b6142b2c22afc/iframe?nocontrols=1&season=1&episode=1" name="it1491779049" width="640" height="360" frameborder="0" allowfullscreen webkitallowfullscreen mozallowfullscreen oallowfullscreen msallowfullscreen></iframe>'
-#seasons=u'<li class="b-simple_season__item active" data-restricted="0" data-tab_id="1">\u0421\u0435\u0437\u043e\u043d 1</li><li class="b-simple_season__item" data-restricted="0" data-tab_id="3">\u0421\u0435\u0437\u043e\u043d 3</li><li class="b-simple_season__item" data-restricted="0" data-tab_id="4">\u0421\u0435\u0437\u043e\u043d 4</li>'
-#episodes=u'<ul id="simple-episodes-list-1" class="b-simple_episodes__list clearfix"><li class="b-simple_episode__item active" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="1">\u0421\u0435\u0440\u0438\u044f 1</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="2">\u0421\u0435\u0440\u0438\u044f 2</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="3">\u0421\u0435\u0440\u0438\u044f 3</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="4">\u0421\u0435\u0440\u0438\u044f 4</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="5">\u0421\u0435\u0440\u0438\u044f 5</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="6">\u0421\u0435\u0440\u0438\u044f 6</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="7">\u0421\u0435\u0440\u0438\u044f 7</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="8">\u0421\u0435\u0440\u0438\u044f 8</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="9">\u0421\u0435\u0440\u0438\u044f 9</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="10">\u0421\u0435\u0440\u0438\u044f 10</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="11">\u0421\u0435\u0440\u0438\u044f 11</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="12">\u0421\u0435\u0440\u0438\u044f 12</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="1" data-episode_id="13">\u0421\u0435\u0440\u0438\u044f 13</li></ul><ul id="simple-episodes-list-3" class="b-simple_episodes__list clearfix" style="display: none;"><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="1">\u0421\u0435\u0440\u0438\u044f 1</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="2">\u0421\u0435\u0440\u0438\u044f 2</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="3">\u0421\u0435\u0440\u0438\u044f 3</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="4">\u0421\u0435\u0440\u0438\u044f 4</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="5">\u0421\u0435\u0440\u0438\u044f 5</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="6">\u0421\u0435\u0440\u0438\u044f 6</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="7">\u0421\u0435\u0440\u0438\u044f 7</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="8">\u0421\u0435\u0440\u0438\u044f 8</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="9">\u0421\u0435\u0440\u0438\u044f 9</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="10">\u0421\u0435\u0440\u0438\u044f 10</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="11">\u0421\u0435\u0440\u0438\u044f 11</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="12">\u0421\u0435\u0440\u0438\u044f 12</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="13">\u0421\u0435\u0440\u0438\u044f 13</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="14">\u0421\u0435\u0440\u0438\u044f 14</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="15">\u0421\u0435\u0440\u0438\u044f 15</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="3" data-episode_id="16">\u0421\u0435\u0440\u0438\u044f 16</li></ul><ul id="simple-episodes-list-4" class="b-simple_episodes__list clearfix" style="display: none;"><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="1">\u0421\u0435\u0440\u0438\u044f 1</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="2">\u0421\u0435\u0440\u0438\u044f 2</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="3">\u0421\u0435\u0440\u0438\u044f 3</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="4">\u0421\u0435\u0440\u0438\u044f 4</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="5">\u0421\u0435\u0440\u0438\u044f 5</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="6">\u0421\u0435\u0440\u0438\u044f 6</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="7">\u0421\u0435\u0440\u0438\u044f 7</li><li class="b-simple_episode__item" data-restricted="0" data-id="1984" data-season_id="4" data-episode_id="8">\u0421\u0435\u0440\u0438\u044f 8</li></ul>'
 
     def show(self, url):
         print "Get video %s" % url
@@ -359,10 +342,12 @@ class HdrezkaTV():
     def getAccessAttrs(self, content):
         attrs = {}
         purl = content.split("var window_surl = '")[-1].split("';")[0]
+        h_attr = content.split("'X-Frame-Commit': '")[-1].split("'")[0]
         attrs['mw_key'] = content.split("var mw_key = '")[-1].split("';")[0] 
         attrs['video_token'] = content.split("video_token: '")[-1].split("',")[0] 
         attrs['mw_pid'] = content.split("mw_pid: ")[-1].split(",")[0] 
         attrs['p_domain_id'] = content.split("p_domain_id: ")[-1].split(",")[0] 
+        attrs['content_type'] = content.split("content_type: '")[-1].split("',")[0] 
         attrs['ad_attr'] = '0'
         attrs['debug'] = 'false'
 
@@ -370,18 +355,18 @@ class HdrezkaTV():
 
         attrs[key] = value
 
-        return purl, attrs
+        return purl, h_attr, attrs
 
 
     def get_video_link_from_iframe(self, url, mainurl):
 
-        playlist_domain = 's4.cdnapponline.com'
+        playlist_domain = 'streamblast.cc'
+        playlist_domain2 = 's1.cdnapponline.com'
 
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
             "Referer": mainurl
         }
-
         request = urllib2.Request(url, "", headers)
         request.get_method = lambda: 'GET'
         response = urllib2.urlopen(request).read()
@@ -390,31 +375,32 @@ class HdrezkaTV():
         if "var subtitles = JSON.stringify(" in response:
             subtitles = response.split("var subtitles = JSON.stringify(")[-1].split(");")[0]
 
-        purl, values = self.getAccessAttrs(response)
+        purl, h_attr, values = self.getAccessAttrs(response)
 
         headers = {
-            "Host": playlist_domain,
-            "Origin": "http://" + playlist_domain,
+            "Host": playlist_domain2,
+            "Origin": "http://" + playlist_domain2,
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
             "Referer": url,
-            "X-Requested-With": "XMLHttpRequest"
+            "X-Frame-Commit": h_attr,
+            "X-Requested-With": "XMLHttpRequest",
         }
-
-        request = urllib2.Request('http://' + playlist_domain + purl, urllib.urlencode(values), headers)
+        request = urllib2.Request('http://' + playlist_domain2 + purl, urllib.urlencode(values), headers)
         response = urllib2.urlopen(request).read()
 
         data = json.loads(response.decode('unicode-escape'))
         playlisturl = data['mans']['manifest_m3u8']
-        response = common.fetchPage({"link": playlisturl})['content']
-#EXTM3U
-                                            #EXT-X-STREAM-INF:RESOLUTION=640x360,BANDWIDTH=376000
-#                                            http://185.38.12.60/sec/1490124744/363937351e999321d7e55abd91062b15ad2e2fce4e564a70/ivs/d3/b8/c15ce5c350bb/hls/tracks-3,4/index.m3u8
-                                            #EXT-X-STREAM-INF:RESOLUTION=852x480,BANDWIDTH=571000
-#                                            http://185.38.12.60/sec/1490124744/33323039e230fadb41f8ceec3f073d0728c48230a8add77d/ivs/d3/b8/c15ce5c350bb/hls/tracks-2,4/index.m3u8
-                                            #EXT-X-STREAM-INF:RESOLUTION=1280x720,BANDWIDTH=1038000
-#                                            http://185.38.12.60/sec/1490124744/34393338c60b1ea171fc69d5612ae0717389dcf0e7e30f6a/ivs/d3/b8/c15ce5c350bb/hls/tracks-1,4/index.m3u8
 
-        #{"mans":{"manifest_f4m":"http://streamblast.cc/video/e037e4450736bb38/manifest.f4m?cd=0&expired=1490102271&mw_pid=157&signature=e0a48062dc0a3b63c7ffcd9f2de08ba0","manifest_m3u8":"http://streamblast.cc/video/e037e4450736bb38/index.m3u8?cd=0&expired=1490102271&mw_pid=157&signature=e0a48062dc0a3b63c7ffcd9f2de08ba0","manifest_dash":"http://streamblast.cc/video/e037e4450736bb38/manifest.mpd?cd=0&expired=1490102271&mw_pid=157&signature=e0a48062dc0a3b63c7ffcd9f2de08ba0","manifest_mp4":null}}
+        headers = {
+            "Host": playlist_domain,
+            "Origin": "http://" + playlist_domain2,
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
+        }
+
+        request = urllib2.Request(playlisturl, "", headers)
+        request.get_method = lambda: 'GET'
+        response = urllib2.urlopen(request).read()
+
         urls = re.compile("http:\/\/.*?\n").findall(response)
         manifest_links = {}
         for i, url in enumerate(urls):
@@ -513,27 +499,6 @@ class HdrezkaTV():
             request = urllib2.Request(self.url + argStr, "", headers)
             request.get_method = lambda: 'GET'
             response = urllib2.urlopen(request).read()
-
-#<div class="b-content__inline b-content__search_wrapper"> 
-#<div class="b-content__inline_inner b-content__inline_inner_mainprobar clearfix"> 
-#<div class="b-content__inline_items"> 
-#<div class="b-content__inline_item" data-id="1984" data-url="http://hdrezka.me/series/fiction/1984-sotnya.html"> 
-#<div class="b-content__inline_item-cover"> 
-#<a href="http://hdrezka.me/series/fiction/1984-sotnya.html"> 
-#<img src="http://static.hdrezka.me/i/2014/8/26/r98bc8a403718bx87e98k.jpg" height="250" width="166" alt="Сотня" /> 
-#<span class="cat series">
-#<i class="entity">Сериал</i>
-#<i class="icon"></i>
-#</span> 
-#<span class="info">4 сезон, 6 серия</span> 
-#<i class="i-sprt play"></i> 
-#</a> 
-#<i class="trailer show-trailer" data-id="1984" data-full="1"><b>Смотреть трейлер</b></i> </div> 
-#<div class="b-content__inline_item-link"> 
-#<a href="http://hdrezka.me/series/fiction/1984-sotnya.html">Сотня</a> 
-#<div>2014 - ..., США, Фантастика</div> 
-#</div>
-#</div>
 
             content = common.parseDOM(response, "div", attrs={"class": "b-content__inline_items"})
             videos = common.parseDOM(content, "div", attrs={"class": "b-content__inline_item"})
