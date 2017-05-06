@@ -5,4 +5,5 @@
     <setting label="Delete patterns" type="text" id="patterns_delete" default="[(].+?[)],[[].+?[]]"/>
     <setting label="Always get id from TMDB" type="bool" id="always_from_tmdb" default="true"/>
     <setting label="Add YouTube videos mode" type="bool" id="youtube_mode" default="false"/>
+    <setting label="Add MetalliQ mode" type="bool" id="metalliq_mode" default="false"/>
 </settings>
