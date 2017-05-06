@@ -29,6 +29,7 @@ PATTERNS_FOR_EDIT = ADDON.getSetting('patterns_edit') if ADDON.getSetting('patte
 PATTERNS_FOR_DELETE = ADDON.getSetting('patterns_delete') if ADDON.getSetting('patterns_delete') else "[(].+?[)],[[].+?[]]"
 ALWAYS_FROM_TMDB = ADDON.getSetting('always_from_tmdb') if ADDON.getSetting('always_from_tmdb') else "false"
 YOUTUBE_MODE = ADDON.getSetting('youtube_mode') if ADDON.getSetting('youtube_mode') else "false"
+METALLIQ_MODE = ADDON.getSetting('metalliq_mode') if ADDON.getSetting('metalliq_mode') else "false"
 
 TYPE_MEDIA_INFO = {"tv": "extendedtvinfo", "person": "extendedactorinfo", "movie": "extendedinfo", "none": "extendedinfo"}
 
@@ -112,6 +113,20 @@ def select_dialog_type():
     else:                
         return "info"
 
+def select_process_type():
+    types = ["This Add-on", "[COLOR ff0084ff]M[/COLOR]etalli[COLOR ff0084ff]Q[/COLOR]"]
+    if (METALLIQ_MODE == "true") and (xbmc.getCondVisibility("System.HasAddon(plugin.video.metalliq)") == True):
+        ret = xbmcgui.Dialog().select("Select process type", types)
+        if ret == 1:
+            return "metalliq"
+        else:
+            if ret < 0:
+                return "none"
+            else:
+                return "this"
+    else:                
+        return "this"
+
 def select_media(data):
     global _title_, _year_, _media_type_
     media = []
@@ -162,6 +177,7 @@ def get_media_meta_movie_id():
     except:
         try:
             params = {k: encode_(v) for k, v in params.iteritems() if v}
+            xbmc.log("url=" + ("search/%s?%s&" % (get_media_category(), urllib.urlencode(params))))
             response = tmdb.get_tmdb_data(url="search/%s?%s&" % (get_media_category(), urllib.urlencode(params)),
                                           cache_days=1)
         except:
@@ -223,28 +239,34 @@ def show_message(msg):
 
 def main():
     global _title_, _year_, _movie_id_, _iddb_
+
     _iddb_ = get_iddb()
 
     if (_iddb_ == "") or (ALWAYS_FROM_TMDB == "true"):
         _title_ = get_media_title()
         _iddb_ = ""
         _year_ = get_media_meta_year()
-        _movie_id_ = get_media_meta_movie_id()
-        if _movie_id_ == None:
-            show_message("Error prepare data - no media")
-            return
     else:
         _title_ = get_title()
+
+    mode = select_process_type()
+    if mode == "none":
+        return
+    elif mode == "metalliq":
+        url = "plugin://plugin.video.metalliq/movies/tmdb/search_term/%s/1" % _title_
+        xbmc.executebuiltin("ActivateWindow(videos,%s,return)" % url)
+        return
 
     mode = select_dialog_type()
     if mode == "none":
         return
-
-    if mode == "youtube":
+    elif mode == "youtube":
         xbmc.executebuiltin("RunScript(script.extendedinfo,info=youtubebrowser,id=%s)" % encode_((_title_ + " " + _year_ + " " + (_media_type_ if _media_type_ != "none" else "")).strip()))
-    else:
-        if check_params():
-            xbmc.executebuiltin("RunScript(script.extendedinfo,%s)" % encode_(get_params()))
+        return
+
+    _movie_id_ = get_media_meta_movie_id()
+    if check_params():
+        xbmc.executebuiltin("RunScript(script.extendedinfo,%s)" % encode_(get_params()))
 
 if __name__ == '__main__':
     main()
