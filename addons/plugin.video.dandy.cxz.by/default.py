@@ -46,12 +46,14 @@ class PopcornBY():
         self.log("Handle: %d" % self.handle)
         self.log("Params: %s" % self.params)
 
+        xbmc.log("params=" + repr(self.params))
         params = common.getParameters(self.params)
+
 
         mode = params['mode'] if 'mode' in params else None
         url = urllib.unquote_plus(params['url']) if 'url' in params else None
         url2 = urllib.unquote_plus(params['url2']) if 'url2' in params else None
-        id_kp = params['id_kp'] if 'id_kp' in params else None
+        id_kp = params['id_kp'] if ('id_kp' in params) and (params['id_kp'] != '0') else None
         title = urllib.unquote_plus(params['title']) if 'title' in params else None
         season = params['season'] if 'season' in params else None
         image = urllib.unquote_plus(params['image']) if 'image' in params else None
@@ -87,11 +89,11 @@ class PopcornBY():
         return
 
         uri = sys.argv[0] + '?mode=kino&url=%s'%(self.url + '/online.php')
-        item = xbmcgui.ListItem("[COLOR=FFFFD700]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=yellow]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=tv' 
-        item = xbmcgui.ListItem("[COLOR=FFFFD700]%s[/COLOR]" % self.language(1001), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=yellow]%s[/COLOR]" % self.language(1001), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'files')
@@ -99,23 +101,23 @@ class PopcornBY():
 
     def menu_kino(self):
         uri = sys.argv[0] + '?mode=search'
-        item = xbmcgui.ListItem("[B][COLOR=FF00FF00]%s[/COLOR][/B]" % self.language(2000), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[B][COLOR=lightgreen]%s[/COLOR][/B]" % self.language(2000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=items&url=%s' % (self.url + "/stream/?yare=0000") 
-        item = xbmcgui.ListItem("[COLOR=FFFFD700]%s[/COLOR]" % self.language(3000), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=orange]%s[/COLOR]" % self.language(3000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=items&url=%s' % (self.url + "/stream/?yare=0001") 
-        item = xbmcgui.ListItem("[COLOR=FFFFD700]%s[/COLOR]" % self.language(3001), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=orange]%s[/COLOR]" % self.language(3001), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=items&url=%s' % (self.url + "/stream/?yare=") 
-        item = xbmcgui.ListItem("[COLOR=FFFFD700]%s[/COLOR]" % self.language(3002), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=orange]%s[/COLOR]" % self.language(3002), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=year' 
-        item = xbmcgui.ListItem("[COLOR=FFFFD700]%s[/COLOR]" % self.language(3003), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=orange]%s[/COLOR]" % self.language(3003), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'files')
@@ -213,11 +215,12 @@ class PopcornBY():
                 except:
                     continue
                 uri = sys.argv[0] + '?mode=items&url=%s' % (self.url + "/stream/?yare=" + year_)
-                item = xbmcgui.ListItem("[COLOR=FFFFD700]%s[/COLOR]" % year_, iconImage=self.icon, thumbnailImage=self.icon)
+                item = xbmcgui.ListItem("[COLOR=yellow]%s[/COLOR]" % year_, iconImage=self.icon, thumbnailImage=self.icon)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
+
 
     def decorate_title(self, title):
         part1 = title.split("(")[0].strip()
@@ -227,7 +230,8 @@ class PopcornBY():
         for i, parti in enumerate(parts.split(" ")):
             part3 = part3 + parti + (", " if (i < len(parts.split(" "))-1) else "")
         part2 = part2 + (", " if (part3 != "") else "")
-        return "%s [COLOR=55FFFFFF][%s%s][/COLOR]" % (part1, part2, part3)
+        return "%s [COLOR=gray][%s%s][/COLOR]" % (part1, part2, part3)
+
 
     def items(self, url, page):
         print "*** Get items %s" % url
@@ -242,27 +246,28 @@ class PopcornBY():
 
             if (page == 1):
                 uri = sys.argv[0] + '?mode=searchcategory&url=%s' % (url)
-                item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(2000), thumbnailImage=self.icon)
+                item = xbmcgui.ListItem("[COLOR=lightgreen]%s[/COLOR]" % self.language(2000), thumbnailImage=self.icon)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
             for i in range((page-1)*ITEMS_PER_PAGE if page == 1 else (page-1)*ITEMS_PER_PAGE-1, page*ITEMS_PER_PAGE):
                 if i <= (len(items) - 1):
                     title = self.decorate_title(self.strip(items[i]))
                     links = common.parseDOM(items[i], "a", ret="href")
-                    id_kp = items[i].split('onclick="id_kp(')[-1].split(');"')[0]
-                    image = "http://st.kp.yandex.net/images/film/%s.jpg" % (id_kp) if id_kp else self.icon
-                    uri = sys.argv[0] + '?mode=show&url=%s&url2=%s&id_kp=%s&title=%s' % (links[0], (links[1] if (len(links) > 1) else ""),  id_kp, title)
+
+                    id_kp = (items[i].split('onclick="id_kp(')[-1].split(');"')[0]) if ("id_kp" in items[i]) else "0"
+                    image = "http://st.kp.yandex.net/images/film/%s.jpg" % (id_kp) if id_kp and (id_kp != '0') else self.icon
+                    uri = sys.argv[0] + '?mode=show&url=%s&url2=%s&id_kp=%s&title=%s' % (links[0], (links[1] if (len(links) > 1) else "*"),  id_kp, title)
                     item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
             if page > 1:
                 uri = sys.argv[0] + '?mode=items&url=%s&page=%d' % (url, 0)
-                item = xbmcgui.ListItem("[COLOR=FFFFD700]%s[/COLOR]" % self.language(4001), thumbnailImage=self.inext, iconImage=self.inext)
+                item = xbmcgui.ListItem("[COLOR=orange]%s[/COLOR]" % self.language(4001), thumbnailImage=self.inext, iconImage=self.inext)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
             if page*ITEMS_PER_PAGE < len(items):
                 uri = sys.argv[0] + '?mode=items&url=%s&page=%d' % (url, page + 1)
-                item = xbmcgui.ListItem(("[COLOR=FFFFD700]%s[/COLOR]" % self.language(4000)) % (page+1, len(items)//ITEMS_PER_PAGE + 1), thumbnailImage=self.inext, iconImage=self.inext)
+                item = xbmcgui.ListItem(("[COLOR=orange]%s[/COLOR]" % self.language(4000)) % (page+1, len(items)//ITEMS_PER_PAGE + 1), thumbnailImage=self.inext, iconImage=self.inext)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'movies')
@@ -303,7 +308,7 @@ class PopcornBY():
 
 
     def get_media_info(self, id_kp, title_):
-        image = "http://st.kp.yandex.net/images/film/%s.jpg" % (id_kp)
+        image = "http://st.kp.yandex.net/images/film/%s.jpg" % (id_kp) if id_kp else self.icon
         response = common.fetchPage({"link": "http://cxz.by/getmovie.php?kp_id=%s" % (id_kp)})
         if response["status"] != 200:
             return
@@ -476,7 +481,7 @@ class PopcornBY():
         if manifest_links:
             list = sorted(manifest_links.iteritems(), key=itemgetter(0))
             for quality, link in list:
-                film_title = "%s [COLOR=FF00FF00][%s][/COLOR]" % (title, str(quality) + '')
+                film_title = "%s [COLOR=green][%s][/COLOR]" % (title, str(quality) + '')
                 uri = sys.argv[0] + '?mode=play&url=%s&pid=1' % urllib.quote(link)
                 item = xbmcgui.ListItem(film_title, iconImage=image)
                 item.setInfo(type='Video', infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
@@ -541,7 +546,7 @@ class PopcornBY():
                 if manifest_links:
                     list = sorted(manifest_links.iteritems(), key=itemgetter(0))
                     for quality, link in list:
-                        film_title = "%s [COLOR=FF00FF00][%s][/COLOR]" % (title, str(quality) + '')
+                        film_title = "%s [COLOR=green][%s][/COLOR]" % (title, str(quality) + '')
                         uri = sys.argv[0] + '?mode=play&url=%s&pid=1' % urllib.quote(link)
                         item = xbmcgui.ListItem(film_title, iconImage=image)
                         item.setInfo(type='Video', infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
@@ -566,7 +571,7 @@ class PopcornBY():
                     urlq = content.split('"' + quality + '":{"src":"')[-1].split('",')[0].replace("\/", "/")
                     if not (urlq in urlqlist):
                         urlqlist.append(urlq)
-                        link_title = "%s [COLOR=FF00FF00][%s][/COLOR]" % (title, quality)
+                        link_title = "%s [COLOR=green][%s][/COLOR]" % (title, quality)
                         uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote_plus(urlq)
                         item = xbmcgui.ListItem(link_title,  iconImage=image, thumbnailImage=image)
                         item.setInfo(type='Video', infoLabels={"title": link_title, "genre": genre, "plot": description})
@@ -638,9 +643,9 @@ class PopcornBY():
                     title = self.decorate_title(self.strip(itemm))
                     links = common.parseDOM(itemm, "a", ret="href")
                     if keyword.decode('utf-8').upper() in title.upper(): 
-                        id_kp = itemm.split('onclick="id_kp(')[-1].split(');"')[0]
-                        image = "http://st.kp.yandex.net/images/film/%s.jpg" % (id_kp) if id_kp else self.icon
-                        uri = sys.argv[0] + '?mode=show&url=%s&url2=%s&id_kp=%s&title=%s' % (links[0], (links[1] if (len(links) > 1) else ""), id_kp, title)
+                        id_kp = (itemm.split('onclick="id_kp(')[-1].split(');"')[0]) if ("id_kp" in itemm) else "0"
+                        image = "http://st.kp.yandex.net/images/film/%s.jpg" % (id_kp) if id_kp and (id_kp != '0') else self.icon
+                        uri = sys.argv[0] + '?mode=show&url=%s&url2=%s&id_kp=%s&title=%s' % (links[0], (links[1] if (len(links) > 1) else "*"), id_kp, title)
                         item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
                         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
     
@@ -676,11 +681,11 @@ class PopcornBY():
                 add = title.split("(")[-1].split(")")[0]
                 add = self.strip(add + ", " + item_.split("<i>")[-1].split("</i>")[0].replace(":", ""))
                 title = self.strip(item_.split("</i>")[-1].split("(")[0].strip())
-                title = "%s [COLOR=55FFFFFF][%s][/COLOR]" % (title, add)
+                title = "%s [COLOR=gray][%s][/COLOR]" % (title, add)
                 id_kp = ""
                 if len(id_kps) >= i+1:
-                    id_kp = id_kps[i].split('id_kp(')[-1].split(')')[0]
-                image = "http://st.kp.yandex.net/images/film/%s.jpg" % (id_kp) if id_kp else self.icon
+                    id_kp = (id_kps[i].split('id_kp(')[-1].split(')')[0]) if ('id_kp' in id_kps[i]) else "0"
+                image = "http://st.kp.yandex.net/images/film/%s.jpg" % (id_kp) if id_kp and (id_kp != '0') else self.icon
                 uri = sys.argv[0] + '?mode=show&url=%s&id_kp=%s&title=%s' % (links[i], id_kp, title)
                 item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
