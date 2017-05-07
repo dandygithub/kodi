@@ -59,6 +59,22 @@
   </extension>
 </addon>
 
+<addon id="plugin.video.dandy.cxz.by" name="Popcorn BY" version="0.0.4" provider-name="dandy">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.xbmc.helpers" version="2.0.0"/>
+    <import addon="script.module.videohosts" version="1.0.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Фильмы, сериалы и ТВ от Кукуруза BY</summary>
+    <description>Фильмы, сериалы и ТВ от Кукуруза BY</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
 <addon id="plugin.video.dandy.rutube.ru" name="RuTube.ru (UnifiedSearch)" version="1.1.2" provider-name="dandy, MrStealth">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -244,5 +260,23 @@
 		<disclaimer>Add-ons for home usage in Kodi</disclaimer>
 		<platform>all</platform>
 	</extension>
+</addon>
+
+<addon id="script.module.videohosts"
+   name="VideoHosts"
+   version="1.0.0"
+   provider-name="dandy">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.module" library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">VideoHosts</summary>
+    <description lang="en">VideoHosts</description>
+    <disclaimer lang="en"></disclaimer>
+    <language></language>
+    <license>GNU GPL v.3</license>
+  </extension>
 </addon>
 </addons>

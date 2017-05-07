@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+    <string id="1000">Кино</string>
+    <string id="1001">ТВ</string>
+
+    <string id="2000">Поиск</string>
+
+    <string id="3000">Сериалы</string>
+    <string id="3001">Мультфильмы</string>
+    <string id="3002">Новинки</string>
+    <string id="3003">Год</string>
+
+    <string id="4000">Следующая страница [%s/%s] ...</string>
+    <string id="4001">В начало ...</string>
+</strings>

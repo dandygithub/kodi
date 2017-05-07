@@ -1,0 +1,4 @@
+<settings>
+  <setting type="bool" id="united_search" visible="false" default="true" />
+  <setting type="text" id="us_command" visible="false" default="mode=search&keyword=" />
+</settings>
