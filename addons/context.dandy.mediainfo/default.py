@@ -249,6 +249,8 @@ def main():
     else:
         _title_ = get_title()
 
+    if _title_ == "":
+        return
     mode = select_process_type()
     if mode == "none":
         return
@@ -261,7 +263,7 @@ def main():
     if mode == "none":
         return
     elif mode == "youtube":
-        xbmc.executebuiltin("RunScript(script.extendedinfo,info=youtubebrowser,id=%s)" % encode_((_title_ + " " + _year_ + " " + (_media_type_ if _media_type_ != "none" else "")).strip()))
+        xbmc.executebuiltin("RunScript(script.extendedinfo,info=youtubebrowser,id=%s)" % encode_((decode_(_title_) + " " + _year_ + " " + (_media_type_ if _media_type_ != "none" else "")).strip()))
         return
 
     _movie_id_ = get_media_meta_movie_id()
