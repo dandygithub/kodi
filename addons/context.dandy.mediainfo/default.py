@@ -256,7 +256,7 @@ def main():
         return
     elif mode == "metalliq":
         url = "plugin://plugin.video.metalliq/movies/tmdb/search_term/%s/1" % _title_
-        xbmc.executebuiltin("ActivateWindow(videos,%s,return)" % url)
+        xbmc.executebuiltin("ActivateWindow(videos,%s,return)" % encode_(url))
         return
 
     mode = select_dialog_type()
