@@ -32,6 +32,6 @@ def get_access_attrs(content):
 
     values[key] = value
 
-    attrs['X-Frame-Commit'] = content.split("'X-Frame-Commit': '")[-1].split("'")[0]
+    attrs['X-User-Story'] = content.split("'X-User-Story': '")[-1].split("'")[0]
 
     return values, attrs

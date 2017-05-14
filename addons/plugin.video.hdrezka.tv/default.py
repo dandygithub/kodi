@@ -21,6 +21,8 @@ try:
 except:
     pass
 
+from videohosts import moonwalk
+
 QUALITY_TYPES = (360, 480, 720, 1080)
 
 class HdrezkaTV():
@@ -328,36 +330,6 @@ class HdrezkaTV():
         return { 'rating' : rating, 'description' : description }
 
 
-    def getKey(self, content):
-        key = ''
-        value = '' 
-        try:  
-            script = content.split("setTimeout(function()")[-1].split("</script>")[0]    
-            key = script.split("['")[-1].split("'] = '")[0]    
-            value = script.split("'] = '")[-1].split("';")[0]    
-        except:
-            pass 
-        return key, value
-
-    def getAccessAttrs(self, content):
-        attrs = {}
-        purl = content.split("var window_surl = '")[-1].split("';")[0]
-        h_attr = content.split("'X-Frame-Commit': '")[-1].split("'")[0]
-        attrs['mw_key'] = content.split("var mw_key = '")[-1].split("';")[0] 
-        attrs['video_token'] = content.split("video_token: '")[-1].split("',")[0] 
-        attrs['mw_pid'] = content.split("mw_pid: ")[-1].split(",")[0] 
-        attrs['p_domain_id'] = content.split("p_domain_id: ")[-1].split(",")[0] 
-        attrs['content_type'] = content.split("content_type: '")[-1].split("',")[0] 
-        attrs['ad_attr'] = '0'
-        attrs['debug'] = 'false'
-
-        key, value = self.getKey(content) 
-
-        attrs[key] = value
-
-        return purl, h_attr, attrs
-
-
     def get_video_link_from_iframe(self, url, mainurl):
 
         playlist_domain = 'streamblast.cc'
@@ -375,17 +347,20 @@ class HdrezkaTV():
         if "var subtitles = JSON.stringify(" in response:
             subtitles = response.split("var subtitles = JSON.stringify(")[-1].split(");")[0]
 
-        purl, h_attr, values = self.getAccessAttrs(response)
+        ###################################################
+        values, attrs = moonwalk.get_access_attrs(response)
+        ###################################################
 
         headers = {
             "Host": playlist_domain2,
             "Origin": "http://" + playlist_domain2,
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
             "Referer": url,
-            "X-Frame-Commit": h_attr,
             "X-Requested-With": "XMLHttpRequest",
         }
-        request = urllib2.Request('http://' + playlist_domain2 + purl, urllib.urlencode(values), headers)
+        headers.update(attrs)
+
+        request = urllib2.Request('http://' + playlist_domain2 + attrs["purl"], urllib.urlencode(values), headers)
         response = urllib2.urlopen(request).read()
 
         data = json.loads(response.decode('unicode-escape'))

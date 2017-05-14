@@ -1,12 +1,13 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="script.module.videohosts"
    name="VideoHosts"
-   version="1.0.0"
+   version="1.0.1"
    provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.module" library="lib" />
+  <extension point='xbmc.service' library="default.py" />
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
     <summary lang="en">VideoHosts</summary>
