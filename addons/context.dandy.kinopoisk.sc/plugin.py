@@ -53,7 +53,7 @@ def process(kp_id, media_title, image):
     list_li = []
     list_li = search.process(kp_id)
     for li in list_li:
-        li[0] = li[0] + ("&media_title=%s" % (urllib.quote_plus(media_title))) if (media_title != "") else ""
+        li[0] = li[0] + ("&media_title=%s&image=%s" % ((urllib.quote_plus(media_title)) if (media_title != "") else "", image))
         li[1].setIconImage(image)
         li[1].setThumbnailImage(image)
         li[1].setInfo(type='Video', infoLabels={'title': media_title, 'label': media_title, 'plot': media_title})

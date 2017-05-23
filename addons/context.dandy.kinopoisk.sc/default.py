@@ -65,7 +65,8 @@ def main():
     _media_title_ = get_media_title()
     _image_ = get_image()
     uri = "plugin://{0}?mode=context&kp_id={1}&media_title={2}&image={3}".format(ID, _kp_id_, urllib.quote_plus(encode_(_media_title_)), urllib.quote_plus(encode_(_image_)))
-    xbmc.executebuiltin("ActivateWindow(videos,{0},return)".format(uri))
+    #xbmc.executebuiltin("ActivateWindow(videos,{0},return)".format(uri))
+    xbmc.executebuiltin("Container.Update({0})".format(uri))
 
 if __name__ == '__main__':
     main()
