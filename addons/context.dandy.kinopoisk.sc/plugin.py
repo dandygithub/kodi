@@ -36,10 +36,35 @@ def get_media_title(kp_id):
             media_title = common.parseDOM(div, "h1")[0]
         except:
             pass
+    return strip_(encode_('utf-8', decode_('cp1251', media_title)))
 
-        image = "https://st.kp.yandex.net/images/film_big/" + kp_id + ".jpg"
+def get_media_image(kp_id):
+    return "https://st.kp.yandex.net/images/film_big/" + kp_id + ".jpg"
 
-    return strip_(encode_('utf-8', decode_('cp1251', media_title))), image
+def search_kp_id(media_title):
+    media = []
+
+    response = common.fetchPage({"link": "http://www.kinopoisk.ru/index.php?first=no&what=&kp_query=" + urllib.quote_plus(media_title)})
+    if response["status"] == 200:
+        content = response["content"]
+
+        try:
+            div = common.parseDOM(content, "div", attrs={"class": "search_results"})[0]
+            links = common.parseDOM(div, "ul", attrs={"class": "links"})[0]
+            media.append(common.parseDOM(links, "a", ret="data-id")[0])
+        except:
+            pass
+
+    ret = 0
+    if len(media) > 0:
+        if len(media) > 1:
+            ret = xbmcgui.Dialog().select("Select media", media)
+        if ret >= 0:
+            return media[ret]
+        else:
+            return None
+    else:
+        return None
 
 def get_user_input():
     dialog = xbmcgui.Dialog()
@@ -49,11 +74,31 @@ def get_user_input():
         kp_id = result
     return kp_id
 
+def get_kp_id(media_title):
+    if media_title:
+        return search_kp_id(media_title)
+    else:
+        return get_user_input()
+
+
+def get_engine(data):
+    if 'moonwalk' in data:
+        return 'moonwalk'
+    elif 'hdgo' in data:
+        return 'hdgo'
+    elif 'kodik' in data:
+        return 'kodik'
+    elif 'videoframe' in data:
+        return 'videoframe'
+    else:
+        return 'none'
+
 def process(kp_id, media_title, image):
     list_li = []
     list_li = search.process(kp_id)
     for li in list_li:
-        li[0] = li[0] + ("&media_title=%s&image=%s" % ((urllib.quote_plus(media_title)) if (media_title != "") else "", image))
+        engine = get_engine(li[1].getLabel())
+        li[0] = li[0] + ("&media_title=%s&image=%s&engine=%s" % ((urllib.quote_plus(media_title)) if (media_title != "") else "", image, engine))
         li[1].setIconImage(image)
         li[1].setThumbnailImage(image)
         li[1].setInfo(type='Video', infoLabels={'title': media_title, 'label': media_title, 'plot': media_title})
@@ -73,20 +118,20 @@ def show_kodik(url, title):
 def show_videoframe(url, title):
     return videoframe.get_playlist(url)
 
-def show(url, title, media_title, image):
+def show(url, title, media_title, image, engine):
     manifest_links = {} 
     subtitles = None
     if (not media_title):
         media_title = title
     direct = 0
-    if 'moonwalk' in url:
+    if 'moonwalk' in engine:
         manifest_links, subtitles, season, episode = show_moonwalk(url, title)
         direct = 1
-    elif 'hdgo' in url:
+    elif 'hdgo' in engine:
         manifest_links, subtitles, season, episode = show_hdgo(url, title)
-    elif 'kodik' in url:
+    elif 'kodik' in engine:
         manifest_links, subtitles, season, episode, direct = show_kodik(url, title)
-    elif 'videoframe' in url:
+    elif 'videoframe' in engine:
         manifest_links, subtitles, season, episode = show_videoframe(url, title)
 
     if manifest_links:
@@ -152,19 +197,21 @@ def main():
     media_title = urllib.unquote_plus(PARAMS['media_title']) if 'media_title' in PARAMS else None
     image = urllib.unquote_plus(PARAMS['image']) if 'image' in PARAMS else None
     direct = int(PARAMS['direct']) if 'direct' in PARAMS else None
+    engine = PARAMS['engine'] if 'engine' in PARAMS else None
 
-    if (not mode) or (mode == "context"):
-        if (mode == "context") and (not kp_id):
-            return
+    search_kp_id = False 
+    if (not mode) or (mode == "context") or (mode == "search"):
         if (not kp_id):
-            kp_id = get_user_input()
+            kp_id = get_kp_id(media_title)
+            search_kp_id = True 
         if (not kp_id):
             return
-        if not media_title:
-            media_title, image = get_media_title(kp_id)
+        if search_kp_id == True: 
+            media_title = get_media_title(kp_id)
+            image = get_media_image(kp_id)
         process(kp_id, media_title, image)
     elif mode == "show":
-        show(url, title, media_title, image)
+        show(url, title, media_title, image, engine)
     elif mode == "play":
         play(url, direct)
 

@@ -21,7 +21,7 @@
   </extension>
 </addon>
 
-<addon id="context.dandy.kinopoisk.sc" name="Kinopoisk Search Content" version="1.0.1" provider-name="dandy">
+<addon id="context.dandy.kinopoisk.sc" name="Kinopoisk Search Content" version="1.1.0" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.0.0"/>
@@ -36,7 +36,7 @@
   <extension point="kodi.context.item" library="default.py">
     <item>
       <label>$ADDON[context.dandy.kinopoisk.sc 32000]</label>
-      <visible>SubString(Container.PluginName, plugin.video.KinoPoisk.ru) + [Container.Content(tvshows)|Container.Content(movies)|Container.Content(musicvideos)]</visible>
+      <visible>Container.Content(tvshows)|Container.Content(movies)|Container.Content(musicvideos)</visible>
     </item>
   </extension>
   <extension point="kodi.addon.metadata">
