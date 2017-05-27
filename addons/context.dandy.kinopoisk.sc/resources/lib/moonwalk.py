@@ -129,17 +129,21 @@ def get_playlist(url):
     episode = None
 
     headers = {
-        "Host": PLAYLIST_DOMAIN,
         "Referer": url,
-        "Upgrade-Insecure-Requests": "1",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
     }
     try: 
         request = urllib2.Request(url, "", headers)
         request.get_method = lambda: 'GET'
         response = urllib2.urlopen(request).read()
-    except:
-        return manifest_links, subtitles, season, episode 
+    except urllib2.HTTPError, error:
+        try:
+            url_ = dict(error.info())['location']
+            request = urllib2.Request(url_, "", headers)
+            request.get_method = lambda: 'GET'
+            response = urllib2.urlopen(request).read()
+        except:
+            return manifest_links, subtitles, season, episode 
 
     #tvshow
     tvshow = common.parseDOM(response, "select", attrs={"name": "season"})
