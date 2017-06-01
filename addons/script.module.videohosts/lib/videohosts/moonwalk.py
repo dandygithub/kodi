@@ -26,12 +26,11 @@ def get_access_attrs(content):
     values['content_type'] = content.split("content_type: '")[-1].split("',")[0],
     values['ad_attr'] = '0'
     values['debug'] = 'false'
-    values['content_type'] = 'serial'
 
     key, value = get_key(content) 
 
     values[key] = value
 
-    attrs['X-User-Story'] = content.split("'X-User-Story': '")[-1].split("'")[0]
+    attrs['X-Access-Level'] = content.split("'X-Access-Level': '")[-1].split("'")[0]
 
     return values, attrs
