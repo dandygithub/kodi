@@ -52,14 +52,14 @@ def select_episode(data, url):
     else:
         index_ = 0  
     eurl = urls[index_]
+    if not ("http:" in eurl):
+        eurl = "http:" + eurl
     eindex = str(index_ + 1)
     if index_ < 0:
         return "", sindex, eindex
 
     headers = {
-        "Host": "kodik.biz",
         "Referer": url,
-        "Upgrade-Insecure-Requests": "1",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
     }
     try: 

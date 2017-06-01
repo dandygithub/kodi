@@ -55,6 +55,8 @@ def get_content(videohost):
             translator = strip_(common.parseDOM(row, "td")[1])
             url = prepare_url(common.parseDOM(row, "a", ret="href")[0])
             if url != 'http://i.noughth.ru/?':
+                if "/.biz/" in url:
+                    url = url.replace("/.biz/", "/kodik.biz/")
                 title = "[COLOR=orange][{0}][/COLOR] {1}".format(vh_title, encode_(translator))
                 uri = sys.argv[0] + "?mode=show&url={0}&title={1}".format(urllib.quote_plus(url), urllib.quote_plus(title))
                 item = xbmcgui.ListItem(title)
