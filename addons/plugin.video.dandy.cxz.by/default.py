@@ -41,14 +41,14 @@ class PopcornBY():
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.debug = False
 
+        self.quality = self.addon.getSetting('quality') if self.addon.getSetting('quality') else "select"
+
     def main(self):
         self.log("Addon: %s"  % self.id)
         self.log("Handle: %d" % self.handle)
         self.log("Params: %s" % self.params)
 
-        xbmc.log("params=" + repr(self.params))
         params = common.getParameters(self.params)
-
 
         mode = params['mode'] if 'mode' in params else None
         url = urllib.unquote_plus(params['url']) if 'url' in params else None
@@ -60,6 +60,7 @@ class PopcornBY():
         page = int(params['page']) if 'page' in params else 1
         pid = params['pid'] if 'pid' in params else None
         play = params['play'] if 'play' in params else None
+        type_cont = int(params['type']) if 'type' in params else 0
 
         keyword = params['keyword'] if 'keyword' in params else None
 
@@ -72,11 +73,11 @@ class PopcornBY():
         if mode == 'search':
             self.search(keyword)
         if mode == 'searchcategory':
-            self.search_category(url)
+            self.search_category(url, keyword)
         if mode == 'show':
             self.show(url, id_kp, title, play)
         if mode == 'items':
-            self.items(url, page)
+            self.items(url, page, type_cont)
         if mode == 'year':
             self.year()
         if mode == 'serial':
@@ -100,11 +101,11 @@ class PopcornBY():
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def menu_kino(self):
-        uri = sys.argv[0] + '?mode=search'
-        item = xbmcgui.ListItem("[B][COLOR=lightgreen]%s[/COLOR][/B]" % self.language(2000), thumbnailImage=self.icon)
-        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+#        uri = sys.argv[0] + '?mode=search'
+#        item = xbmcgui.ListItem("[B][COLOR=lightgreen]%s[/COLOR][/B]" % self.language(2000), thumbnailImage=self.icon)
+#        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        uri = sys.argv[0] + '?mode=items&url=%s' % (self.url + "/stream/?yare=0000") 
+        uri = sys.argv[0] + '?mode=items&url=%s&type=1' % (self.url + "/stream/?yare=0000") 
         item = xbmcgui.ListItem("[COLOR=orange]%s[/COLOR]" % self.language(3000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
@@ -167,7 +168,9 @@ class PopcornBY():
             uri = sys.argv[0] + '?mode=show&url=%s&id_kp=%s&title=%s&play=1' % (url_, id_kp, title)
             item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
             item.setInfo(type='Video', infoLabels={"title": title})
-            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+            if (self.quality != 'select'):
+                item.setProperty('IsPlayable', 'true')
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True if (self.quality == 'select') else False)
 
         xbmcplugin.setContent(self.handle, 'tvshows')
         xbmcplugin.endOfDirectory(self.handle, True)
@@ -182,10 +185,13 @@ class PopcornBY():
         urls = common.parseDOM(seriesbox, "option", ret="value")
         for i, seria in enumerate(series):
             title = self.encode(seria)
-            uri = sys.argv[0] + '?mode=show&url=%s&id_kp=%s&title=%s' % (urls[i], id_kp, title)
+            url_ = urls[i] if ("http" in urls[i]) else "http:" + urls[i]
+            uri = sys.argv[0] + '?mode=show&url=%s&id_kp=%s&title=%s' % (url_, id_kp, title)
             item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
             item.setInfo(type='Video', infoLabels={"title": title})
-            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+            if (self.quality != 'select'):
+                item.setProperty('IsPlayable', 'true')
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True if (self.quality == 'select') else False)
 
         xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
@@ -233,7 +239,7 @@ class PopcornBY():
         return "%s [COLOR=gray][%s%s][/COLOR]" % (part1, part2, part3)
 
 
-    def items(self, url, page):
+    def items(self, url, page, type_cont):
         print "*** Get items %s" % url
         if (page == 0):
             page += 1;  
@@ -258,7 +264,9 @@ class PopcornBY():
                     image = "http://st.kp.yandex.net/images/film/%s.jpg" % (id_kp) if id_kp and (id_kp != '0') else self.icon
                     uri = sys.argv[0] + '?mode=show&url=%s&url2=%s&id_kp=%s&title=%s' % (links[0], (links[1] if (len(links) > 1) else "*"),  id_kp, title)
                     item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
-                    xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+                    if (self.quality != 'select') and (type_cont == 0):
+                        item.setProperty('IsPlayable', 'true')
+                    xbmcplugin.addDirectoryItem(self.handle, uri, item, True if ((self.quality == 'select') or (type_cont == 1)) else False)
 
             if page > 1:
                 uri = sys.argv[0] + '?mode=items&url=%s&page=%d' % (url, 0)
@@ -309,22 +317,22 @@ class PopcornBY():
 
     def get_media_info(self, id_kp, title_):
         image = "http://st.kp.yandex.net/images/film/%s.jpg" % (id_kp) if id_kp else self.icon
-        response = common.fetchPage({"link": "http://cxz.by/getmovie.php?kp_id=%s" % (id_kp)})
-        if response["status"] != 200:
-            return
+        #response = common.fetchPage({"link": "http://cxz.by/getmovie.php?kp_id=%s" % (id_kp)})
+        #if response["status"] != 200:
+        #    return
 
         title = title_
         description = ""
         genre = ""
         links = [] 
 
-        content = response["content"]
-        if "h4" in content:
-            titlefull = common.parseDOM(content, "h4")[0]
-            title = titlefull.split("<br>")[0]
-            genre = common.parseDOM(titlefull, "small")[0]
-            description = content.split("</h4>")[-1].split("<br")[0]
-            links = common.parseDOM(content, "a", ret="href")
+        #content = response["content"]
+        #if "h4" in content:
+        #    titlefull = common.parseDOM(content, "h4")[0]
+        #    title = titlefull.split("<br>")[0]
+        #    genre = common.parseDOM(titlefull, "small")[0]
+        #    description = content.split("</h4>")[-1].split("<br")[0]
+        #    links = common.parseDOM(content, "a", ret="href")
 
         return image, title, genre, description
 
@@ -482,19 +490,27 @@ class PopcornBY():
         manifest_links, subtitles = self.parse_by_moonwalk(url, image, id_kp, title, genre, description, play)
         if manifest_links:
             list = sorted(manifest_links.iteritems(), key=itemgetter(0))
-            for quality, link in list:
-                film_title = "%s [COLOR=green][%s][/COLOR]" % (title, str(quality) + '')
-                uri = sys.argv[0] + '?mode=play&url=%s&pid=1' % urllib.quote(link)
-                item = xbmcgui.ListItem(film_title, iconImage=image)
-                item.setInfo(type='Video', infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
-                item.setProperty('IsPlayable', 'true')
-                if subtitles: 
-                    urls = re.compile('http:\/\/.*?\.srt').findall(subtitles)
-                    item.setSubtitles(urls)
-                xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
-
-            xbmcplugin.setContent(self.handle, 'movies')
-            xbmcplugin.endOfDirectory(self.handle, True)
+            if (self.quality == 'select'):
+                for quality, link in list:
+                    film_title = "%s [COLOR=green][%s][/COLOR]" % (title, str(quality) + '')
+                    uri = sys.argv[0] + '?mode=play&url=%s&pid=1' % urllib.quote(link)
+                    item = xbmcgui.ListItem(film_title, iconImage=image)
+                    item.setInfo(type='Video', infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
+                    item.setProperty('IsPlayable', 'true')
+                    if subtitles: 
+                        urls = re.compile('http:\/\/.*?\.srt').findall(subtitles)
+                        item.setSubtitles(urls)
+                    xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
+    
+                xbmcplugin.setContent(self.handle, 'movies')
+                xbmcplugin.endOfDirectory(self.handle, True)
+            else:
+                url_ = list[0][1]
+                for i in range(len(list), 0, -1):
+                    if int(list[i-1][0]) <= int(self.quality[:-1]):
+                        url_ = list[i-1][1]
+                        break
+                self.play_item(url_, 1)
 
 
     def show_2(self, url, id_kp, title, image, genre, description, play):
@@ -547,19 +563,27 @@ class PopcornBY():
                 manifest_links, subtitles = self.parse_alt(data_, url_)
                 if manifest_links:
                     list = sorted(manifest_links.iteritems(), key=itemgetter(0))
-                    for quality, link in list:
-                        film_title = "%s [COLOR=green][%s][/COLOR]" % (title, str(quality) + '')
-                        uri = sys.argv[0] + '?mode=play&url=%s&pid=1' % urllib.quote(link)
-                        item = xbmcgui.ListItem(film_title, iconImage=image)
-                        item.setInfo(type='Video', infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
-                        item.setProperty('IsPlayable', 'true')
-                        if subtitles: 
-                            urls = re.compile('http:\/\/.*?\.srt').findall(subtitles)
-                            item.setSubtitles(urls)
-                        xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
-    
-                    xbmcplugin.setContent(self.handle, 'movies')
-                    xbmcplugin.endOfDirectory(self.handle, True)
+                    if self.quality == 'select':
+                        for quality, link in list:
+                            film_title = "%s [COLOR=green][%s][/COLOR]" % (title, str(quality) + '')
+                            uri = sys.argv[0] + '?mode=play&url=%s&pid=1' % urllib.quote(link)
+                            item = xbmcgui.ListItem(film_title, iconImage=image)
+                            item.setInfo(type='Video', infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
+                            item.setProperty('IsPlayable', 'true')
+                            if subtitles: 
+                                urls = re.compile('http:\/\/.*?\.srt').findall(subtitles)
+                                item.setSubtitles(urls)
+                            xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
+        
+                        xbmcplugin.setContent(self.handle, 'movies')
+                        xbmcplugin.endOfDirectory(self.handle, True)
+                    else:
+                        url_ = list[0][1]
+                        for i in range(len(list), 0, -1):
+                            if int(list[i-1][0]) <= int(self.quality[:-1]):
+                                url_ = list[i-1][1]
+                                break
+                        self.play_item(url_, 1)
                 return
     
             if not response:
@@ -567,22 +591,32 @@ class PopcornBY():
             content = response.split('"qualities":{')[-1].split("}},")[0]
 
             qualities = ("360", "480", "720", "1080") 
+            qlist = []
             urlqlist = []
             for i, quality in enumerate(qualities):
                 if ('"' + quality + '"') in content:
                     urlq = content.split('"' + quality + '":{"src":"')[-1].split('",')[0].replace("\/", "/")
                     if not (urlq in urlqlist):
+                        qlist.append(quality)
                         urlqlist.append(urlq)
-                        link_title = "%s [COLOR=green][%s][/COLOR]" % (title, quality)
-                        uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote_plus(urlq)
-                        item = xbmcgui.ListItem(link_title,  iconImage=image, thumbnailImage=image)
-                        item.setInfo(type='Video', infoLabels={"title": link_title, "genre": genre, "plot": description})
-                        item.setProperty('IsPlayable', 'true')
-                        xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
+                        if self.quality == 'select':
+                            link_title = "%s [COLOR=green][%s][/COLOR]" % (title, quality)
+                            uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote_plus(urlq)
+                            item = xbmcgui.ListItem(link_title,  iconImage=image, thumbnailImage=image)
+                            item.setInfo(type='Video', infoLabels={"title": link_title, "genre": genre, "plot": description})
+                            item.setProperty('IsPlayable', 'true')
+                            xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
     
-            xbmcplugin.setContent(self.handle, 'movies')
-            xbmcplugin.endOfDirectory(self.handle, True)
-
+            if self.quality == 'select':
+                xbmcplugin.setContent(self.handle, 'movies')
+                xbmcplugin.endOfDirectory(self.handle, True)
+            else:
+                url_ = urlqlist[0]
+                for i in range(len(qlist), 0, -1):
+                    if int(qlist[i-1]) <= int(self.quality[:-1]):
+                        url_ = urlqlist[i-1]
+                        break
+                self.play_item(url_)
 
     def show(self, url, id_kp, title_, play = None):
         print "*** show for url %s " % url
@@ -631,8 +665,11 @@ class PopcornBY():
         return keyword
 
 
-    def search_category(self, url):
-        keyword = self.get_user_input()
+    def search_category(self, url, keyword):
+        if (url == None):
+            url = self.url + "/stream/?yare="
+        keyword = urllib.unquote_plus(keyword) if (keyword) else self.get_user_input()
+
         if keyword:
             response = common.fetchPage({"link": url})
 
@@ -649,8 +686,10 @@ class PopcornBY():
                         image = "http://st.kp.yandex.net/images/film/%s.jpg" % (id_kp) if id_kp and (id_kp != '0') else self.icon
                         uri = sys.argv[0] + '?mode=show&url=%s&url2=%s&id_kp=%s&title=%s' % (links[0], (links[1] if (len(links) > 1) else "*"), id_kp, title)
                         item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
-                        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-    
+                        if (self.quality != 'select'):
+                            item.setProperty('IsPlayable', 'true')
+                        xbmcplugin.addDirectoryItem(self.handle, uri, item, True if (self.quality == 'select') else False)
+   
                 xbmcplugin.setContent(self.handle, 'movies')
                 xbmcplugin.endOfDirectory(self.handle, True)
 
