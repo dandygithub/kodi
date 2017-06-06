@@ -61,8 +61,10 @@ class PopcornBY():
         pid = params['pid'] if 'pid' in params else None
         play = params['play'] if 'play' in params else None
         type_cont = int(params['type']) if 'type' in params else 0
-
         keyword = params['keyword'] if 'keyword' in params else None
+
+        if page == 0:
+            xbmc.executebuiltin('Container.Update(%s, replace)' % sys.argv[0])
 
         if mode == 'kino':
             self.menu_kino()
@@ -269,12 +271,12 @@ class PopcornBY():
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, True if ((self.quality == 'select') or (type_cont == 1)) else False)
 
             if page > 1:
-                uri = sys.argv[0] + '?mode=items&url=%s&page=%d' % (url, 0)
+                uri = sys.argv[0] + '?mode=items&url=%s&page=%d&type=%d' % (url, 0, type_cont)
                 item = xbmcgui.ListItem("[COLOR=orange]%s[/COLOR]" % self.language(4001), thumbnailImage=self.inext, iconImage=self.inext)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
             if page*ITEMS_PER_PAGE < len(items):
-                uri = sys.argv[0] + '?mode=items&url=%s&page=%d' % (url, page + 1)
+                uri = sys.argv[0] + '?mode=items&url=%s&page=%d&type=%d' % (url, page + 1, type_cont)
                 item = xbmcgui.ListItem(("[COLOR=orange]%s[/COLOR]" % self.language(4000)) % (page+1, len(items)//ITEMS_PER_PAGE + 1), thumbnailImage=self.inext, iconImage=self.inext)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
