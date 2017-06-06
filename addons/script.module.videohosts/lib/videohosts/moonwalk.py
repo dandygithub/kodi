@@ -6,8 +6,8 @@ def get_key(content):
     value = '' 
     try:  
         script = content.split("setTimeout(function()")[-1].split("</script>")[0]    
-        key = script.split("['")[-1].split("'] = '")[0]    
-        value = script.split("'] = '")[-1].split("';")[0]    
+        key = script.split("']['")[-1].split("'] = '")[0].replace("' + '", "")
+        value = script.split("'] = '")[-1].split("';")[0].replace("' + '", "")
     except:
         pass 
     return key, value
@@ -25,7 +25,6 @@ def get_access_attrs(content):
     values['p_domain_id'] = content.split("p_domain_id: ")[-1].split(",")[0] 
     values['content_type'] = content.split("content_type: '")[-1].split("',")[0],
     values['ad_attr'] = '0'
-    values['debug'] = 'false'
 
     key, value = get_key(content) 
 
