@@ -37,10 +37,12 @@ class HdrezkaTV():
         self.language = self.addon.getLocalizedString
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.handle = int(sys.argv[1])
-        self.url = 'http://hdrezka.me'
+        self.domain = self.addon.getSetting('domain')
+        self.url = 'http://' + self.addon.getSetting('domain')
 
         self.quality = self.addon.getSetting('quality')
         self.translator = self.addon.getSetting('translator') if self.addon.getSetting('translator') else "default"
+        self.description = self.addon.getSetting('description') if self.addon.getSetting('translator') else "true"
 
     def main(self):
         params = common.getParameters(sys.argv[2])
@@ -86,7 +88,7 @@ class HdrezkaTV():
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1003), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.index('http://hdrezka.me/films', 1)
+        self.index(self.url + '/films', 1)
 
     def categories(self):
         response = common.fetchPage({"link": self.url})
@@ -218,8 +220,8 @@ class HdrezkaTV():
         idt = ids[index_]
 
         headers = {
-            "Host": "hdrezka.me",
-            "Origin": "http://hdrezka.me",
+            "Host": self.domain,
+            "Origin": self.url,
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
             "X-Requested-With": "XMLHttpRequest"
         }
@@ -229,7 +231,7 @@ class HdrezkaTV():
             "translator_id": idt
         }
 
-        request = urllib2.Request("http://hdrezka.me/ajax/get_cdn_series/", urllib.urlencode(values), headers)
+        request = urllib2.Request(self.url + "/ajax/get_cdn_series/", urllib.urlencode(values), headers)
         response = urllib2.urlopen(request).read()
 
         data = json.loads(response)
@@ -285,7 +287,7 @@ class HdrezkaTV():
                 item.setProperty('IsPlayable', 'true')
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
-            except ValueError:
+            except:
                 print "GET LINK FROM IFRAME"
                 videoplayer = common.parseDOM(content, 'div', attrs={'id': 'videoplayer'})
                 iframe = common.parseDOM(content, 'iframe', ret='src')[0]
@@ -296,12 +298,15 @@ class HdrezkaTV():
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def get_item_description(self, referer, post_id):
-        url = 'http://hdrezka.me/engine/ajax/quick_content.php'
+        if self.description == "false":
+            return { 'rating' : '', 'description' : '' }
+
+        url = self.url + '/engine/ajax/quick_content.php'
 
         headers = {
             "Accept" : "text/plain, */*; q=0.01",
             "Content-Type" : "application/x-www-form-urlencoded; charset=UTF-8",
-            "Host" : "hdrezka.me",
+            "Host" : self.domain,
             "Referer" : referer,
             "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:27.0) Gecko/20100101 Firefox/27.0",
             "X-Requested-With" : "XMLHttpRequest"
@@ -384,12 +389,12 @@ class HdrezkaTV():
         return manifest_links, subtitles
 
     def get_video_link(self, referer, post_id):
-        url = 'http://hdrezka.me/engine/ajax/getvideo.php'
+        url = self.url + '/ajax/getvideo.php'
 
         headers = {
             "Accept" : "text/plain, */*; q=0.01",
             "Content-Type" : "application/x-www-form-urlencoded; charset=UTF-8",
-            "Host" : "hdrezka.me",
+            "Host" : self.domain,
             "Referer" : referer,
             "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:27.0) Gecko/20100101 Firefox/27.0",
             "X-Requested-With" : "XMLHttpRequest"
@@ -407,12 +412,12 @@ class HdrezkaTV():
         return links['hls']
 
     def get_seaons_link(self, referer, video_id, season, episode):
-        url = 'http://hdrezka.me/engine/ajax/getvideo.php'
+        url = self.url + '/engine/ajax/getvideo.php'
 
         headers = {
             "Accept" : "text/plain, */*; q=0.01",
             "Content-Type" : "application/x-www-form-urlencoded; charset=UTF-8",
-            "Host" : "hdrezka.me",
+            "Host" : self.domain,
             "Referer" : referer,
             "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:27.0) Gecko/20100101 Firefox/27.0",
             "X-Requested-With" : "XMLHttpRequest"
@@ -456,8 +461,8 @@ class HdrezkaTV():
             print keyword
 
             headers = {
-                'Host': 'hdrezka.me',
-                'Referer': 'http://hdrezka.me/',
+                'Host': self.domain,
+                'Referer': self.url,
                 'Upgrade-Insecure-Requests': '1',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
             }

@@ -3,6 +3,8 @@
     <setting id="unified_search" type="bool" label="Unified search" default="false" />
     <setting id="quality" type="labelenum" label="Video quality" values="select|360p|480p|720p|1080p" default="select"/>
     <setting id="translator" type="labelenum" label="Use translator" values="default|select" default="default"/>
+    <setting id="domain" type="text" label="Site URL" default="hdrezka.ag"/>
+    <setting id="description" type="bool" label="Get media description" default="true" />
     <setting type="bool" id="united_search" visible="false" default="true" />
     <setting type="text" id="us_command" visible="false" default="mode=search&keyword=" />
 </settings>
