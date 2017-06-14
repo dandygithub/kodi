@@ -17,7 +17,7 @@ def get_access_attrs(content):
     values = {}
     attrs = {}
 
-    attrs['purl'] = content.split("var window_surl = '")[-1].split("';")[0]
+    attrs['purl'] = '/manifests' + content.split("'/manifests")[-1].split("';")[0]
 
     values['mw_key'] = content.split("var mw_key = '")[-1].split("';")[0] 
     values['video_token'] = content.split("video_token: '")[-1].split("',")[0] 
