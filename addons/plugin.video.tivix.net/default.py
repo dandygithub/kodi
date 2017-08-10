@@ -276,15 +276,16 @@ class Tivix():
     def getStreamURL(self,  dataprev):
         streams = []
         try:
-            data = common.parseDOM(dataprev, "div", attrs={"class": "tab-pane fade"})[0].replace('\n', '')
-            data = self.parseObfusc(data)
-            data = self.parseObfusc(data)
-            arrdata = data.split(';eval')
-            data = self.parseObfusc(arrdata[2])
-            if "http://" in data:
-                url = "http://" + data.split("http://")[-1].split("');")[0].split("'};")[0]
-            else:
-                url = "rtmp://" + data.split("rtmp://")[-1].split("'};")[0]
+            url = common.parseDOM(dataprev, "span", attrs={"id": "srces"})[0]
+#            data = common.parseDOM(dataprev, "div", attrs={"class": "tab-pane fade"})[0].replace('\n', '')
+#            data = self.parseObfusc(data)
+#            data = self.parseObfusc(data)
+#            arrdata = data.split(';eval')
+#            data = self.parseObfusc(arrdata[2])
+#            if "http://" in data:
+#                url = "http://" + data.split("http://")[-1].split("');")[0].split("'};")[0]
+#            else:
+#                url = "rtmp://" + data.split("rtmp://")[-1].split("'};")[0]
             streams.append(url)
         except:
             self.showErrorMessage("The channel is not available")

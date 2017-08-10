@@ -1,2 +1,2 @@
 @echo off
-C:\Python27\python.exe release.py
+python.exe release.py
