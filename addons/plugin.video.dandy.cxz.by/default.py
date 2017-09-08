@@ -178,10 +178,16 @@ class PopcornBY():
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def serial_2(self, url, season, image, id_kp):
-        response = common.fetchPage({"link": url})
-        if response["status"] != 200:
-            return
-        serial = common.parseDOM(response["content"], "div", attrs={"class": "serial-panel"})
+        headers = {
+            "Host": "kodik.cc",
+             "Referer": "http://cxz.by/online.php",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
+        }
+        request = urllib2.Request(url, "", headers)
+        request.get_method = lambda: 'GET'
+        response = urllib2.urlopen(request).read()
+
+        serial = common.parseDOM(response, "div", attrs={"class": "serial-panel"})
         seriesbox = common.parseDOM(serial[0], "div", attrs={"class": "season-" + season})[0]
         series = common.parseDOM(seriesbox, "option")
         urls = common.parseDOM(seriesbox, "option", ret="value")
@@ -200,7 +206,7 @@ class PopcornBY():
 
 
     def serial(self, url, season, image, id_kp):
-        print "*** Get series list"
+        print "*** Get series list, season " + season + ", url " + url 
         if "moonwalk" in url:
             self.serial_1(url, season, image, id_kp)
         else:
@@ -516,14 +522,20 @@ class PopcornBY():
 
 
     def show_2(self, url, id_kp, title, image, genre, description, play):
-        response = common.fetchPage({"link": url})
-        if response["status"] != 200:
-            return
-        data_ = response["content"]
+        headers = {
+            "Host": "kodik.cc",
+            "Referer": "http://cxz.by/online.php",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
+        }
+        request = urllib2.Request(url, "", headers)
+        request.get_method = lambda: 'GET'
+        response = urllib2.urlopen(request).read()            
+
+        data_ = response
         url_ = url
 
         #serial
-        serial = common.parseDOM(response["content"], "div", attrs={"class": "serial-panel"})
+        serial = common.parseDOM(response, "div", attrs={"class": "serial-panel"})
         if serial:
             seasonsbox = common.parseDOM(serial[0], "div", attrs={"class": "serial-season-box"})[0]
             seasons = common.parseDOM(seasonsbox, "option")
@@ -539,7 +551,7 @@ class PopcornBY():
             return
 
         else: 
-            content = response["content"].split("$.ajax(")[-1].split("beforeSend")[0]
+            content = response.split("$.ajax(")[-1].split("beforeSend")[0]
             content = content.split("data: {")[-1].split("},")[0]
 
             headers = {
