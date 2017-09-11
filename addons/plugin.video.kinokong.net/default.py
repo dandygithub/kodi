@@ -88,13 +88,14 @@ class Kinokong():
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getCategoryItems('http://kinokong.cc/films/novinki-kino', 1)
+        self.getCategoryItems('http://kinokong.cc/films/novinki-kinos', 1)
 
     def getCategoryItems(self, url, page):
         print "*** Get category items %s" % url
         page_url = "%s/page/%s/" % (url, str(int(page)))
         response = common.fetchPage({"link": page_url})
         per_page = 0
+        pagenav = None
 
         if response["status"] == 200:
             content = common.parseDOM(response["content"], "div", attrs={"id": "container"})
