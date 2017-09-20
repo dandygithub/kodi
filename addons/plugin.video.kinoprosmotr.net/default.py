@@ -26,7 +26,6 @@ try:
     from unified_search import UnifiedSearch
 except:
     pass
-#    xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("Warning", 'Please install UnifiedSearch add-on!', str(10 * 1000)))
 
 class Kinoprosmotr():
     def __init__(self):
@@ -41,7 +40,8 @@ class Kinoprosmotr():
         self.handle = int(sys.argv[1])
         self.params = sys.argv[2]
 
-        self.url = 'http://kinoprosmotr.tv'
+        self.domain = self.addon.getSetting('domain')
+        self.url = 'http://' + self.addon.getSetting('domain')
 
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.debug = False
@@ -84,11 +84,11 @@ class Kinoprosmotr():
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        uri = sys.argv[0] + '?mode=%s&url=%s' % ("category", "http://kinoprosmotr.tv/serial/")
+        uri = sys.argv[0] + '?mode=%s&url=%s' % ("category",  self.url + "/serial/")
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1001), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        uri = sys.argv[0] + '?mode=%s&url=%s' % ("category", "http://kinoprosmotr.tv/mult/")
+        uri = sys.argv[0] + '?mode=%s&url=%s' % ("category", self.url + "/mult/")
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1002), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
@@ -160,6 +160,7 @@ class Kinoprosmotr():
         print "*** getFilmInfo"
 
         response = common.fetchPage({"link": url})
+        response_ = response
 
         if response["status"] == 200:
             movie = common.parseDOM(response["content"], "div", attrs={"class": "full_movie"})
@@ -179,37 +180,38 @@ class Kinoprosmotr():
                     values = common.fetchPage({"link": link2})
 
             if not values and not links:
-                iframe = common.parseDOM(movie, "iframe", ret="src")[0]
-                import urlparse
-                linkparse = urlparse.urlsplit(iframe)
-                iframe = urlparse.urlunsplit((linkparse.scheme, 'km396z9t3.xyz', linkparse.path, '', ''))
-                link = iframe + '?ref=kinoprosmotr.tv'
-                #link = iframe.replace('kino.kinoprosmotr.org', 'km396z9t3.xyz').replace('hdgo.cc', 'km396z9t3.xyz') + '?ref=kinoprosmotr.tv'
-                headers = {
-                   'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                   'Accept-Language':'ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4',
-                   'Connection':'keep-alive',
-                   'Host':'km396z9t3.xyz',
-                   'Referer': iframe,
-                   'Cookie':'hd_volume=6; popup=true',
-                   'Upgrade-Insecure-Requests':'1',
-                   'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
-                }
-                try:  
-                    request = urllib2.Request(link, "", headers)
-                    request.get_method = lambda: 'GET'
-                    response = urllib2.urlopen(request)
-                    data = response.read().split('media: [')[-1].split('],')[0]
-                    data = data.split('},{')
-                    for item in data:
-                       links.append(item.split("url: '")[-1].split("'")[0])
+                iframe = None
+                try:
+                    iframe = common.parseDOM(movie, "iframe", ret="src")[0]
                 except:
-                    self.showErrorMessage('No media source (YouTube, ...)')
-                    return False
+                    pass
+                if iframe:
+                    import urlparse
+                    linkparse = urlparse.urlsplit(iframe)
+                    host = "km396z9t3.xyz"
+                    iframe = urlparse.urlunsplit((linkparse.scheme, host, linkparse.path, '', ''))
+                    link = iframe + '?ref=' + self.domain
+                    headers = {
+                       'Host': host,
+                       'Referer': iframe,
+                       'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+                    }
+                    try:  
+                        request = urllib2.Request(link, "", headers)
+                        request.get_method = lambda: 'GET'
+                        response = urllib2.urlopen(request)
+                        data = response.read().split('media: [')[-1].split('],')[0]
+                        data = data.split('},{')
+                        for item in data:
+                            url_ = item.split("url: '")[-1].split("'")[0]
+                            links.append(url_)
+                    except:
+                        self.showErrorMessage('No media source (YouTube, ...)')
+                        return False
 
-            if not values and not links:
-                self.showErrorMessage('No media source (YouTube, ...)')
-                return False
+#            if not values and not links:
+#                self.showErrorMessage('No media source (YouTube, ...)')
+#                return False
 
             poster = common.parseDOM(movie, "div", attrs={"class": "full_movie_poster"})
             description = common.parseDOM(movie, "div", attrs={"class": "full_movie_desc"})
@@ -230,7 +232,7 @@ class Kinoprosmotr():
                 self.log("This is a film")
                 for i, link in enumerate(links):   
                     uri = sys.argv[0] + '?mode=play&url=%s' % link
-                    item = xbmcgui.ListItem("# %d. " % (i+1) + title,  iconImage=image)
+                    item = xbmcgui.ListItem("#%d. " % (i+1) + title,  iconImage=image)
                     item.setInfo(type='Video', infoLabels={'title': title, 'genre': genres, 'plot': desc, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
                     item.setProperty('IsPlayable', 'true')
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
@@ -240,9 +242,13 @@ class Kinoprosmotr():
             else:
                 print "This is a season"
 
-                response = values
+                response = response_
 
                 if response["status"] == 200:
+                    player = common.parseDOM(response["content"], "object", attrs={"type": "application/x-shockwave-flash"})[0]
+                    pl_url = player.split("pl=")[-1].split("&")[0]
+                    response = common.fetchPage({"link": pl_url})
+
                     response = eval(response["content"])
 
                     if 'playlist' in response['playlist'][0]:
@@ -337,7 +343,7 @@ class Kinoprosmotr():
         unified_search_results = []
 
         if keyword:
-            url = 'http://kinoprosmotr.tv/index.php?do=search'
+            url =  self.url + '/index.php?do=search'
 
             # Advanced search: titles only
             values = {
@@ -361,7 +367,7 @@ class Kinoprosmotr():
             }
 
             headers = {
-                "Referer" : 'http://kinoprosmotr.tv/index.php?do=search',
+                "Referer" : self.url + '/index.php?do=search',
                 "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64; rv:25.0) Gecko/20100101 Firefox/25.0"
             }
 
