@@ -319,7 +319,7 @@ class Kinoprosmotr():
 
     def playItem(self, url):
         print "*** play url %s" % url
-        item = xbmcgui.ListItem(path=url)
+        item = xbmcgui.ListItem(path=url + "|User-Agent=Kodi/17.4 (Linux; Android 7.1.1; S3 Build/N6F26U) Android/7.1.1 Sys_CPU/aarch64 App_Bitness/64 Version/17.4-Git:20170822-80a0e63")
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
     def getUserInput(self):
