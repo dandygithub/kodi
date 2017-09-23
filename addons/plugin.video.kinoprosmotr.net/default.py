@@ -156,6 +156,75 @@ class Kinoprosmotr():
         xbmcplugin.setContent(self.handle, 'movies')
         xbmcplugin.endOfDirectory(self.handle, True)
 
+    def select_season(self, data):
+        tvshow = common.parseDOM(data, "select", attrs={"name": "season"})
+        seasons = common.parseDOM(tvshow[0], "option")
+        values = common.parseDOM(tvshow[0], "option", ret="value")
+        if len(seasons) > 1:
+            dialog = xbmcgui.Dialog()
+            index_ = dialog.select("Select season", seasons)
+            if int(index_) < 0:
+                index_ = -1    
+        else:
+            index_ = 0    
+        if index_ < 0:
+            return ""
+        else:
+            return values[index_], str(index_ + 1)
+
+    def select_episode(self, data, url, headers):
+        sindex = None
+        eindex = None
+        season, sindex = self.select_season(data)
+        if season == "":
+            return ""
+
+        values = {
+            "season": season,
+            "ref": self.domain
+        }  
+        encoded_kwargs = urllib.urlencode(values.items())
+        argStr = "?%s" %(encoded_kwargs)
+        try: 
+            request = urllib2.Request(url + argStr, "", headers)
+            request.get_method = lambda: 'GET'
+            data = urllib2.urlopen(request).read()
+        except:
+            return ""
+
+        tvshow = common.parseDOM(data, "select", attrs={"name": "episode"})
+        series = common.parseDOM(tvshow[0], "option")
+        evalues = common.parseDOM(tvshow[0], "option", ret="value")
+
+        if len(series) > 1:
+            dialog = xbmcgui.Dialog()
+            index_ = dialog.select("Select episode", series)
+            if int(index_) < 0:
+                index_ = -1    
+        else:
+            index_ = 0  
+        episode = evalues[int(index_)]
+        eindex = str(int(index_) + 1)
+        if int(index_) < 0:
+            return ""
+
+
+        values = {
+            "season": season,
+            "e": episode,
+            "ref": self.domain
+        }  
+        encoded_kwargs = urllib.urlencode(values.items())
+        argStr = "?%s" %(encoded_kwargs)
+
+        try: 
+            xbmc.log("url_=" + repr(url + argStr))
+            request = urllib2.Request(url + argStr, "", headers)
+            request.get_method = lambda: 'GET'
+            return urllib2.urlopen(request).read()
+        except:
+            return ""
+
     def getFilmInfo(self, url):
         print "*** getFilmInfo"
 
@@ -184,7 +253,12 @@ class Kinoprosmotr():
                 try:
                     iframe = common.parseDOM(movie, "iframe", ret="src")[0]
                 except:
-                    pass
+                    try:
+                        iframe = common.parseDOM(movie, "script", ret="src")[0]                    
+                        response = common.fetchPage({"link": iframe})
+                        iframe = response['content'].split('"src", "')[-1].split('");')[0]
+                    except: 
+                        pass
                 if iframe:
                     import urlparse
                     linkparse = urlparse.urlsplit(iframe)
@@ -200,7 +274,14 @@ class Kinoprosmotr():
                         request = urllib2.Request(link, "", headers)
                         request.get_method = lambda: 'GET'
                         response = urllib2.urlopen(request)
-                        data = response.read().split('media: [')[-1].split('],')[0]
+                        data = response.read()
+
+                        #tvshow
+                        tvshow = common.parseDOM(data, "select", attrs={"name": "season"})
+                        if tvshow:
+                            data = self.select_episode(data, iframe, headers)
+
+                        data = data.split('media: [')[-1].split('],')[0]
                         data = data.split('},{')
                         for item in data:
                             url_ = item.split("url: '")[-1].split("'")[0]
@@ -208,10 +289,6 @@ class Kinoprosmotr():
                     except:
                         self.showErrorMessage('No media source (YouTube, ...)')
                         return False
-
-#            if not values and not links:
-#                self.showErrorMessage('No media source (YouTube, ...)')
-#                return False
 
             poster = common.parseDOM(movie, "div", attrs={"class": "full_movie_poster"})
             description = common.parseDOM(movie, "div", attrs={"class": "full_movie_desc"})
@@ -222,7 +299,7 @@ class Kinoprosmotr():
             image = self.url+image
 
 
-            year = infos[2].split('</span>')[-1].strip()
+            year = infos[2].split('</span>')[-1].split("(")[0].strip()
 
             title = "%s (%s)" % (self.encode(common.parseDOM(infos[0], "h1")[0]), year)
             genres = self.encode((', ').join(common.parseDOM(infos[4], "a")))
@@ -245,7 +322,11 @@ class Kinoprosmotr():
                 response = response_
 
                 if response["status"] == 200:
-                    player = common.parseDOM(response["content"], "object", attrs={"type": "application/x-shockwave-flash"})[0]
+                    player = ""
+                    try:
+                        player = common.parseDOM(response["content"], "object", attrs={"type": "application/x-shockwave-flash"})[0]
+                    except:
+                        pass
                     pl_url = player.split("pl=")[-1].split("&")[0]
                     response = common.fetchPage({"link": pl_url})
 
