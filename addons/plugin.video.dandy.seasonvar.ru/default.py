@@ -211,7 +211,7 @@ class Seasonvar():
         urls = common.parseDOM(dateitem, "a", ret = "href")
         for i, filmitem in enumerate(filmitems):
             titlediv = common.parseDOM(filmitem, "div", attrs={"class": "news-w"})[0]
-            title = common.parseDOM(titlediv, "div", attrs={"class": "news_n"})[0]
+            title = self.strip(common.parseDOM(titlediv, "div", attrs={"class": "news_n"})[0])
             titleadd = common.parseDOM(titlediv, "span", attrs={"class": "news_s"})[0]
             title_ = title + ' [COLOR=FF00FFF0][' + titlediv.split('</div>')[-1].split('<span')[0].strip() + " " + titleadd + '][/COLOR]'
             link = urls[i]
