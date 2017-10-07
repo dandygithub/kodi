@@ -103,9 +103,9 @@ class PopcornBY():
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def menu_kino(self):
-#        uri = sys.argv[0] + '?mode=search'
-#        item = xbmcgui.ListItem("[B][COLOR=lightgreen]%s[/COLOR][/B]" % self.language(2000), thumbnailImage=self.icon)
-#        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+        uri = sys.argv[0] + '?mode=search'
+        item = xbmcgui.ListItem("[B][COLOR=lightgreen]%s[/COLOR][/B]" % self.language(2000), thumbnailImage=self.icon)
+        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=items&url=%s&type=1' % (self.url + "/stream/?yare=0000") 
         item = xbmcgui.ListItem("[COLOR=orange]%s[/COLOR]" % self.language(3000), thumbnailImage=self.icon)
@@ -192,7 +192,7 @@ class PopcornBY():
         series = common.parseDOM(seriesbox, "option")
         urls = common.parseDOM(seriesbox, "option", ret="value")
         for i, seria in enumerate(series):
-            title = self.encode(seria)
+            title = seria
             url_ = urls[i] if ("http" in urls[i]) else "http:" + urls[i]
             uri = sys.argv[0] + '?mode=show&url=%s&id_kp=%s&title=%s' % (url_, id_kp, title)
             item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
@@ -213,7 +213,7 @@ class PopcornBY():
             self.serial_2(url, season, image, id_kp)
 
 
-    def year(self):
+    def year(self, mode = None):
         print "*** Get years list"
         response = common.fetchPage({"link": self.url + "/online.php"})
 
@@ -222,18 +222,25 @@ class PopcornBY():
 
             itemsdiv = common.parseDOM(content, "select", attrs={"id": "my_select"})[0]
             years = common.parseDOM(itemsdiv, "option")
-
+            list_years = []
+                
             for i, year_ in enumerate(years):
                 try:
                     yeari = int(year_)
                 except:
                     continue
-                uri = sys.argv[0] + '?mode=items&url=%s' % (self.url + "/stream/?yare=" + year_)
-                item = xbmcgui.ListItem("[COLOR=yellow]%s[/COLOR]" % year_, iconImage=self.icon, thumbnailImage=self.icon)
-                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-
-        xbmcplugin.setContent(self.handle, 'files')
-        xbmcplugin.endOfDirectory(self.handle, True)
+                if (mode == None):
+                    uri = sys.argv[0] + '?mode=items&url=%s' % (self.url + "/stream/?yare=" + year_)
+                    item = xbmcgui.ListItem("[COLOR=yellow]%s[/COLOR]" % year_, iconImage=self.icon, thumbnailImage=self.icon)
+                    xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+                else:
+                    list_years.append(year_)
+        
+            if (mode == None):
+                xbmcplugin.setContent(self.handle, 'files')
+                xbmcplugin.endOfDirectory(self.handle, True)
+            else:
+                return list_years
 
 
     def decorate_title(self, title):
@@ -540,7 +547,7 @@ class PopcornBY():
             seasonsbox = common.parseDOM(serial[0], "div", attrs={"class": "serial-season-box"})[0]
             seasons = common.parseDOM(seasonsbox, "option")
             for i, season in enumerate(seasons):
-                title = self.encode(season)
+                title = season
                 uri = sys.argv[0] + '?mode=serial&url=%s&season=%d&image=%s&id_kp=%s' % (url, i+1, image, id_kp)
                 item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
                 item.setInfo(type='Video', infoLabels={"title": title, "genre": genre, "plot": description})
@@ -561,15 +568,13 @@ class PopcornBY():
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
                 "X-Requested-With": "XMLHttpRequest"
             }
-    
             values = {
                 "domain": "cxz.by",
-                "url": "http://cxz.by/online.php",
-                "type": content.split('type: "')[-1].split('",')[0],         
-                "hash": content.split('hash: "')[-1].split('",')[0],
-                "id": content.split('id: "')[-1].split('",')[0],
-                "quality": content.split('quality: "')[-1].split('",')[0]
+                "type": content.split("type: '")[-1].split("',")[0],         
+                "hash": content.split("hash: '")[-1].split("',")[0],
+                "id": content.split("id: '")[-1].split("',")[0]
             } 
+
             try: 
                 request = urllib2.Request("http://kodik.cc/get-video", urllib.urlencode(values), headers)
                 response = urllib2.urlopen(request).read()            
@@ -602,24 +607,61 @@ class PopcornBY():
     
             if not response:
                 return
-            content = response.split('"qualities":{')[-1].split("}},")[0]
-
-            qualities = ("360", "480", "720", "1080") 
+            urls = []
+            qualities = []
             qlist = []
             urlqlist = []
-            for i, quality in enumerate(qualities):
-                if ('"' + quality + '"') in content:
-                    urlq = content.split('"' + quality + '":{"src":"')[-1].split('",')[0].replace("\/", "/")
-                    if not (urlq in urlqlist):
-                        qlist.append(quality)
-                        urlqlist.append(urlq)
-                        if self.quality == 'select':
-                            link_title = "%s [COLOR=green][%s][/COLOR]" % (title, quality)
-                            uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote_plus(urlq)
-                            item = xbmcgui.ListItem(link_title,  iconImage=image, thumbnailImage=image)
-                            item.setInfo(type='Video', infoLabels={"title": link_title, "genre": genre, "plot": description})
-                            item.setProperty('IsPlayable', 'true')
-                            xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
+            pid = None
+            if ('"links"' in response):
+                json_playlist = json.loads(response)
+                for i, item in enumerate(json_playlist["links"]):
+                    item2 = json_playlist["links"][item]
+                    qualities.append(item)
+                    urls.append(item2["src"])
+            else:
+                link = response.split('"link":"')[-1].split('","')[0]
+                if not ("http:" in link):
+                    link = "http:" + link
+
+                headers = {
+                    "Referer": url,
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
+                }
+                request = urllib2.Request(link, "", headers)
+                request.get_method = lambda: 'GET'
+                try:
+                    response = urllib2.urlopen(request).read()
+                except urllib2.HTTPError, error:
+                    link = dict(error.info())['location']
+                    request = urllib2.Request(url_, "", headers)
+                    request.get_method = lambda: 'GET'
+                    response = urllib2.urlopen(request).read()
+                if "http:" in response:
+                   pid = "0"
+                   qualities = ["360", "480", "720", "1080"]
+                   urls_ = re.compile("http:\/\/.*?\n").findall(response)
+                   for i, urlq in enumerate(urls_):
+                       urls.append(urlq.replace("\n", ""))
+                else:
+                    urls_ = re.compile("\.\/.*?\.m3u8").findall(response)
+                    for i, urlq in enumerate(urls_):
+                        urls.append(link.replace("hls.m3u8",  urlq.replace("./", "")))
+                        qualities.append(urlq.replace("./", "").split(".")[0])
+
+            for i, urlq in enumerate(urls):
+                urli = urlq
+                quality =  qualities[i]
+                qlist.append(quality)
+                urlqlist.append(urli)
+                if self.quality == 'select':
+                    link_title = "%s [COLOR=green][%s][/COLOR]" % (title, quality)
+                    uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote_plus(urli)
+                    if pid:
+                        uri = uri + '&pid=%s' % pid
+                    item = xbmcgui.ListItem(link_title,  iconImage=image, thumbnailImage=image)
+                    item.setInfo(type='Video', infoLabels={"title": link_title, "genre": genre, "plot": description})
+                    item.setProperty('IsPlayable', 'true')
+                    xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
     
             if self.quality == 'select':
                 xbmcplugin.setContent(self.handle, 'movies')
@@ -679,10 +721,11 @@ class PopcornBY():
         return keyword
 
 
-    def search_category(self, url, keyword):
+    def search_category(self, url, keyword, mode = None):
         if (url == None):
             url = self.url + "/stream/?yare="
-        keyword = urllib.unquote_plus(keyword) if (keyword) else self.get_user_input()
+        if (mode == None)  :
+            keyword = urllib.unquote_plus(keyword) if (keyword) else self.get_user_input()
 
         if keyword:
             response = common.fetchPage({"link": url})
@@ -704,50 +747,21 @@ class PopcornBY():
                             item.setProperty('IsPlayable', 'true')
                         xbmcplugin.addDirectoryItem(self.handle, uri, item, True if (self.quality == 'select') else False)
    
-                xbmcplugin.setContent(self.handle, 'movies')
-                xbmcplugin.endOfDirectory(self.handle, True)
+                if (mode == None) or (mode == 0):
+                    xbmcplugin.setContent(self.handle, 'movies')
+                    xbmcplugin.endOfDirectory(self.handle, True)
 
 
     def search(self, keyword):
-        keyword = keyword if (keyword) else self.get_user_input()
-        if keyword:
-            url = self.url + '/search_.php'
-
-            values = {
-                "name": keyword
-            }
-
-            headers = {
-                "Host": "cxz.by",
-                "Origin": self.url,
-                "Referer": "http://cxz.by/online.php",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
-                "X-Requested-With": "XMLHttpRequest"
-            }
-
-            request = urllib2.Request(url, urllib.urlencode(values), headers)
-            response = urllib2.urlopen(request).read()
-
-            items = common.parseDOM(response, "li")
-            links = common.parseDOM(items, "a", ret="href")
-            id_kps = common.parseDOM(items, "img", attrs={"title": "Info"}, ret="onclick")
-            for i, item_ in enumerate(items):
-                title = self.strip(item_)
-                add = title.split("(")[-1].split(")")[0]
-                add = self.strip(add + ", " + item_.split("<i>")[-1].split("</i>")[0].replace(":", ""))
-                title = self.strip(item_.split("</i>")[-1].split("(")[0].strip())
-                title = "%s [COLOR=gray][%s][/COLOR]" % (title, add)
-                id_kp = ""
-                if len(id_kps) >= i+1:
-                    id_kp = (id_kps[i].split('id_kp(')[-1].split(')')[0]) if ('id_kp' in id_kps[i]) else "0"
-                image = "http://st.kp.yandex.net/images/film/%s.jpg" % (id_kp) if id_kp and (id_kp != '0') else self.icon
-                uri = sys.argv[0] + '?mode=show&url=%s&id_kp=%s&title=%s' % (links[i], id_kp, title)
-                item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
-                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-
-            xbmcplugin.setContent(self.handle, 'movies')
-            xbmcplugin.endOfDirectory(self.handle, True)
-
+        keyword = urllib.unquote_plus(keyword) if (keyword) else self.get_user_input()
+        self.search_category(self.url + "/stream/?yare=0000", keyword, 1)
+        self.search_category(self.url + "/stream/?yare=0001", keyword, 1)
+        list_years = self.year(0)
+        for year in list_years:
+            self.search_category(self.url + "/stream/?yare=%s"%(year), keyword, 1)              
+        self.search_category(self.url + "/stream/?yare=0002", keyword, 0)
+        xbmcplugin.setContent(self.handle, 'movies')
+        xbmcplugin.endOfDirectory(self.handle, True)
 
     # *** Add-on helpers
     def log(self, message):
