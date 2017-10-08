@@ -48,7 +48,7 @@ def prepare_url(url):
         return url
 
 def get_content():
-    vh_title = "moonwalk"
+    vh_title = "moonwalk.co"
     list_li = []
 
     VALUES["kinopoisk_id"] = _kp_id_
@@ -58,14 +58,18 @@ def get_content():
     if response:
         try:
             table = common.parseDOM(response, "table", attrs={"class": "table table-striped"})[0]
-            row = common.parseDOM(table, "tr")[1]
-            data = common.parseDOM(row, "div", attrs={"class": "copy-iframe-button btn btn-mini btn-info"}, ret = "onclick")[0]
-            url = prepare_url(data.split("<iframe src=\\\'")[-1].split("\\\'")[0])
-            title_ = common.parseDOM(row, "td")[0]        
-            title = "[COLOR=orange][{0}][/COLOR] {1}".format(vh_title, title_)
-            uri = sys.argv[0] + "?mode=show&url={0}&title={1}".format(urllib.quote_plus(url), urllib.quote_plus(title))
-            item = xbmcgui.ListItem(title)
-            list_li.append([uri, item, True]) 
+            rows = common.parseDOM(table, "tr")
+            for row in rows:
+                try: 
+                    data = common.parseDOM(row, "div", attrs={"class": "copy-iframe-button btn btn-mini btn-info"}, ret = "onclick")[0]
+                except:
+                    continue
+                url = prepare_url(data.split("<iframe src=\\\'")[-1].split("\\\'")[0])
+                title_ = common.parseDOM(row, "td")[0] + " (" + common.parseDOM(row, "td")[2] + ", " + common.parseDOM(row, "td")[3] + ", " + common.parseDOM(row, "td")[4] + ")"
+                title = "[COLOR=orange][{0}][/COLOR] {1}".format(vh_title, title_)
+                uri = sys.argv[0] + "?mode=show&url={0}&title={1}".format(urllib.quote_plus(url), urllib.quote_plus(title))
+                item = xbmcgui.ListItem(title)
+                list_li.append([uri, item, True]) 
         except:
             pass 
 
