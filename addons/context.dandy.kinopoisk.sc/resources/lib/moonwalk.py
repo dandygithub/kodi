@@ -2,6 +2,7 @@ import urllib, urllib2
 import json
 import re
 import socket
+import xbmc
 import xbmcgui
 from videohosts import moonwalk
 import XbmcHelpers
@@ -47,9 +48,8 @@ def select_translator(content, url):
 
 
 def select_season(data):
-    tvshow = common.parseDOM(data, "select", attrs={"name": "season"})
-    seasons = common.parseDOM(tvshow[0], "option")
-    values = common.parseDOM(tvshow[0], "option", ret="value")
+    seasons =  data.split("seasons: [")[-1].split("],")[0].split(",")
+    values = seasons
     if len(seasons) > 1:
         dialog = xbmcgui.Dialog()
         index_ = dialog.select("Select season", seasons)
@@ -58,7 +58,7 @@ def select_season(data):
     else:
         index_ = 0    
     if index_ < 0:
-        return ""
+        return "", ""
     else:
         return values[index_], str(index_ + 1)
 
@@ -84,9 +84,11 @@ def select_episode(data, url):
     request = urllib2.Request(url_, urllib.urlencode(values), headers)
     request.get_method = lambda: 'GET'
     response = urllib2.urlopen(request).read()
-
-    tvshow = common.parseDOM(response, "select", attrs={"name": "episode"})
-    series = common.parseDOM(tvshow[0], "option")
+    
+    series = []
+    series_ =  response.split("episodes: [[")[-1].split("]],")[0].split("],[")
+    for seria in series_:
+        series.append(seria.split(",")[1])
 
     if len(series) > 1:
         dialog = xbmcgui.Dialog()
@@ -95,10 +97,10 @@ def select_episode(data, url):
             index_ = -1    
     else:
         index_ = 0  
-    episode = str(index_ + 1)
+    episode = series[index_]
     eindex = str(index_ + 1)
     if episode < 0:
-        return "", sindex, eindex
+        return "", season, episode
 
     values = {
         "season": season,
@@ -117,9 +119,9 @@ def select_episode(data, url):
     try: 
         request = urllib2.Request(url + argStr, "", headers)
         request.get_method = lambda: 'GET'
-        return urllib2.urlopen(request).read(), sindex, eindex
+        return urllib2.urlopen(request).read(), season, episode
     except:
-        return "", sindex, eindex
+        return "", season, episode
 
 
 def get_playlist(url):
@@ -146,14 +148,14 @@ def get_playlist(url):
             return manifest_links, subtitles, season, episode 
 
     #tvshow
-    tvshow = common.parseDOM(response, "select", attrs={"name": "season"})
-    if tvshow:
+    tvshow = response.split("serial_token: '")[-1].split("',")[0]
+    if (tvshow != "null"):
         response, season, episode = select_episode(response, url)
         if response == "":
             return manifest_links, subtitles, season, episode 
 
-    if "var subtitles = JSON.stringify(" in response:
-        subtitles = response.split("var subtitles = JSON.stringify(")[-1].split(");")[0]
+    if "master_vtt" in response:
+        subtitles = response.split('master_vtt":"')[-1].split('"')[0]
 
     ###################################################
     values, attrs = moonwalk.get_access_attrs(response)
