@@ -1,0 +1,19 @@
+# Kodi Media Center language file
+# Addon Name: ExtendedInfo Script - Open dialog
+# Addon id: context.extendedinfo.dialog
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2014-10-26 17:05+0000\n"
+"PO-Revision-Date: 2017-10-08 07:28+0300\n"
+"Last-Translator: A. Dambledore\n"
+"Language-Team: Eng2Heb\n"
+"Language: he_IL\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+
+msgctxt "#32000"
+msgid "[COLOR=FFFFD700]Search in US[/COLOR]"
+msgstr "[COLOR=FFFFD700]חפש ב-US[/COLOR]"
