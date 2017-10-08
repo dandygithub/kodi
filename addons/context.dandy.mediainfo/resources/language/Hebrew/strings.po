@@ -1,0 +1,20 @@
+# Kodi Media Center language file
+# Addon Name: context.dandy.mediainfo
+# Addon id: context.dandy.mediainfo
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2014-10-26 17:05+0000\n"
+"PO-Revision-Date: 2017-10-08 07:34+0300\n"
+"Last-Translator: A. Dambledore\n"
+"Language-Team: Eng2Heb\n"
+"Language: he_IL\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Project-Id-Version: \n"
+
+
+msgctxt "#32000"
+msgid "[COLOR red]Media[/COLOR] Info"
+msgstr "[COLOR red]פרטי מדיה[/COLOR]"
