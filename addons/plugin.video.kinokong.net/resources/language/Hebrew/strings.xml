@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+    <string id="1000">סגנונות סרטים</string>
+    <string id="1001">סדרות</string>
+    <string id="1002">אנימציות</string>
+
+    <string id = "2000"> חיפוש </ string>
+    <string id = "2001"> למרבה הצער, החיפוש באתר לא הניב תוצאות כלשהן. </ string>
+
+    <string id="5000">עונה</string>
+    <string id="5001">סדרה</string>
+    <string id="5002">צפה באינטרנט</string>
+    <string id="5003">אינטרנט</string>
+    <string id="5004">סדרה</string>
+
+    <string id="9000">לדף הבא >></string>
+</strings>
