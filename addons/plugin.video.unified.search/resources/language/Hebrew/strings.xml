@@ -1,0 +1,12 @@
+
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+    <string id="1000">חיפוש</string>
+    <string id="1001">תוצאות החיפוש הקודם</string>
+    <string id="1002">היסטוריית חיפוש</string>
+    <string id="1003">אפס תוצאות חיפוש</string>
+
+    <string id="2000">אנא המתן...</string>
+    <string id="2001">שום דבר לא נמצא, נסה שוב</string>
+    <string id="2002">בוצע</string>
+</strings>
