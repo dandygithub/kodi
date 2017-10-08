@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+    <string id="1000">חיפוש</string>
+    <string id="1001">לצערנו, החיפוש באתר לא הניב תוצאות.</string>
+
+    <string id="2000">דף הבא (%s) >>></string>
+    <string id="2001">לדף הבא >>></string>
+    <string id="2002">להתחלה >>></string>
+
+    <string id="3000">בחירת איכות</string>
+</strings>
