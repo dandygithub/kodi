@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+  <stringid="1000">חיפוש</string>
+  <stringid="1001">הגדרות חיפוש</string>
+  <stringid="1002">מצטערים, לא נמצאו תוצאות לבקשתך</string>
+  <stringid="1003">תשתמש בתעתיק בעת חיפוש</string>
+
+  <stringid="2000">רשימות ניגון</string>
+  <stringid="2001">מצטערים, לא נמצאו תוצאות לפיבקשתך</string>
+  
+  <stringid="3000">תחנות רדיו מקוונות</string>
+  <stringid="3001">תרשימים לתחנות רדיו(מוסקבה)</string>
+  <stringid="3002">תרשימים של תחנות רדיו סנט פטרסבורג)</string>
+
+  <stringid="4000">תרשימים</string>
+  <stringid="4001">תרשים רוסי</string>
+  <stringid="4002">תרשים העולם</string>
+  <stringid="4003">סגנונות</string>
+  <stringid="4004">רשימת ניגון אקראית</string>
+
+  <stringid="5000">אמנים</string>
+  <stringid="5001">אמנים רוסיים</string>
+  <stringid="5002">אמנים זרים</string>
+
+  <stringid="6000">אלפבית</string>
+
+  <stringid="7000">אימות</string>
+  <stringid="7001">כניסה</string>
+  <stringid="7002">סיסמה</string>
+  <stringid="7003">בדוק את שם המשתמש והסיסמה שלך בהגדרות ההרחבה</string>
+
+  <stringid="8000">הורדת קבצים</string>
+  <stringid="8001">הורדת MP3</string>
+  <stringid="8002">הורדת הקובץ, אנא המתן...</string>
+  <stringid="8003">הורד תיקייה</string>
+
+  <stringid="9000">הגדרות אחרות</string>
+  <stringid="9001">אפשר בדיקת זמינות הזרמה</string>
+  <stringid="9002"מרווח בדיקת זמינות הזרימה (שעה)</string>
+</strings>
