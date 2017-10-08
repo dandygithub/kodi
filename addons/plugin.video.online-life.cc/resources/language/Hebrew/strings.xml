@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+    <string id="1000">ז'אנרים של סרטים</string>
+    <string id="1001">סרטים</string>
+    <string id="1002">סדרות</string>
+    <string id="1003">קריקטורות</string>
+    <string id="1004">סדרות אנימציה</string>
+    <string id="1005">עדכונים אחרונים</string>
+    <string id="1006">טלויזיה</string>
+    <string id="1007">סרטים חדשים</string>
+
+    <string id="2000">חיפוש</string>
+    <string id="2001">למרבה הצער, החיפוש באתר לא הניב תוצאות כלשהן.</string>
+    <string id="2002">השתמש בתעתיק בעת חיפוש</string>
+
+    <string id="5000">עונה</string>
+    <string id="5001">סדרה</string>
+    <string id="5002">צפה באינטרנט</string>
+    <string id="5002">צפה באינטרנט</string>
+    <string id="5003">באינטרנט</string>
+    <string id="5004">סדרה</string>
+    <string id="5005">המידע על הסרט/הסדרה לצערי אינו זמין</string>
+
+    <string id="6000">עדכון דירוג בעת ההפעלה</string>
+    <string id="6001">דירוג חיפוש סרט</string>
+    <string id="6002">דירוג IMDB</string>
+
+    <string id="9001">לדף הבא...</string>
+</strings>
