@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+  <string id="1000">מקומי</string>
+  <string id="1001">בלש</string>
+  <string id="1002">מלודרמה</string>
+  <string id="1003">פעולה</string>
+  <string id="1004">בדיוני</string>
+  <string id="1005">פשע</string>
+  <string id="1006">קומדיה</string>
+  <string id="1007">סדרות</string>
+  <string id="1008">קריקטורה</string>
+  <string id="1009">הרפתקאות</string>
+  <string id="1010">פנטזיה</string>
+  <string id="1011">זוועות</string>
+  <string id="1012">דרמה</string>
+  <string id="1013">היסטורי</string>
+  <string id="1014">מתח</string>
+  <string id="1015">מיסטיקה</string>
+  <string id="1016">ספורט</string>
+  <string id="1017">מוסיקלי</string>
+  <string id="1018">תיעודי</string>
+  <string id="1019">מלחמה</string>
+
+  <string id="2000">קטגוריות</string>
+  <string id="2001">סגנונות (תוספות אחרונות)</string>
+  <string id="2002">חיפוש</string>
+  <string id="2003">המועדפים שלי</string>
+  <string id="2004">למרבה הצער, החיפוש באתר לא הניב תוצאות.</string>
+
+  <string id="3000">[לדף הבא]>></string>
+  <string id="3001">הוסף למועדפים שלי</string>
+  <string id="3002">רשימת המועדפים ריקה</string>
+  <string id="3003">נוסף בהצלחה לרשימת המועדפים</string>
+  <string id="3004">הסר מהמועדפים שלי</string>
+  <string id="3005">הוצא בהצלחה מרשימת המועדפים שלי</string>
+  <string id="3006">רשימת מועדפים</string>
+  <string id="3007">המשך?</string>
+
+  <string id="5000">לצפות באינטרנט</string>
+  <string id="5001">באינטרנט</string>
+
+  <string id="6001">הצגת רשימה של סדרות(תצוגה)</string>
+  <string id="6002">הצגת רשימת הסדרות(תצוגה)</string>
+
+  <string id="7000">בחר תמיד את האיכות הטובה ביותר</string>
+</strings>
