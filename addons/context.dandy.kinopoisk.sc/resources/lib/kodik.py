@@ -10,9 +10,6 @@ common = XbmcHelpers
 
 socket.setdefaulttimeout(120)
 
-QUALITY_TYPES = (360, 480, 720, 1080)
-
-
 def select_season(data):
     tvshow = common.parseDOM(data, "div", attrs={"class": "serial-season-box"})
     seasons = common.parseDOM(tvshow[0], "option")
@@ -34,7 +31,6 @@ def select_episode(data, url):
     sindex = None
     eindex = None
 
-    url_ = url.split("?")[0]
     season, sindex = select_season(data)
     if season == "":
         return "", sindex, eindex
@@ -74,12 +70,10 @@ def get_attrs(content):
     values = {}
     attrs = {}
 
-    values['domain'] = content.split('domain: "')[-1].split('",')[0] 
-    values['url'] = content.split('url: "')[-1].split('",')[0] 
-    values['type'] = content.split('type: "')[-1].split('",')[0] 
-    values['hash'] = content.split('hash: "')[-1].split('",')[0] 
-    values['id'] = content.split('id: "')[-1].split('",')[0] 
-    values['quality'] = content.split('quality: "')[-1].split('",')[0] 
+    values['domain'] = "kodik.biz"
+    values['type'] = content.split("type: '")[-1].split("',")[0] 
+    values['hash'] = content.split("hash: '")[-1].split("',")[0] 
+    values['id'] = content.split("id: '")[-1].split("',")[0] 
 
     return values, attrs
 
@@ -142,17 +136,19 @@ def get_playlist(url):
     episode = None
 
     headers = {
-        "Host": "kodik.biz",
+        "Host": "kodik.cc",
         "Referer": url,
-        "Upgrade-Insecure-Requests": "1",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
     }
+
     try: 
-        request = urllib2.Request(url, "", headers)
+        request = urllib2.Request(url.split("?")[0], "", headers)
         request.get_method = lambda: 'GET'
         response = urllib2.urlopen(request).read()
     except:
         return manifest_links, subtitles, season, episode, 0
+
+    xbmc.log("response=" + repr(response))
 
     #tvshow
     tvshow = common.parseDOM(response, "div", attrs={"class": "serial-panel"})
@@ -164,14 +160,14 @@ def get_playlist(url):
     values, attrs = get_attrs(response)
 
     headers = {
-        "Host": "kodik.biz",
-        "Origin": "http://kodik.biz",
+        "Host": "kodik.cc",
+        "Origin": "http://kodik.cc",
         "Referer": url,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
         "X-Requested-With": "XMLHttpRequest"
     }
     try: 
-        request = urllib2.Request("http://kodik.biz/get-video", urllib.urlencode(values), headers)
+        request = urllib2.Request("http://kodik.cc/get-video", urllib.urlencode(values), headers)
         request.get_method = lambda: 'POST'
         response = urllib2.urlopen(request).read()
     except:
@@ -180,11 +176,48 @@ def get_playlist(url):
         except:
             return manifest_links, subtitles, season, episode, 0
 
-    response = response.split('"qualities":{')[-1].split("}}")[0]
 
-    for i, quality in enumerate(QUALITY_TYPES):
-        if str(quality) in response:
-            manifest_links[QUALITY_TYPES[i]] = "http:" + response.split('"' + str(quality) + '":{"src":"')[-1].split('"')[0].replace("\/", "/")
+    urls = []
+    qualities = []
+    pid = 0
+    if ('"links"' in response):
+        json_playlist = json.loads(response)
+        for i, item in enumerate(json_playlist["links"]):
+            item2 = json_playlist["links"][item]
+            qualities.append(item)
+            urls.append(item2["src"])
+    else:
+        link = response.split('"link":"')[-1].split('","')[0]
+        if not ("http:" in link):
+            link = "http:" + link
 
-    return manifest_links, subtitles, season, episode, 0
+        headers = {
+            "Referer": url,
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
+        }
+        request = urllib2.Request(link, "", headers)
+        request.get_method = lambda: 'GET'
+        try:
+            response = urllib2.urlopen(request).read()
+        except urllib2.HTTPError, error:
+            link = dict(error.info())['location']
+            request = urllib2.Request(url_, "", headers)
+            request.get_method = lambda: 'GET'
+            response = urllib2.urlopen(request).read()
+        if "http:" in response:
+            pid = 1
+            qualities = ["360", "480", "720", "1080"]
+            urls_ = re.compile("http:\/\/.*?\n").findall(response)
+            for i, urlq in enumerate(urls_):
+                urls.append(urlq.replace("\n", ""))
+        else:
+            urls_ = re.compile("\.\/.*?\.m3u8").findall(response)
+            for i, urlq in enumerate(urls_):
+                urls.append(link.replace("hls.m3u8",  urlq.replace("./", "")))
+                qualities.append(urlq.replace("./", "").split(".")[0])
+
+    for i, urlq in enumerate(urls):
+        manifest_links[qualities[i]] = urlq
+
+    return manifest_links, subtitles, season, episode, pid
    
