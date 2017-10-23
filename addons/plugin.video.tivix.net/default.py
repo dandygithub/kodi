@@ -132,7 +132,7 @@ class Tivix():
             "Accept": "application/json, text/javascript, */*; q=0.01",
             "Host": "tivix.co", 
             "Referer": "http://tivix.co/chto-seychas-na-tv.html",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.62 Safari/537.36",
             "X-Requested-With": "XMLHttpRequest"
         }
         request = urllib2.Request(url, "", headers)
@@ -147,12 +147,15 @@ class Tivix():
             "Host": "schedule.tivix.co",
             "Origin": "http://tivix.co",
             "Referer": "http://tivix.co/chto-seychas-na-tv.html",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.62 Safari/537.36"
         }
-        request = urllib2.Request(url, "", headers)
-        request.get_method = lambda: 'GET'
-        response = urllib2.urlopen(request).read()
-        data = json.loads(response)
+        try:
+            request = urllib2.Request(url, "", headers)
+            request.get_method = lambda: 'GET'
+            response = urllib2.urlopen(request).read()
+            data = json.loads(response)
+        except:
+            data = json.loads("")
 #{"167":[{"name":"\u041b\u0435\u0442\u0430\u044e\u0449\u0438\u0435 \u0437\u0432\u0435\u0440\u0438","start_at":"2017-04-01 16:04:00","date":"2017-04-01 00:00:00"},{"name":"\u0410\u043a\u0430\u0434\u0435\u043c\u0438\u044f \u0421\u0442\u0435\u043a\u043b\u044f\u0448\u043a\u0438\u043d\u0430","start_at":"2017-04-01 16:14:00","date":"2017-04-01 00:00:00"},{"name":"\u0421\u0430\u043b\u044e\u0442 \u0442\u0430\u043b\u0430\u043d\u0442\u043e\u0432","start_at":"2017-04-01 16:28:00","date":"2017-04-01 00:00:00"},{"name":"\u0420\u043e\u0434\u0438\u043b\u0441\u044f \u0426\u0430\u0440\u044c","start_at":"2017-04-01 19:34:00","date":"2017-04-01 00:00:00"},{"name":"\u041a\u0440\u0430\u0441\u043d\u0430\u044f \u0428\u0430\u043f\u043e\u0447\u043a\u0430","start_at":"2017-04-01 19:58:00","date":"2017-04-01 00:00:00"}],
 
         for channelid in channels:
