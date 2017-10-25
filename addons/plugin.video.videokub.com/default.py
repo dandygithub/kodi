@@ -22,7 +22,7 @@
 # Writer (c) 2014, MrStealth
 # Rev. 2.0.3.4
 
-import os, urllib, urllib2, sys #, socket, cookielib, errno
+import os, urllib, urllib2, sys
 import xbmc, xbmcplugin,xbmcgui,xbmcaddon
 import re
 import json
@@ -51,7 +51,8 @@ class VideoKub():
         self.language = self.addon.getLocalizedString
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.handle = int(sys.argv[1])
-        self.url = 'https://www.videokub.online/'
+        self.domain = self.addon.getSetting('domain')
+        self.url = 'https://' + self.addon.getSetting('domain') + '/'
 
     def main(self):
         params = common.getParameters(sys.argv[2])
@@ -94,7 +95,7 @@ class VideoKub():
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1003), iconImage=self.icon, thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.index('https://www.videokub.online/latest-updates/', 1)
+        self.index(self.url + '/latest-updates/', 1)
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def history(self):    
@@ -118,7 +119,7 @@ class VideoKub():
       
     def genres(self):
 
-        url = 'https://www.videokub.online/categories/'
+        url = self.url + 'categories/'
         response = common.fetchPage({"link": url})
         block_content = common.parseDOM(response["content"], "div", attrs={"class": "block_content"})
 
@@ -266,10 +267,6 @@ class VideoKub():
 			player = common.parseDOM(response["content"], "div", attrs={"class": "player"})[0]
 			link = player.split("'video': [{'url': '")[-1].split("'}],")[0]
 
-		#search_string = title.split(' ')
-
-		# 'http://www.videokub.me/search/?q=%s' % (search_string[0] + ' ' + search_string[1])
-
 		uri = sys.argv[0] + '?mode=play&url=%s' % link
 		item = xbmcgui.ListItem(title, thumbnailImage=self.icon, iconImage=self.icon)
 		item.setInfo(type='Video', infoLabels={'title': title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
@@ -313,7 +310,7 @@ class VideoKub():
         
         if keyword:
             
-            url = 'https://www.videokub.online/search/'+str(page)+'/?q=%s' % (keyword)
+            url = self.url + '/search/'+str(page)+'/?q=%s' % (keyword)
             request = urllib2.Request(url)
             request.add_header('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36')
             response = urllib2.urlopen(request)
@@ -347,12 +344,6 @@ class VideoKub():
                     item.setInfo(type='Video', infoLabels={'title': title, 'genre': durations[i], 'duration': duration})
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-                # TODO: Fix search pagination
-                # http://www.videokub.me/search/2/?q=%D0%B1%D0%B0%D1%80%D0%B1%D0%BE%D1%81%D0%BA&search=%D0%9D%D0%B0%D0%B9%D1%82%D0%B8
-                #uri = sys.argv[0] + '?mode=%s&url=%s' % ("show", url)
-                #item = xbmcgui.ListItem(self.language(1004), iconImage=self.inext)
-                #xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-
                 if int(page)<=len(pages):
                 	uri = sys.argv[0] + '?mode=%s&keyword=%s&page=%s' % ("search", keyword, str(int(page)+1))
                 	item = xbmcgui.ListItem("следующая страница...", iconImage=self.icon, thumbnailImage=self.icon)
@@ -363,22 +354,6 @@ class VideoKub():
 
         else:
             self.menu()
-
-
-
-# <div class="wrapper">
-#     <div class="left">
-#         <div class="middle" id="wide_col">
-#             <div class="full">
-#             <div class="title">Барбоскины - 121 серия. Семейный секрет</div>
-#             <div class="content">
-#             <div class="item">АВТОР: <a href="http://www.videokub.me/members/39/">videokub</a></div>
-#             <div class="item">
-#             <a href="http://www.videokub.me/categories/multfilmy/" title="">Mультфильмы</a>                                                    </div>
-#             <div class="item">ОПИСАНИЕ: У видео нет описания</div>
-
-
-        # xbmcplugin.endOfDirectory(self.handle, True)
 
     def play(self, url):
         print 'url to play '+url
