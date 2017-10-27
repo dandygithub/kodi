@@ -372,7 +372,7 @@ class OnlineLife():
         unified_search_results = []
 
         if keyword:
-            url = 'http://www.online-life.cc/?do=search'
+            url = 'http://www.online-life.club/index.php?do=search'
 
             # Advanced search: titles only
             values = {
