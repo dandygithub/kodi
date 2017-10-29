@@ -123,9 +123,9 @@ class Seasonvar():
             f = opener.open(req)
             
             for cookie in cj:
-                cookie = str(cookie).split('svid=')[-1].split(' ')[0].strip()
+                cookie = str(cookie).split('svid1=')[-1].split(' ')[0].strip()
                 if cookie and (cookie > ""):
-                    self.authcookie = "svid=" + cookie
+                    self.authcookie = "svid1=" + cookie
                     self.vip = True
 
     def main(self):
