@@ -34,7 +34,7 @@ def get_access_attrs(content):
 
     values['mw_key'] = response.split('mw_key:"')[-1].split('",')[0] 
     values['ad_attr'] = response.split('ad_attr:')[-1].split(',')[0] 
-    values['iframe_version'] = response.split('iframe_version:')[-1].split('}')[0] 
+    values['iframe_version'] = response.split('iframe_version:"')[-1].split('"}')[0] 
 
     values['p_domain_id'] = content.split("domain_id: ")[-1].split(",")[0] 
     values['mw_pid'] = content.split("partner_id: ")[-1].split(",")[0] 
