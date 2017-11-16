@@ -21,7 +21,7 @@
   </extension>
 </addon>
 
-<addon id="context.dandy.kinopoisk.sc" name="Kinopoisk Search Content" version="1.3.0" provider-name="dandy">
+<addon id="context.dandy.kinopoisk.sc" name="Kinopoisk Search Content" version="1.3.1" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.0.0"/>
@@ -184,7 +184,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.kinoprosmotr.net" name="Kinoprosmotr.net" version="2.3.3" provider-name="MrStealth, dandy">
+<addon id="plugin.video.kinoprosmotr.net" name="Kinoprosmotr.net" version="2.3.4" provider-name="MrStealth, dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.0.0"/>

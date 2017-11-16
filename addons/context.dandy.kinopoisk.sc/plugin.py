@@ -137,12 +137,12 @@ def show(url, title, media_title, image, engine):
     if manifest_links:
         list = sorted(manifest_links.iteritems(), key=itemgetter(0))
         if season:
-            title += " (%sx%s)" % (season.zfill(2), episode.zfill(2)) 
+            title += " - s%se%s" % (season.zfill(2), episode.zfill(2)) 
         for quality, link in list:
             film_title = "%s [COLOR=green][%s][/COLOR]" % (title, str(quality) + '')
             uri = sys.argv[0] + '?mode=play&url=%s&title=%s&media_title=%s&direct=%d' % (urllib.quote_plus(link), urllib.quote_plus(title), urllib.quote_plus(media_title), direct)
             item = xbmcgui.ListItem(film_title, iconImage=image, thumbnailImage=image)
-            item.setInfo(type='Video', infoLabels={'title': media_title, 'label': media_title, 'plot': media_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
+            item.setInfo(type='Video', infoLabels={'title': film_title, 'label': film_title, 'plot': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
             item.setProperty('IsPlayable', 'true')
             if subtitles: 
                 urls = re.compile('http:\/\/.*?\.srt').findall(subtitles)

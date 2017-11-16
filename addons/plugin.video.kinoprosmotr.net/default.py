@@ -55,6 +55,7 @@ class Kinoprosmotr():
 
         mode = params['mode'] if 'mode' in params else None
         url = urllib.unquote_plus(params['url']) if 'url' in params else None
+        url2 = urllib.unquote_plus(params['url2']) if 'url2' in params else None
         page = params['page'] if 'page' in params else 1
 
         keyword = params['keyword'] if 'keyword' in params else None
@@ -63,7 +64,7 @@ class Kinoprosmotr():
             external = 'usearch' if 'usearch' in params else None    
 
         if mode == 'play':
-            self.playItem(url)
+            self.playItem(url, url2)
         if mode == 'search':
             self.search(keyword, external)
         if mode == 'genres':
@@ -218,7 +219,6 @@ class Kinoprosmotr():
         argStr = "?%s" %(encoded_kwargs)
 
         try: 
-            xbmc.log("url_=" + repr(url + argStr))
             request = urllib2.Request(url + argStr, "", headers)
             request.get_method = lambda: 'GET'
             return urllib2.urlopen(request).read()
@@ -230,6 +230,7 @@ class Kinoprosmotr():
 
         response = common.fetchPage({"link": url})
         response_ = response
+        url2 = url
 
         if response["status"] == 200:
             movie = common.parseDOM(response["content"], "div", attrs={"class": "full_movie"})
@@ -265,6 +266,7 @@ class Kinoprosmotr():
                     host = "km396z9t3.xyz"
                     iframe = urlparse.urlunsplit((linkparse.scheme, host, linkparse.path, '', ''))
                     link = iframe + '?ref=' + self.domain
+                    url2 = urllib.quote_plus(link)
                     headers = {
                        'Host': host,
                        'Referer': iframe,
@@ -308,7 +310,7 @@ class Kinoprosmotr():
             if links:
                 self.log("This is a film")
                 for i, link in enumerate(links):   
-                    uri = sys.argv[0] + '?mode=play&url=%s' % link
+                    uri = sys.argv[0] + '?mode=play&url=%s&url2=%s' % (link,url2)
                     item = xbmcgui.ListItem("#%d. " % (i+1) + title,  iconImage=image)
                     item.setInfo(type='Video', infoLabels={'title': title, 'genre': genres, 'plot': desc, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
                     item.setProperty('IsPlayable', 'true')
@@ -340,7 +342,7 @@ class Kinoprosmotr():
 
                             for episode in episods:
                                 etitle = "%s (%s)" % (episode['comment'], common.stripTags(season['comment']))
-                                uri = sys.argv[0] + '?mode=play&url=%s' % episode['file']
+                                uri = sys.argv[0] + '?mode=play&url=%s&url2=%s' % (episode['file'], url2)
                                 item = xbmcgui.ListItem(etitle, iconImage=image)
                                 info = {
                                     'title': title,
@@ -357,9 +359,9 @@ class Kinoprosmotr():
                         print "This is one season"
                         for episode in response['playlist']:
                             etitle = episode['comment']
-                            url = episode['file']
+                            url_ = episode['file']
 
-                            uri = sys.argv[0] + '?mode=play&url=%s' % url
+                            uri = sys.argv[0] + '?mode=play&url=%s&url2=%s' % (url_,url2)
                             item = xbmcgui.ListItem(etitle, iconImage=image)
                             info = {
                                 'title': title,
@@ -398,9 +400,9 @@ class Kinoprosmotr():
         xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def playItem(self, url):
+    def playItem(self, url, url2):
         print "*** play url %s" % url
-        item = xbmcgui.ListItem(path=url + "|User-Agent=Kodi/17.4 (Linux; Android 7.1.1; S3 Build/N6F26U) Android/7.1.1 Sys_CPU/aarch64 App_Bitness/64 Version/17.4-Git:20170822-80a0e63")
+        item = xbmcgui.ListItem(path=url + "|Referer="+url2)
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
     def getUserInput(self):
