@@ -250,6 +250,14 @@ class Kinoprosmotr():
                     values = common.fetchPage({"link": link2})
 
             if not values and not links:
+                vp = common.parseDOM(response['content'], 'object', attrs={"id": "videoplayer1257"})
+                if vp:
+                    link2 = vp[0].split(';pl=')[-1].split('&')[0]
+                    values = common.fetchPage({"link": link2})
+
+            xbmc.log("values=" + repr(values))
+
+            if not values and not links:
                 iframe = None
                 try:
                     iframe = common.parseDOM(movie, "iframe", ret="src")[0]
