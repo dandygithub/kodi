@@ -154,7 +154,7 @@ def show(url, title, media_title, image, engine):
 
 def play(url, direct):
     if (direct != 1) and ("m3u8" in url):
-        url = ("http:" if (not ("http://" in url)) else "") + url
+        url = ("http:" if (not (("http://" in url) or ("https://" in url))) else "") + url
         response = common.fetchPage({"link": url})
         if (not (("http://" in response["content"]) or ("https://" in response["content"]))):
             content = response["content"].split("\n")
