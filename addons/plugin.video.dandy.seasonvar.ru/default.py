@@ -68,6 +68,7 @@ class Seasonvar():
         self.new_search_method = self.addon.getSetting('new_search_method') if self.addon.getSetting('new_search_method') else None
         self.quality = self.addon.getSetting('quality') if self.addon.getSetting('quality') else "sd"
         self.translator = self.addon.getSetting('translator') if self.addon.getSetting('translator') else "standard"
+        self.addtolib = self.addon.getSetting('addtolib') if self.addon.getSetting('addtolib') else None
         
         self.headers = {
                 "Host" : "seasonvar.ru",
@@ -149,17 +150,21 @@ class Seasonvar():
         idPlaylist = int(params['idpl']) if 'idpl' in params else 0
 
         page = int(params['page']) if 'page' in params else None
+        if page == 0:
+            xbmc.executebuiltin('Container.Update(%s, replace)' % sys.argv[0])
 
         filterType = int(params['ft']) if 'ft' in params else None
         filterValue = params['fv'] if 'fv' in params else None
         alphaBeta = int(params['ab']) if 'ab' in params else 0   
+      
+        title =  urllib.unquote_plus(params['title']) if 'title' in params else None
         
         if mode == 'play':
             self.playItem(url)
         if mode == 'search':
             self.search(keyword, external, transpar, strong)
         if mode == 'show':
-            self.show(url, (withMSeason == "1"))
+            self.show(url, title, (withMSeason == "1"))
         if mode == 'filter':
             self.getFilter(filterType, filterValue, alphaBeta)
         if mode == 'nextdate':
@@ -215,7 +220,7 @@ class Seasonvar():
             titleadd = common.parseDOM(titlediv, "span", attrs={"class": "news_s"})[0]
             title_ = title + ' [COLOR=FF00FFF0][' + titlediv.split('</div>')[-1].split('<span')[0].strip() + " " + titleadd + '][/COLOR]'
             link = urls[i]
-            uri = sys.argv[0] + '?mode=show&url=%s&wm=0' % (self.url + link)
+            uri = sys.argv[0] + '?mode=show&url=%s&title=%s&wm=0' % (self.url + link, title)
             image = self.getSerialImage(self.url + link)
             item = xbmcgui.ListItem(title_, iconImage=image, thumbnailImage=image)
             item.setInfo(type='Video', infoLabels={'title': title_})
@@ -226,7 +231,7 @@ class Seasonvar():
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
             
         if page > 0:
-            uri = sys.argv[0] + '?'
+            uri = sys.argv[0] + '?mode=%s&page=%s' % ("nextdate", "0")
             item = xbmcgui.ListItem('[COLOR=FFFFD700]' + self.language(9001) + '[/COLOR]', thumbnailImage=self.inext, iconImage=self.inext)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
             
@@ -285,7 +290,7 @@ class Seasonvar():
                 title_ = ' '.join(title_.split()).strip()
                 image = common.parseDOM(item, "img", ret="data-src")[0]
                 link = urls[i]
-                uri = sys.argv[0] + '?mode=show&url=%s&wm=0' % (self.url + link)
+                uri = sys.argv[0] + '?mode=show&url=%s&title=%s&wm=0' % (self.url + link, title)
                 item = xbmcgui.ListItem(title_, iconImage=image, thumbnailImage=image)
                 item.setInfo(type='Video', infoLabels={'title': title_})
 
@@ -316,11 +321,11 @@ class Seasonvar():
 
 #<script>var pl = {'0': "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vnc8cEV9cAn8UoNzDgisBaePDlN4v2M9ygn9y7D937DpICC"};</script>
 # <ul class="pgs-trans">
-#          <li data-click="translate" data-translate="0">—Ú‡Ì‰‡ÚÌ˚È</li>
-#                <li data-click="translate" data-translate="1">—Û·ÚËÚ˚</li>
+#          <li data-click="translate" data-translate="0">“≤·Æ§·±≤Óº©</li>
+#                <li data-click="translate" data-translate="1">“≥‚≥®Û±πº/li>
 #      <script>pl[1] = "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vncf2gIf2Eof2gofyQcf2gIf2wof2gofyQTf2gIf2wbf2gofyQTf2gofyQIf2gofyh=8cEV9cAn8UoNzDgisBaePDlN4v2M9ygn9y7D937DpICC";</script>          <li data-click="translate" data-translate="16">BaibaKo</li>
-#      <script>pl[16] = "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vncgZFN7ZF84TLop39IOSMe16pV85hd43MV1vaRPyEVOyEUpcAUpczC";</script>          <li data-click="translate" data-translate="68">“ÂÈÎÂ˚</li>
-#      <script>pl[68] = "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vncf2gIf2ETf2gofyQIf2gIf2waf2gIf2wnf2gIf2f=f2gIf2waf2gofyQIf2gofyh=8cEV9cAn8UoNzDgisBaePDlN4v2M9ygn9y7D937DpICC";</script>        <li class="label">¬˚·ÂËÚÂ ÔÂÂ‚Ó‰:</li>
+#      <script>pl[16] = "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vncgZFN7ZF84TLop39IOSMe16pV85hd43MV1vaRPyEVOyEUpcAUpczC";</script>          <li data-click="translate" data-translate="68">”∞Ê™´Ê±ª</li>
+#      <script>pl[68] = "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vncf2gIf2ETf2gofyQIf2gIf2waf2gIf2wnf2gIf2f=f2gIf2waf2gofyQIf2gofyh=8cEV9cAn8UoNzDgisBaePDlN4v2M9ygn9y7D937DpICC";</script>        <li class="label">√ª‚¶∞È≥• ê¶∞Ê£Æ‚∏º/li>
 #  </ul>
 
     def selectTranslator(self, content):
@@ -393,7 +398,15 @@ class Seasonvar():
         xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def parsePlaylist(self, url, playlist, image, description, title):
+    def getTitle(self, title1, title2, title3, season, mode = 0):
+        if self.addtolib != "false":
+            return title3 + " S" + season.zfill(2) + "E" + title2.split(" ")[0].zfill(2) + " [" + title2.replace(title2.split(" ")[0], "").strip().replace(title2.split(" ")[1], "").strip() + "]"
+        elif mode == 0:
+            return title2
+        else:
+            return title1 + " " + title2
+
+    def parsePlaylist(self, url, playlist, image, description, title, season, title_orig):
         for episode in playlist:
             etitle = self.strip(episode['comment'].replace("<br>", "  "))
             playlist_ = None
@@ -413,8 +426,8 @@ class Seasonvar():
                     subtitle = episode["sub"]
                 except:
                     subtitle = None 
-                item = xbmcgui.ListItem(label=etitle, iconImage=image, thumbnailImage=image)
-                labels = {'title': title + " " + etitle, 'plot': description, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0}
+                item = xbmcgui.ListItem(label=self.getTitle(title, etitle, title_orig, season), iconImage=image, thumbnailImage=image)
+                labels = {'title': self.getTitle(title, etitle, title_orig, season, 1), 'plot': description, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0}
                 item.setInfo(type='Video', infoLabels=labels)
                 item.setProperty('IsPlayable', 'true')
                 if subtitle:
@@ -449,7 +462,7 @@ class Seasonvar():
     def getMultiseasonDiv(self, content):
         return common.parseDOM(content, 'div', attrs={'class': 'pgs-seaslist'})
 
-    def show(self, url, withMSeason = True):
+    def show(self, url, title, withMSeason = True):
         print "*** show for url %s " % url
 
         response = common.fetchPage({"link": url, "cookie": self.getCookies()})
@@ -458,6 +471,16 @@ class Seasonvar():
         image = common.parseDOM(content, 'meta', attrs={'property': 'og:image'}, ret='content')[0] if common.parseDOM(content, 'meta', attrs={'property': 'og:image'}, ret='content') else None
         description = common.parseDOM(content, 'meta', attrs={'name': 'description'}, ret='content')[0] if common.parseDOM(response["content"], 'meta', attrs={'name': 'description'}, ret='content') else ''
         multiseason = self.getMultiseasonDiv(content)
+        title_orig_div = common.parseDOM(content, 'div', attrs={'class': 'pgs-sinfo_list'})[0]
+	title_orig = common.parseDOM(title_orig_div, 'span')[0].replace("&#039;", "'")
+        title_ = common.parseDOM(content, 'meta', attrs={'property': 'og:title'}, ret='content')[0]
+        parts = title_.split(" ")
+        season = None
+        for i, part in enumerate(parts):
+            if "—Å–µ–∑–æ–Ω" in part:
+                season = parts[i-1]
+        if season == None:
+            season = "1"
 
         if withMSeason and multiseason:
             serialitems = common.parseDOM(multiseason, "h2")
@@ -466,7 +489,7 @@ class Seasonvar():
                 title = common.parseDOM(serialitem, "a")[0]
                 title = title.replace('<span>', '[COLOR=FF00FFF0][').replace('</span>', '][/COLOR]').replace('<small>', '[COLOR=FF00FFF0][').replace('</small>', '][/COLOR]')
                 title = ' '.join(title.split()).strip()
-                uri = sys.argv[0] + '?mode=show&url=%s&wm=0' % url
+                uri = sys.argv[0] + '?mode=show&url=%s&title=%s&wm=0' % (url, title)
                 item = xbmcgui.ListItem(self.strip(title), iconImage=image, thumbnailImage=image)
                 item.setInfo(type='Video', infoLabels={'title': title})
                 item.select(title.find('>>>') > -1)
@@ -485,9 +508,9 @@ class Seasonvar():
                 json_playlist = json.loads(response["content"])
                 playlist = json_playlist['playlist']
 
-            self.parsePlaylist(url, playlist, image, description, titlemain)
+            self.parsePlaylist(url, playlist, image, description, title, season, title_orig)
 
-        if multiseason:
+        if withMSeason and multiseason:
            xbmcplugin.setContent(self.handle, 'files')
         else:
            xbmcplugin.setContent(self.handle, 'episodes')

@@ -9,6 +9,7 @@
   <setting id="new_search_method" type="bool" label="New search method" default="true"/>
   <setting id="translator" type="labelenum" label="Use translator" values="standard|select" default="standard"/>
   <setting id="quality" type="labelenum" label="Video quality" enable="!eq(2,)" values="sd|hd" default="sd"/>
+  <setting id="addtolib" type="bool" label="Adapt for AddToLib addon" default="false"/>
   <setting type="sep"/>
   <setting id="login" type="text" label="Login" default=""/>
   <setting id="password" type="text" label="Password" enable="!eq(-1,)" option="hidden" default=""/>
