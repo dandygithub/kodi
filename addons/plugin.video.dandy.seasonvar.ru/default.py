@@ -150,7 +150,7 @@ class Seasonvar():
         idPlaylist = int(params['idpl']) if 'idpl' in params else 0
 
         page = int(params['page']) if 'page' in params else None
-        if page == 0:
+	if page == 0:	
             xbmc.executebuiltin('Container.Update(%s, replace)' % sys.argv[0])
 
         filterType = int(params['ft']) if 'ft' in params else None
@@ -231,7 +231,7 @@ class Seasonvar():
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
             
         if page > 0:
-            uri = sys.argv[0] + '?mode=%s&page=%s' % ("nextdate", "0")
+            uri = sys.argv[0] + '?page=%s' % ("0")
             item = xbmcgui.ListItem('[COLOR=FFFFD700]' + self.language(9001) + '[/COLOR]', thumbnailImage=self.inext, iconImage=self.inext)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
             
@@ -451,8 +451,8 @@ class Seasonvar():
             
     def checkAccessContent(self, content):
             bad = common.parseDOM(content, 'div', attrs={'class': 'pgs-player-block'})
-            if not bad:
-                bad = common.parseDOM(content, 'div', attrs={'class': 'pgs-msg'})
+#            if not bad:
+#                bad = common.parseDOM(content, 'div', attrs={'class': 'pgs-msg'})
             if bad:
                 self.showErrorMessage("Content unavailable")
                 return False
@@ -500,8 +500,12 @@ class Seasonvar():
                 return
 
             self.addplaylists = []
-            response = common.fetchPage({"link": self.getURLPlayList(url, content, 0), "cookie": self.getCookies()})
-            json_playlist = json.loads(response["content"])
+            try: 
+                response = common.fetchPage({"link": self.getURLPlayList(url, content, 0), "cookie": self.getCookies()})
+                json_playlist = json.loads(response["content"])
+            except:
+                self.showErrorMessage("Content unavailable")
+                return
             playlist = json_playlist['playlist']
             if not playlist:
                 response = common.fetchPage({"link": self.getURLPlayList(url, content, 1), "cookie": self.getCookies()})
