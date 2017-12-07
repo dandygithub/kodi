@@ -6,13 +6,14 @@ import xbmc
 import XbmcHelpers
 common = XbmcHelpers
 
-def get_key(content):
+def get_key(content, content2):
     key = ''
     value = '' 
     try:  
         data = content.split('window.')[-1].split("';")[0]
-        key = data.split(' ')[0]
         value = data.split("'")[1]
+        data = content2.split('iframe_version:"')[-1].split('},')[0] 
+        key = data.split(',')[-1].split(':')[0] 
     except:
         pass 
     return key, value
@@ -39,7 +40,7 @@ def get_access_attrs(content):
     values['p_domain_id'] = content.split("domain_id: ")[-1].split(",")[0] 
     values['mw_pid'] = content.split("partner_id: ")[-1].split(",")[0] 
 
-    key, value = get_key(content) 
+    key, value = get_key(content, response) 
 
     values[key] = value
 

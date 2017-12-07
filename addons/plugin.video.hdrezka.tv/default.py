@@ -193,7 +193,7 @@ class HdrezkaTV():
                 item.setInfo(type='Video', infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
                 item.setProperty('IsPlayable', 'true')
                 if subtitles: 
-                    urls = re.compile('http:\/\/.*?\.srt').findall(subtitles)
+                    urls = subtitles
                     item.setSubtitles(urls)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
@@ -338,20 +338,20 @@ class HdrezkaTV():
     def get_video_link_from_iframe(self, url, mainurl):
 
         playlist_domain = 'streamblast.cc'
-        playlist_domain2 = 's1.cdnapponline.com'
+        playlist_domain2 = 's4.cdnapponline.com'
 
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
 #            "Referer": mainurl
-            "Referer": "http://google.com"
+            "Referer": "http://www.random.org"
         }
         request = urllib2.Request(url, "", headers)
         request.get_method = lambda: 'GET'
         response = urllib2.urlopen(request).read()
 
         subtitles = None
-        if "var subtitles = JSON.stringify(" in response:
-            subtitles = response.split("var subtitles = JSON.stringify(")[-1].split(");")[0]
+        if 'subtitles: {"master_vtt":"' in response:
+            subtitles = response.split('subtitles: {"master_vtt":"')[-1].split('"')[0]
 
         ###################################################
         values, attrs = moonwalk.get_access_attrs(response)
@@ -362,20 +362,21 @@ class HdrezkaTV():
             "Origin": "http://" + playlist_domain2,
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
             "Referer": url,
-            "X-Requested-With": "XMLHttpRequest",
+            "X-Requested-With": "XMLHttpRequest"
         }
         headers.update(attrs)
 
         request = urllib2.Request('http://' + playlist_domain2 + attrs["purl"], urllib.urlencode(values), headers)
         response = urllib2.urlopen(request).read()
-
         data = json.loads(response.decode('unicode-escape'))
         playlisturl = data['mans']['manifest_m3u8']
 
         headers = {
-            "Host": playlist_domain,
+            "Host": playlist_domain2,
+            "Referer": url,
             "Origin": "http://" + playlist_domain2,
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
+            "X-Requested-With": "XMLHttpRequest"
         }
 
         request = urllib2.Request(playlisturl, "", headers)
