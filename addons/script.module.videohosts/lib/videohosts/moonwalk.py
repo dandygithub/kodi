@@ -10,9 +10,9 @@ def get_key(content):
     key = ''
     value = '' 
     try:  
-        data = content.split('mw_key:"')[-1].split('",mw_pid')[0]
-        key = data.split('",')[-1].split(':"')[0]
-        value = data.split(':"')[-1]
+        data = content.split('window.')[-1].split("';")[0]
+        key = data.split(' ')[0]
+        value = data.split("'")[1]
     except:
         pass 
     return key, value
@@ -34,15 +34,15 @@ def get_access_attrs(content):
 
     values['mw_key'] = response.split('mw_key:"')[-1].split('",')[0] 
     values['ad_attr'] = response.split('ad_attr:')[-1].split(',')[0] 
-    values['iframe_version'] = response.split('iframe_version:"')[-1].split('"}')[0] 
+    values['iframe_version'] = response.split('iframe_version:"')[-1].split('"')[0] 
 
     values['p_domain_id'] = content.split("domain_id: ")[-1].split(",")[0] 
     values['mw_pid'] = content.split("partner_id: ")[-1].split(",")[0] 
 
-    key, value = get_key(response) 
+    key, value = get_key(content) 
 
     values[key] = value
 
-    attrs['X-Access-Level'] = content.split("user_token: '")[-1].split("',")[0] 
+    #attrs['X-Access-Level'] = content.split("user_token: '")[-1].split("',")[0] 
 
     return values, attrs
