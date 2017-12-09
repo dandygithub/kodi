@@ -408,7 +408,7 @@ class Seasonvar():
 
     def parsePlaylist(self, url, playlist, image, description, title, season, title_orig):
         for episode in playlist:
-            etitle = self.strip(episode['comment'].replace("<br>", "  "))
+            etitle = self.strip(episode['title'].replace("<br>", "  "))
             playlist_ = None
             try:
                 url = episode['file']
@@ -506,7 +506,7 @@ class Seasonvar():
             except:
                 self.showErrorMessage("Content unavailable")
                 return
-            playlist = json_playlist['playlist']
+            playlist = json_playlist
             if not playlist:
                 response = common.fetchPage({"link": self.getURLPlayList(url, content, 1), "cookie": self.getCookies()})
                 json_playlist = json.loads(response["content"])
