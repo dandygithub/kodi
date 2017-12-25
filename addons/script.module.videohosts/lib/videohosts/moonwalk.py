@@ -10,10 +10,9 @@ def get_key(content, content2):
     key = ''
     value = '' 
     try:  
-        data = content.split('window.')[-1].split("';")[0]
-        value = data.split("'")[1]
-        data = content2.split('iframe_version:"')[-1].split('},')[0] 
-        key = data.split(',')[-1].split(':')[0] 
+        data = content.split("window['")[-1].split("';")[0]
+        value = data.split("'")[2]
+        key = content2.split('};n.')[-1].split('=e[')[0] 
     except:
         pass 
     return key, value
