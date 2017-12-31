@@ -66,7 +66,7 @@ def get_content(part):
             for item in rows:
                 try: 
                     tds = common.parseDOM(item, "td")
-                    url_ = common.parseDOM(item, "a", attrs={"class": "btn btn-info btn-xs copycode"}, ret="data-code")[0]
+                    url_ = "http:" + common.parseDOM(item, "a", attrs={"class": "btn btn-info btn-xs copycode"}, ret="data-code")[0]
                 except:
                     continue
                 url = prepare_url(url_)

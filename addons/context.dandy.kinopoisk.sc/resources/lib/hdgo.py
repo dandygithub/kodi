@@ -110,6 +110,13 @@ def get_playlist(url):
         response = urllib2.urlopen(request).read()
     except:
         return manifest_links, subtitles, season, episode 
+    iframe = "http:" + common.parseDOM(response, "iframe", ret="src")[0]
+    try: 
+        request = urllib2.Request(iframe, "", headers)
+        request.get_method = lambda: 'GET'
+        response = urllib2.urlopen(request).read()
+    except:
+        return manifest_links, subtitles, season, episode 
 
     #tvshow
     tvshow = common.parseDOM(response, "select", attrs={"name": "season"})
