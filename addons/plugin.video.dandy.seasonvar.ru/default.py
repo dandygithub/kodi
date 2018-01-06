@@ -487,7 +487,7 @@ class Seasonvar():
             for serialitem in serialitems:
                 url = self.url + common.parseDOM(serialitem, "a", ret="href")[0]
                 title = common.parseDOM(serialitem, "a")[0]
-                title = title.replace('<span>', '[COLOR=FF00FFF0][').replace('</span>', '][/COLOR]').replace('<small>', '[COLOR=FF00FFF0][').replace('</small>', '][/COLOR]')
+                title = title.replace('<span>', '[COLOR=FF00FFF0][').replace('</span>', '][/COLOR]').replace('<small>', '[COLOR=FF00FFF0][').replace('</small>', '][/COLOR]').replace("&#039;", "'")
                 title = ' '.join(title.split()).strip()
                 uri = sys.argv[0] + '?mode=show&url=%s&title=%s&wm=0' % (url, title)
                 item = xbmcgui.ListItem(self.strip(title), iconImage=image, thumbnailImage=image)
