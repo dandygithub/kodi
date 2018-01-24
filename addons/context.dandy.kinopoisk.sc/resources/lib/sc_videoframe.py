@@ -74,19 +74,22 @@ def get_content():
     list_li = []
 
     VALUES["kp_id"] = _kp_id_
-    url2, response = get_response(URL, HEADERS, VALUES, 'GET')
-    if response:
-        if (not ("Sorry, not found" in response)):
+    try:
+        url2, response = get_response(URL, HEADERS, VALUES, 'GET')
+        if response:
+            if (not ("Sorry, not found" in response)):
 #        values2 = getValues(response) 
 #        HEADERS2["Referer"]  = url2
 #        url2, response2 = get_response(URL+"stats.php", HEADERS2, values2, 'GET')
 #        if response2:
 #        url = response2.split('"url":"')[-1].split('","')[0].replace("\/", "/")
-            title_ = getTitle(response)
-            title = "[COLOR=orange][{0}][/COLOR] {1}".format(vh_title, title_)
-            uri = sys.argv[0] + "?mode=show&url={0}&title={1}".format(urllib.quote_plus(url2), urllib.quote_plus(title))
-            item = xbmcgui.ListItem(title)
-            list_li.append([uri, item, True]) 
+                title_ = getTitle(response)
+                title = "[COLOR=orange][{0}][/COLOR] {1}".format(vh_title, title_)
+                uri = sys.argv[0] + "?mode=show&url={0}&title={1}".format(urllib.quote_plus(url2), urllib.quote_plus(title))
+                item = xbmcgui.ListItem(title)
+                list_li.append([uri, item, True]) 
+    except:
+        pass
     return list_li
 
 

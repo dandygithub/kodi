@@ -21,6 +21,8 @@ ID = 'context.dandy.kinopoisk.sc'
 ADDON = xbmcaddon.Addon(ID)
 PATH = ADDON.getAddonInfo('path')
 
+EXT_SEARCH = ADDON.getSetting('ext_search') if ADDON.getSetting('ext_search') else "false"
+
 PARAMS = None
 
 def get_media_title(kp_id):
@@ -43,22 +45,35 @@ def get_media_image(kp_id):
 
 def search_kp_id(media_title):
     media = []
+    media_titles = []
 
     response = common.fetchPage({"link": "http://www.kinopoisk.ru/index.php?first=no&what=&kp_query=" + urllib.quote_plus(media_title)})
+
     if response["status"] == 200:
         content = response["content"]
 
         try:
             div = common.parseDOM(content, "div", attrs={"class": "search_results"})[0]
-            links = common.parseDOM(div, "ul", attrs={"class": "links"})[0]
-            media.append(common.parseDOM(links, "a", ret="data-id")[0])
+            info = common.parseDOM(div, "div", attrs={"class": "info"})[0]
+            title = encode_('utf-8', decode_('cp1251', common.parseDOM(info, "a")[0]))
+            media.append(common.parseDOM(info, "a", ret="data-id")[0])            
+            media_titles.append(title + " (" + common.parseDOM(info, "span")[0] + ")")
+            if EXT_SEARCH == "true":
+                divmain = common.parseDOM(content, "div", attrs={"class": "search_results search_results_last"})[0]
+                divs = common.parseDOM(divmain, "div", attrs={"class": "element"})
+                for div in divs:
+                    info = common.parseDOM(div, "div", attrs={"class": "info"})[0]
+                    title = encode_('utf-8', decode_('cp1251', common.parseDOM(info, "a")[0]))
+                    if media_title.decode('utf-8').upper() in title.decode('utf-8').upper(): 
+                        media.append(common.parseDOM(info, "a", ret="data-id")[0])
+                        media_titles.append(title + " (" + common.parseDOM(info, "span")[0] + ")")
         except:
             pass
 
     ret = 0
     if len(media) > 0:
         if len(media) > 1:
-            ret = xbmcgui.Dialog().select("Select media", media)
+            ret = xbmcgui.Dialog().select("Select media", media_titles)
         if ret >= 0:
             return media[ret]
         else:
@@ -139,7 +154,7 @@ def show(url, title, media_title, image, engine):
         if season:
             title += " - s%se%s" % (season.zfill(2), episode.zfill(2)) 
         for quality, link in list:
-            film_title = "%s [COLOR=green][%s][/COLOR]" % (title, str(quality) + '')
+            film_title = "[COLOR=lightgreen][%s][/COLOR] %s" % (str(quality), title)
             uri = sys.argv[0] + '?mode=play&url=%s&title=%s&media_title=%s&direct=%d' % (urllib.quote_plus(link), urllib.quote_plus(title), urllib.quote_plus(media_title), direct)
             item = xbmcgui.ListItem(film_title, iconImage=image, thumbnailImage=image)
             item.setInfo(type='Video', infoLabels={'title': film_title, 'label': film_title, 'plot': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})

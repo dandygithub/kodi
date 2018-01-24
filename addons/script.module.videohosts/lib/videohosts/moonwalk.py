@@ -6,6 +6,8 @@ import xbmc
 import XbmcHelpers
 common = XbmcHelpers
 
+socket.setdefaulttimeout(120)
+
 def get_key(content, content2):
     key = ''
     value = '' 

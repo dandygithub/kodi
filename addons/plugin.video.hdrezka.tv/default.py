@@ -23,6 +23,8 @@ except:
 
 from videohosts import moonwalk
 
+socket.setdefaulttimeout(120)
+
 QUALITY_TYPES = (360, 480, 720, 1080)
 
 class HdrezkaTV():
