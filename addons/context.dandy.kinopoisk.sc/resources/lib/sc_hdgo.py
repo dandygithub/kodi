@@ -49,6 +49,18 @@ def prepare_url(url):
     else:
         return url
 
+def add_title_info(info):
+    result = ""
+    if info[2] or info[3]:
+        result = " ("
+    if info[2]:
+        result = result + strip_(info[2])
+    if info[3]:
+        result = result + ", " + strip_(info[3])
+    if result != "":
+        result = result + ")"
+    return result
+
 def get_content(part):
     vh_title = "hdgo.club"
     list_li = []
@@ -67,7 +79,7 @@ def get_content(part):
                 except:
                     continue
                 url = prepare_url(url_)
-                title_ = strip_(divs[1].split("\n")[0]) + " (" + strip_(divs[2]) + ", " + strip_(divs[3]) + ")"
+                title_ = strip_(divs[1].split("\n")[0]) + add_title_info(divs)
                 title = "[COLOR=orange][{0}][/COLOR] {1}".format(vh_title, title_)
                 uri = sys.argv[0] + "?mode=show&url={0}&title={1}".format(urllib.quote_plus(url), urllib.quote_plus(title))
                 item = xbmcgui.ListItem(title)
