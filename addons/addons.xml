@@ -150,7 +150,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="2.1.10" provider-name="MrStealth, dandy">
+<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="2.1.11" provider-name="MrStealth, dandy">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.xbmc.helpers" version="2.0.0"/>
@@ -291,7 +291,7 @@
 	</extension>
 </addon>
 
-<addon id="script.module.videohosts" name="VideoHosts" version="1.0.11" provider-name="dandy">
+<addon id="script.module.videohosts" name="VideoHosts" version="1.0.12" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.0.0"/>

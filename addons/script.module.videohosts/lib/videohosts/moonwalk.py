@@ -4,6 +4,7 @@
 import urllib, urllib2
 import xbmc
 import XbmcHelpers
+import socket
 common = XbmcHelpers
 
 socket.setdefaulttimeout(120)
