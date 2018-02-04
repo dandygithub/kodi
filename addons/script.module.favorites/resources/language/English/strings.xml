@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+    <string id="1000">[B]My Favorites[/B]</string>
+    <string id="1001">Add to 'My Favorites'</string>
+    <string id="1002">Remove from 'My Favorites'</string>
+    <string id="1003">Item added to 'My Favorites'</string>
+    <string id="1004">Item removed from 'My Favorites'</string>
+    <string id="1005">Empty ...</string>
+</strings>
