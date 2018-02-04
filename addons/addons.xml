@@ -307,4 +307,16 @@
     <license>GNU GPL v.3</license>
   </extension>
 </addon>
+
+<addon id='script.module.xbmc.helpers' version='2.1.0' name='Xbmc helpers module based on Parsedom module' provider-name='mrstealth, dandy'>
+  <requires>
+    <import addon="xbmc.python" version="2.1.0" />
+  </requires>
+  <extension point='xbmc.service' library="default.py" />
+  <extension point='xbmc.addon.metadata'>
+    <platform>all</platform>
+    <summary lang='en'>XbmcHelpers based on Parsedom module.</summary>
+  </extension>
+  <extension point='xbmc.python.module' library='lib' />
+</addon>
 </addons>
