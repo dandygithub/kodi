@@ -22,6 +22,7 @@ ADDONS_WITH_KINOPOISKID = {"plugin.video.KinoPoisk.ru": r"\?id=(.*)\&"}
 IS_EDIT = ADDON.getSetting('is_edit') if ADDON.getSetting('is_edit') else "false"
 
 _kp_id_ = ''
+_orig_title_ = ''
 _media_title_ = ''
 _image_ = ''
 _addon_id_ = ''
@@ -64,8 +65,7 @@ def edit_title(title):
             title = ""
     return title
 
-def get_media_title():
-    title = get_title()
+def get_media_title(title):
     patterns = PATTERNS_FOR_DELETE.split(",") if PATTERNS_FOR_DELETE else []
     for pattern in patterns:
         title = re.compile(decode_(pattern)).sub("", title).strip()
@@ -93,17 +93,18 @@ def show_message(msg):
 
 
 def main():
-    global _kp_id_, _media_title_, _image_, _addon_id_
+    global _kp_id_, _title_, _media_title_, _image_, _addon_id_
     _addon_id_ = get_addon_id()
     _kp_id_ = get_kinopoisk_id()
-    _media_title_ = get_media_title()
+    _orig_title_ = get_title()    
+    _media_title_ = get_media_title(_orig_title_)
     _image_ = get_image()
 
     if _kp_id_:
-        uri = "plugin://{0}?mode=context&kp_id={1}&media_title={2}&image={3}".format(ID, _kp_id_, urllib.quote_plus(encode_(_media_title_)), urllib.quote_plus(encode_(_image_)))
-    else:
-        uri = "plugin://{0}?mode=context&media_title={1}&image={2}".format(ID, urllib.quote_plus(encode_(_media_title_)), urllib.quote_plus(encode_(_image_)))
-    #xbmc.executebuiltin("ActivateWindow(videos,{0},return)".format(uri))
+        uri = "plugin://{0}?mode=context&kp_id={1}&orig_title={2}&media_title={3}&image={4}".format(ID, _kp_id_, urllib.quote_plus(encode_(_orig_title_)), urllib.quote_plus(encode_(_media_title_)), urllib.quote_plus(encode_(_image_)))
+    else:    
+        uri = "plugin://{0}?mode=context&orig_title={1}&media_title={2}&image={3}".format(ID, urllib.quote_plus(encode_(_orig_title_)), urllib.quote_plus(encode_(_media_title_)), urllib.quote_plus(encode_(_image_)))
+
     xbmc.executebuiltin("Container.Update({0})".format(uri))
 
 if __name__ == '__main__':

@@ -67,7 +67,7 @@ def getTitle(content):
     trans_ = common.parseDOM(content, "div", attrs={"class": "trans"})
     if trans_:
         title_ = title_ + " (" + trans_[0] + ")" 
-    return title_
+    return strip_(title_)
 
 def get_content():
     vh_title = "videoframe.online"

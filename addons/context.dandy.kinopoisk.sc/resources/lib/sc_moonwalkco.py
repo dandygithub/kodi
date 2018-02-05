@@ -41,10 +41,10 @@ def prepare_url(url):
     if not url:
         return ""
     HEADERS2["Referer"] = url
-    response = get_response(url, HEADERS2, {})
-    if response:
+    try:
+        response = get_response(url, HEADERS2, {})
         return common.parseDOM(response, "iframe", ret="src")[0]
-    else:
+    except:
         return url
 
 def get_content():

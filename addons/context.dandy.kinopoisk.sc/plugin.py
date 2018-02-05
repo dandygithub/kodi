@@ -24,26 +24,33 @@ PATH = ADDON.getAddonInfo('path')
 EXT_SEARCH = ADDON.getSetting('ext_search') if ADDON.getSetting('ext_search') else "false"
 
 PARAMS = None
+MODE = None
 
-def get_media_title(kp_id):
-    media_title = "None"
-    image = ""
+def get_media_title(kp_id, media_title):
     if not kp_id:
         return media_title
+
+    if media_title:
+        media_title_ = media_title
+    else:
+        media_title_ = "<" + kp_id + ">"
+
     response = common.fetchPage({"link": "https://www.kinopoisk.ru/film/" + kp_id + "/"})
+
     if response["status"] == 200:
         content = response["content"]
         try:
             div = common.parseDOM(content, "div", attrs={"id": "headerFilm"})[0]
-            media_title = common.parseDOM(div, "h1")[0]
+            media_title_ = strip_(encode_('utf-8', decode_('cp1251', common.parseDOM(div, "h1")[0])))
         except:
             pass
-    return strip_(encode_('utf-8', decode_('cp1251', media_title)))
+    return media_title_
+
 
 def get_media_image(kp_id):
     return "https://st.kp.yandex.net/images/film_big/" + kp_id + ".jpg"
 
-def search_kp_id(media_title):
+def search_kp_id(media_title, mode):
     media = []
     media_titles = []
 
@@ -57,8 +64,8 @@ def search_kp_id(media_title):
             info = common.parseDOM(div, "div", attrs={"class": "info"})[0]
             title = encode_('utf-8', decode_('cp1251', common.parseDOM(info, "a")[0]))
             media.append(common.parseDOM(info, "a", ret="data-id")[0])            
-            media_titles.append(title + " (" + common.parseDOM(info, "span")[0] + ")")
-            if EXT_SEARCH == "true":
+            media_titles.append(replace_(title + " (" + common.parseDOM(info, "span")[0] + ")"))
+            if (EXT_SEARCH == "true") and (mode != "search"):
                 divmain = common.parseDOM(content, "div", attrs={"class": "search_results search_results_last"})[0]
                 divs = common.parseDOM(divmain, "div", attrs={"class": "element"})
                 for div in divs:
@@ -66,7 +73,7 @@ def search_kp_id(media_title):
                     title = encode_('utf-8', decode_('cp1251', common.parseDOM(info, "a")[0]))
                     if media_title.decode('utf-8').upper() in title.decode('utf-8').upper(): 
                         media.append(common.parseDOM(info, "a", ret="data-id")[0])
-                        media_titles.append(title + " (" + common.parseDOM(info, "span")[0] + ")")
+                        media_titles.append(replace_(title + " (" + common.parseDOM(info, "span")[0] + ")"))
         except:
             pass
 
@@ -89,12 +96,11 @@ def get_user_input():
         kp_id = result
     return kp_id
 
-def get_kp_id(media_title):
+def get_kp_id(media_title, mode):
     if media_title:
-        return search_kp_id(media_title)
+        return search_kp_id(media_title, mode)
     else:
         return get_user_input()
-
 
 def get_engine(data):
     if 'moonwalk' in data:
@@ -107,6 +113,35 @@ def get_engine(data):
         return 'videoframe'
     else:
         return 'none'
+
+def prepare(mode, kp_id, orig_title, media_title, image):
+    search_kp_id = False 
+    if (not kp_id):
+        kp_id = get_kp_id(media_title, mode)
+        search_kp_id = True 
+    if (not kp_id):
+        return None, "", "", ""
+    if search_kp_id == True: 
+        media_title = get_media_title(kp_id, media_title)
+        orig_title = media_title
+        image = get_media_image(kp_id)
+    return kp_id, orig_title, media_title, image
+
+def main_(mode, kp_id, orig_title, media_title, image):
+    kp_id, orig_title, media_title, image = prepare(mode, kp_id, orig_title, media_title, image)
+    if (not kp_id):
+        return
+    if mode == "search":
+        process(kp_id, media_title, image)
+    else:    
+        film_title = " %s" % (orig_title)
+        uri = sys.argv[0] + '?mode=process&kp_id=%s&media_title=%s&image=%s' % (kp_id, urllib.quote_plus(media_title), urllib.quote_plus(image))
+        item = xbmcgui.ListItem(film_title, iconImage=image, thumbnailImage=image)
+        item.setInfo(type='Video', infoLabels={'title': film_title, 'label': film_title, 'plot': film_title})
+        xbmcplugin.addDirectoryItem(HANDLE, uri, item, True)
+        xbmcplugin.setContent(HANDLE, 'movies')
+        xbmcplugin.endOfDirectory(HANDLE, True)
+
 
 def process(kp_id, media_title, image):
     list_li = []
@@ -203,28 +238,27 @@ def encode_(code, param):
 def strip_(string):
     return common.stripTags(string)
 
+def replace_(string):
+    return string.replace("&ndash;", "/")
+
 def main():
     PARAMS = common.getParameters(sys.argv[2])
-    kp_id = PARAMS['kp_id'] if 'kp_id' in PARAMS else None
+    kp_id = PARAMS['kp_id'] if ('kp_id' in PARAMS) else None
     mode = PARAMS['mode'] if 'mode' in PARAMS else None
     url = urllib.unquote_plus(PARAMS['url']) if 'url' in PARAMS else None
     title = urllib.unquote_plus(PARAMS['title']) if 'title' in PARAMS else None
+    orig_title = urllib.unquote_plus(PARAMS['orig_title']) if 'orig_title' in PARAMS else None    
     media_title = urllib.unquote_plus(PARAMS['media_title']) if 'media_title' in PARAMS else None
+    if orig_title == None:
+        orig_title = media_title
     image = urllib.unquote_plus(PARAMS['image']) if 'image' in PARAMS else None
     direct = int(PARAMS['direct']) if 'direct' in PARAMS else None
     engine = PARAMS['engine'] if 'engine' in PARAMS else None
 
-    search_kp_id = False 
     if (not mode) or (mode == "context") or (mode == "search"):
-        if (not kp_id):
-            kp_id = get_kp_id(media_title)
-            search_kp_id = True 
-        if (not kp_id):
-            return
-        if search_kp_id == True: 
-            media_title = get_media_title(kp_id)
-            image = get_media_image(kp_id)
-        process(kp_id, media_title, image)
+        main_(mode, kp_id, orig_title, media_title, image)
+    elif mode == "process":
+        process(kp_id, media_title, image)    
     elif mode == "show":
         show(url, title, media_title, image, engine)
     elif mode == "play":

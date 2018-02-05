@@ -86,17 +86,17 @@ def select_episode(data, url):
     response = urllib2.urlopen(request).read()
     
     series = []
-    series_ =  response.split("episodes: [[")[-1].split("]],")[0].split("],[")
+    series_ =  response.split("episodes: [")[-1].split("],")[0].split(",")
     for seria in series_:
-        series.append(seria.split(",")[1])
+        series.append(seria)
 
     if len(series) > 1:
         dialog = xbmcgui.Dialog()
         index_ = dialog.select("Select episode", series)
         if int(index_) < 0:
-            index_ = -1    
+            return "", sindex, eindex        
     else:
-        index_ = 0  
+        index_ = 0
     episode = series[index_]
     eindex = str(index_ + 1)
     if episode < 0:
