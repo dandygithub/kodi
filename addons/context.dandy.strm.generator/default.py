@@ -108,16 +108,38 @@ def generate_strm(category, media_title, year):
 
     path = xbmc.getInfoLabel('ListItem.FileNameAndPath')
 
-    dirlib = os.path.join(DIRECTORY.decode("utf-8"), 'lib/' + category)
+    dirlib = os.path.join(DIRECTORY.decode("utf-8"), 'lib/' + category.replace("(ts)", "").strip())
     if not os.path.exists(dirlib):
         os.makedirs(dirlib)
-    name = dirlib + "/" + encode_(media_title) + ".strm"
-    f = open(name, "w+")
-    uri = "plugin://{0}?mode=run&uri={1}".format(ID, urllib.quote_plus(encode_(path)))
-    f.write(uri + "\n")
-    f.close()
+
+    if "(ts)" in category:
+        namedir = dirlib + "/" + encode_(media_title)
+        if not os.path.exists(namedir):
+            os.makedirs(namedir)
+        namefile = dirlib + "/" + encode_(media_title) + "/s1e1.strm"
+        name = namedir
+        try:
+            f = open(namefile, "w+")
+            uri = "plugin://{0}?mode=run&uri={1}".format(ID, urllib.quote_plus(encode_(path)))
+            f.write(uri + "\n")
+            f.close()
+        except:
+            return
+    else:
+        name = dirlib + "/" + encode_(media_title) + ".strm"
+        try:
+            f = open(name, "w+")
+            uri = "plugin://{0}?mode=run&uri={1}".format(ID, urllib.quote_plus(encode_(path)))
+            f.write(uri + "\n")
+            f.close()
+        except:
+            return
+    xbmcgui.Dialog().ok(".strm", "", "Generated " + name)
 
 def generate_nfo(category, media_title, year):
+    if "(ts)" in category:
+        return
+    media_title_orig = media_title
     if TRANSLIT == "true":
         media_title = translit.eng(media_title)
     if year:
@@ -125,7 +147,7 @@ def generate_nfo(category, media_title, year):
 
     nfo = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n'
     nfo += '<movie>\n'
-    nfo += "    <title>" + encode_(media_title) + "</title>\n"
+    nfo += "    <title>" + encode_(media_title_orig) + "</title>\n"
     if year:
         nfo += "    <year>" + year + "</year>\n"
     nfo += "</movie>\n"
@@ -134,9 +156,13 @@ def generate_nfo(category, media_title, year):
     if not os.path.exists(dirlib):
         os.makedirs(dirlib)
     name = dirlib + "/" + encode_(media_title) + ".nfo"
-    f = open(name, "w+")
-    f.write(nfo + "\n")
-    f.close()
+    try:
+        f = open(name, "w+")
+        f.write(nfo + "\n")
+        f.close()
+    except:
+        return
+    xbmcgui.Dialog().ok(".nfo", "", "Generated " + name)
     
 def generate():
     category = select_category()
@@ -151,7 +177,9 @@ def generate():
 def run(uri):
     playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     playlist.clear()
-    xbmc.executebuiltin("Container.Update({0})".format(uri))
+    cwnd = xbmcgui.getCurrentWindowId()
+    xbmc.executebuiltin("ActivateWindow({0}, {1})".format("10025", uri))
+    #xbmc.executebuiltin("Container.Update({0})".format(uri))
 
 def main():
     mode = None
