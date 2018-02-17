@@ -77,21 +77,6 @@ def get_image():
     image = xbmc.getInfoLabel("ListItem.Icon") if xbmc.getInfoLabel("ListItem.Icon") else xbmc.getInfoLabel("ListItem.Thumb")
     return decode_(image)
 
-def decode_(param):
-    try:
-        return param.decode('utf-8')
-    except:
-        return param
-
-def encode_(param):
-    try:
-        return unicode(param).encode('utf-8')
-    except:
-        return param
-
-def show_message(msg):
-    xbmc.executebuiltin("XBMC.Notification(%s, %s, %s)" % ("ERROR", msg, str(5 * 1000)))
-
 def select_category():
     category = None
     if CATEGORIES != None:
@@ -123,8 +108,11 @@ def generate_strm(category, media_title, year):
             uri = "plugin://{0}?mode=run&uri={1}".format(ID, urllib.quote_plus(encode_(path)))
             f.write(uri + "\n")
             f.close()
-        except:
+        except Exception, e:
+            xbmc.log( '[%s]: WRITE EXCEPT [%s]' % (ID, e), 4 )
+            show_message(e)
             return
+
     else:
         name = dirlib + "/" + encode_(media_title) + ".strm"
         try:
@@ -132,7 +120,9 @@ def generate_strm(category, media_title, year):
             uri = "plugin://{0}?mode=run&uri={1}".format(ID, urllib.quote_plus(encode_(path)))
             f.write(uri + "\n")
             f.close()
-        except:
+        except Exception, e:
+            xbmc.log( '[%s]: WRITE EXCEPT [%s]' % (ID, e), 4 )
+            show_message(e)
             return
     xbmcgui.Dialog().ok(".strm", "", "Generated " + name)
 
@@ -160,7 +150,9 @@ def generate_nfo(category, media_title, year):
         f = open(name, "w+")
         f.write(nfo + "\n")
         f.close()
-    except:
+    except Exception, e:
+        xbmc.log( '[%s]: WRITE EXCEPT [%s]' % (ID, e), 4 )
+        show_message(e)
         return
     xbmcgui.Dialog().ok(".nfo", "", "Generated " + name)
     
@@ -180,6 +172,21 @@ def run(uri):
     cwnd = xbmcgui.getCurrentWindowId()
     xbmc.executebuiltin("ActivateWindow({0}, {1})".format("10025", uri))
     #xbmc.executebuiltin("Container.Update({0})".format(uri))
+
+def decode_(param):
+    try:
+        return param.decode('utf-8')
+    except:
+        return param
+
+def encode_(param):
+    try:
+        return unicode(param).encode('utf-8')
+    except:
+        return param
+
+def show_message(msg):
+    xbmc.executebuiltin("XBMC.Notification(%s, %s, %s)" % ("ERROR", msg, str(5 * 1000)))
 
 def main():
     mode = None

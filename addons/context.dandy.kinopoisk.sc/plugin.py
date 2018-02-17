@@ -71,7 +71,7 @@ def search_kp_id(media_title, mode):
                 for div in divs:
                     info = common.parseDOM(div, "div", attrs={"class": "info"})[0]
                     title = encode_('utf-8', decode_('cp1251', common.parseDOM(info, "a")[0]))
-                    if media_title.decode('utf-8').upper() in title.decode('utf-8').upper(): 
+                    if media_title.decode('utf-8').upper() == title.decode('utf-8').upper(): 
                         media.append(common.parseDOM(info, "a", ret="data-id")[0])
                         media_titles.append(replace_(title + " (" + common.parseDOM(info, "span")[0] + ")"))
         except:
@@ -121,10 +121,12 @@ def prepare(mode, kp_id, orig_title, media_title, image):
         search_kp_id = True 
     if (not kp_id):
         return None, "", "", ""
-    if search_kp_id == True: 
-        media_title = get_media_title(kp_id, media_title)
+
+    media_title = get_media_title(kp_id, media_title)
+    if orig_title == None:
         orig_title = media_title
-        image = get_media_image(kp_id)
+    image = get_media_image(kp_id)
+
     return kp_id, orig_title, media_title, image
 
 def main_(mode, kp_id, orig_title, media_title, image):

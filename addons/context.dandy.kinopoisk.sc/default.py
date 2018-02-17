@@ -26,6 +26,7 @@ _orig_title_ = ''
 _media_title_ = ''
 _image_ = ''
 _addon_id_ = ''
+_year_ = ''
 
 def get_kinopoisk_id():
     pattern = None
@@ -65,6 +66,12 @@ def edit_title(title):
             title = ""
     return title
 
+def get_media_year():
+    title = get_title()
+    pattern = r"[([]([12][90]\d\d)[]), ]"
+    match = re.compile(decode_(pattern)).search(title)
+    return match.group(1) if match else None
+
 def get_media_title(title):
     patterns = PATTERNS_FOR_DELETE.split(",") if PATTERNS_FOR_DELETE else []
     for pattern in patterns:
@@ -93,12 +100,13 @@ def show_message(msg):
 
 
 def main():
-    global _kp_id_, _title_, _media_title_, _image_, _addon_id_
+    global _kp_id_, _title_, _media_title_, _image_, _addon_id_, _year_
     _addon_id_ = get_addon_id()
     _kp_id_ = get_kinopoisk_id()
     _orig_title_ = get_title()    
     _media_title_ = get_media_title(_orig_title_)
     _image_ = get_image()
+    _year_ = get_media_year()
 
     if _kp_id_:
         uri = "plugin://{0}?mode=context&kp_id={1}&orig_title={2}&media_title={3}&image={4}".format(ID, _kp_id_, urllib.quote_plus(encode_(_orig_title_)), urllib.quote_plus(encode_(_media_title_)), urllib.quote_plus(encode_(_image_)))
