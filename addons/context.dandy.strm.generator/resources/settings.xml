@@ -5,4 +5,5 @@
     <setting label="Edit title" type="bool" id="is_edit" default="false"/>
     <setting label="Use translit for name" type="bool" id="translit" default="false"/>
     <setting label="Generate .nfo" type="bool" id="nfo" default="false"/>
+    <setting label="Generate .strm by United Search" type="bool" id="us" default="false"/>    
 </settings>

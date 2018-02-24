@@ -1,2 +1,5 @@
+1.1.0
+[add] Multiple sources
+
 1.0.0
 [add] First release

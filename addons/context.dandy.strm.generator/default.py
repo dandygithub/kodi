@@ -27,6 +27,7 @@ CATEGORIES = ADDON.getSetting('categories') if ADDON.getSetting('categories') el
 DIRECTORY = ADDON.getSetting('directory') if ADDON.getSetting('directory') else PATH
 TRANSLIT = ADDON.getSetting('translit') if ADDON.getSetting('translit') else "false"
 GENERATE_NFO = ADDON.getSetting('nfo') if ADDON.getSetting('nfo') else "false"
+GENERATE_US = ADDON.getSetting('us') if ADDON.getSetting('us') else "false"
 
 _kp_id_ = ''
 _media_title_ = ''
@@ -60,15 +61,17 @@ def edit_title(title):
 
 def get_media_title():
     title = get_title()
+    year = get_media_year(title)
     patterns = PATTERNS_FOR_DELETE.split(",") if PATTERNS_FOR_DELETE else []
     for pattern in patterns:
         title = re.compile(decode_(pattern)).sub("", title).strip()
     title = title.replace(":", ".")
+    if year:
+        title = "{0} [{1}]".format(title, year)
     title = edit_title(title) 
     return title
 
-def get_media_year():
-    title = get_title()
+def get_media_year(title):
     pattern = r"[([]([12][90]\d\d)[]), ]"
     match = re.compile(decode_(pattern)).search(title)
     return match.group(1) if match else None
@@ -85,11 +88,18 @@ def select_category():
            category = CATEGORIES.split(";")[ret]
     return category
 
-def generate_strm(category, media_title, year):
-    if TRANSLIT == "true":
+def update_uri(content, uri):
+    uril = content.split("&uri=")[1].replace("\n", "").split('@')
+    uriout = ""
+    for item in uril:
+        if get_addon_id(item) != get_addon_id(uri):
+            uriout = uriout + item + '@'
+    uriout = uriout + uri 
+    return uriout
+
+def generate_strm(category, media_title):
+    if (TRANSLIT == "true") and (GENERATE_US == "false"):
         media_title = translit.eng(media_title)
-    if year:
-        media_title = "{0} [{1}]".format(media_title, year)
 
     path = xbmc.getInfoLabel('ListItem.FileNameAndPath')
 
@@ -97,15 +107,27 @@ def generate_strm(category, media_title, year):
     if not os.path.exists(dirlib):
         os.makedirs(dirlib)
 
-    if "(ts)" in category:
+    uri = path
+    action = "Generated " 
+    if ("(ts)" in category) and (GENERATE_US == "false"):
         namedir = dirlib + "/" + encode_(media_title)
+        namefile = dirlib + "/" + encode_(media_title) + "/s1e1.strm"        
+        name = namedir
         if not os.path.exists(namedir):
             os.makedirs(namedir)
-        namefile = dirlib + "/" + encode_(media_title) + "/s1e1.strm"
-        name = namedir
+        else:
+            if (xbmcgui.Dialog().yesno(".strm", "", "Exist .strm file. Continue?") == False):
+                return
+            f = open(namefile, "r+")
+            content = urllib.unquote_plus(f.read())
+            f.close()
+            if (ID in content):
+                if (xbmcgui.Dialog().yesno(".strm", "", "Update existing .strm file?") == True):
+                    uri = update_uri(content, uri)
+                    action = "Updated "                    
         try:
             f = open(namefile, "w+")
-            uri = "plugin://{0}?mode=run&uri={1}".format(ID, urllib.quote_plus(encode_(path)))
+            uri = "plugin://{0}?mode=run&uri={1}".format(ID, urllib.quote_plus(uri))
             f.write(uri + "\n")
             f.close()
         except Exception, e:
@@ -114,26 +136,37 @@ def generate_strm(category, media_title, year):
             return
 
     else:
-        name = dirlib + "/" + encode_(media_title) + ".strm"
+        name = dirlib + "/" + encode_(media_title) + ".strm"    
+        if (GENERATE_US == "true"):
+            uri = "plugin://plugin.video.united.search/?action=search&keyword={0}".format(encode_(media_title.split('[')[0].split('(')[0].split('/')[0].strip()))
+        else:
+            if os.path.exists(name): 
+                if (xbmcgui.Dialog().yesno(".strm", "", "Exist .strm file. Continue?") == False):
+                    return
+                f = open(name, "r+")
+                content = urllib.unquote_plus(f.read())
+                f.close()
+                if (ID in content) and (path not in content):
+                    if (xbmcgui.Dialog().yesno(".strm", "", "Update existing .strm file?") == True):
+                        uri = update_uri(content, uri)
+                        action = "Updated "
         try:
             f = open(name, "w+")
-            uri = "plugin://{0}?mode=run&uri={1}".format(ID, urllib.quote_plus(encode_(path)))
+            uri = "plugin://{0}?mode=run&uri={1}".format(ID, urllib.quote_plus(uri))
             f.write(uri + "\n")
             f.close()
         except Exception, e:
             xbmc.log( '[%s]: WRITE EXCEPT [%s]' % (ID, e), 4 )
             show_message(e)
             return
-    xbmcgui.Dialog().ok(".strm", "", "Generated " + name)
+    xbmcgui.Dialog().ok(".strm", "", action + name)
 
-def generate_nfo(category, media_title, year):
+def generate_nfo(category, media_title):
     if "(ts)" in category:
         return
     media_title_orig = media_title
     if TRANSLIT == "true":
         media_title = translit.eng(media_title)
-    if year:
-        media_title = "{0} [{1}]".format(media_title, year)
 
     nfo = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n'
     nfo += '<movie>\n'
@@ -146,6 +179,8 @@ def generate_nfo(category, media_title, year):
     if not os.path.exists(dirlib):
         os.makedirs(dirlib)
     name = dirlib + "/" + encode_(media_title) + ".nfo"
+    if os.path.exists(name) and (xbmcgui.Dialog().yesno(".strm", "", "Exist .nfo file. Continue?") == False):
+        return
     try:
         f = open(name, "w+")
         f.write(nfo + "\n")
@@ -161,17 +196,36 @@ def generate():
     if category == None:
         return
     media_title = get_media_title()
-    year = get_media_year()
-    generate_strm(category, media_title, year)
+    generate_strm(category, media_title)
     if GENERATE_NFO == "true":
-        generate_nfo(category, media_title, year)
+        generate_nfo(category, media_title)
 
-def run(uri):
+def get_addon_id(uri):
+    return uri.split('?')[0].replace("plugin://", '').replace('/', '')
+
+def run(uris):
     playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     playlist.clear()
     cwnd = xbmcgui.getCurrentWindowId()
+    
+    uri = uris
+    uril = uris.split('@')
+    titles = []
+    for item in uril:
+        titles.append(get_addon_id(item))
+    ret = 0
+    if len(uril) > 0:
+        if len(uril) > 1:
+            ret = xbmcgui.Dialog().select("Select source", titles)
+        if ret >= 0:
+            uri = uril[ret]
+        else:
+            return
+    else:
+        return
+
     xbmc.executebuiltin("ActivateWindow({0}, {1})".format("10025", uri))
-    #xbmc.executebuiltin("Container.Update({0})".format(uri))
+    xbmc.executebuiltin("Container.Update({0})".format(uri))
 
 def decode_(param):
     try:
@@ -193,12 +247,12 @@ def main():
     if len(sys.argv) > 1:
         PARAMS = common.getParameters(sys.argv[2])
         mode = PARAMS['mode'] if 'mode' in PARAMS else None
-        uri = urllib.unquote_plus(PARAMS['uri']) if 'uri' in PARAMS else None
+        uris = urllib.unquote_plus(PARAMS['uri']) if 'uri' in PARAMS else None
 
     if (not mode):
         generate()
     elif mode == "run":
-        run(uri)
+        run(uris)
 
 if __name__ == '__main__':
     main()
