@@ -224,8 +224,8 @@ def run(uris):
     else:
         return
 
-    xbmc.executebuiltin("ActivateWindow({0}, {1})".format("10025", uri))
-    #xbmc.executebuiltin("Container.Update({0})".format(uri))
+    #xbmc.executebuiltin("ActivateWindow({0}, {1})".format("10025", uri))
+    xbmc.executebuiltin("Container.Update({0})".format(uri))
 
 def decode_(param):
     try:
