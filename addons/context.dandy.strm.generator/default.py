@@ -73,9 +73,13 @@ def get_media_title():
     return title
 
 def get_media_year(title):
-    pattern = r"[([]([12][90]\d\d)[]), ]"
-    match = re.compile(decode_(pattern)).search(title)
-    return match.group(1) if match else None
+    year = xbmc.getInfoLabel('ListItem.Year')
+    if year:
+        return year
+    else:    
+        pattern = r"[([]([12][90]\d\d)[]), ]"
+        match = re.compile(decode_(pattern)).search(title)
+        return match.group(1) if match else None
 
 def get_image():
     image = xbmc.getInfoLabel("ListItem.Icon") if xbmc.getInfoLabel("ListItem.Icon") else xbmc.getInfoLabel("ListItem.Thumb")
@@ -128,7 +132,7 @@ def generate_strm(category, media_title):
                     action = "Updated "                    
         try:
             f = open(namefile, "w+")
-            uri = "plugin://{0}?mode=run&uri={1}".format(ID, urllib.quote_plus(uri))
+            uri = "plugin://{0}?mode=run&uri={1}&title={2}".format(ID, urllib.quote_plus(uri), encode_(media_title.split('[')[0].split('(')[0].split('/')[0].strip()))
             f.write(uri + "\n")
             f.close()
         except Exception, e:
@@ -138,22 +142,19 @@ def generate_strm(category, media_title):
 
     else:
         name = dirlib + "/" + encode_(media_title) + ".strm"    
-        if (GENERATE_US == "true"):
-            uri = "plugin://plugin.video.united.search/?action=search&keyword={0}".format(encode_(media_title.split('[')[0].split('(')[0].split('/')[0].strip()))
-        else:
-            if os.path.exists(name): 
-                if (xbmcgui.Dialog().yesno(".strm", "", "Exist .strm file. Continue?") == False):
-                    return
-                f = open(name, "r+")
-                content = urllib.unquote_plus(f.read())
-                f.close()
-                if (ID in content) and (path not in content):
-                    if (xbmcgui.Dialog().yesno(".strm", "", "Update existing .strm file?") == True):
-                        uri = update_uri(content, uri)
-                        action = "Updated "
+        if os.path.exists(name): 
+            if (xbmcgui.Dialog().yesno(".strm", "", "Exist .strm file. Continue?") == False):
+                return
+            f = open(name, "r+")
+            content = urllib.unquote_plus(f.read())
+            f.close()
+            if (ID in content) and (path not in content):
+                if (xbmcgui.Dialog().yesno(".strm", "", "Update existing .strm file?") == True):
+                    uri = update_uri(content, uri)
+                    action = "Updated "
         try:
             f = open(name, "w+")
-            uri = "plugin://{0}?mode=run&uri={1}".format(ID, urllib.quote_plus(uri))
+            uri = "plugin://{0}?mode=run&uri={1}&title={2}".format(ID, urllib.quote_plus(uri), encode_(media_title.split('[')[0].split('(')[0].split('/')[0].strip()))
             f.write(uri + "\n")
             f.close()
         except Exception, e:
@@ -197,6 +198,8 @@ def generate():
     if category == None:
         return
     media_title = get_media_title()
+    if (media_title == None) or (media_title == ""):
+        return
     generate_strm(category, media_title)
     if GENERATE_NFO == "true":
         generate_nfo(category, media_title)
@@ -204,7 +207,7 @@ def generate():
 def get_addon_id(uri):
     return uri.split('?')[0].replace("plugin://", '').replace('/', '')
 
-def run(uris):
+def run(uris, title):
     xbmc.executebuiltin("Playlist.Clear")
     #xbmc.PlayList(xbmc.PLAYLIST_VIDEO).clear()
     cwnd = xbmcgui.getCurrentWindowId()
@@ -214,6 +217,11 @@ def run(uris):
     titles = []
     for item in uril:
         titles.append(get_addon_id(item))
+        
+    if (GENERATE_US == "true") and (title) and (cwnd != 10000):
+            titles.append("Search with United Search ...")  
+            uril.append("plugin://plugin.video.united.search/?action=search&keyword={0}".format(title))
+        
     ret = 0
     if len(uril) > 0:
         if len(uril) > 1:
@@ -226,10 +234,7 @@ def run(uris):
         return
 
     if (cwnd == 10000): 
-        if ("plugin.video.united.search" in uri):
-            show_message("Do not run in this mode")
-        else:    
-            xbmc.executebuiltin("ActivateWindow({0}, {1})".format("videos", uri))
+        xbmc.executebuiltin("ActivateWindow({0}, {1})".format("videos", uri))
     else:
         xbmc.executebuiltin("Container.Update({0})".format(uri))
     time.sleep(0.1)
@@ -255,11 +260,12 @@ def main():
         PARAMS = common.getParameters(sys.argv[2])
         mode = PARAMS['mode'] if 'mode' in PARAMS else None
         uris = urllib.unquote_plus(PARAMS['uri']) if 'uri' in PARAMS else None
+        title = urllib.unquote_plus(PARAMS['title']) if 'title' in PARAMS else None        
 
     if (not mode):
         generate()
     elif mode == "run":
-        run(uris)
+        run(uris, title)
 
 if __name__ == '__main__':
     main()

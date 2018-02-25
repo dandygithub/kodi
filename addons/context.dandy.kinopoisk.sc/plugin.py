@@ -1,6 +1,7 @@
 import os
 import urllib, urllib2
 import re
+import socket
 import xbmc
 import xbmcplugin
 import xbmcgui
@@ -15,6 +16,8 @@ import resources.lib.moonwalk as moonwalk
 import resources.lib.hdgo as hdgo
 import resources.lib.kodik as kodik
 import resources.lib.videoframe as videoframe
+
+socket.setdefaulttimeout(120)
 
 HANDLE = int(sys.argv[1])
 ID = 'context.dandy.kinopoisk.sc'

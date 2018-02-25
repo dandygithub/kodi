@@ -10,8 +10,11 @@ import xbmcaddon
 import xbmcplugin
 import xbmcgui
 import re
+import socket
 
 import resources.lib.search as search
+
+socket.setdefaulttimeout(120)
 
 ID = "context.dandy.kinopoisk.sc"
 ADDON = xbmcaddon.Addon(ID)
@@ -67,10 +70,14 @@ def edit_title(title):
     return title
 
 def get_media_year():
-    title = get_title()
-    pattern = r"[([]([12][90]\d\d)[]), ]"
-    match = re.compile(decode_(pattern)).search(title)
-    return match.group(1) if match else None
+    year = xbmc.getInfoLabel('ListItem.Year')
+    if year:
+        return year
+    else:    
+        title = get_title()
+        pattern = r"[([]([12][90]\d\d)[]), ]"
+        match = re.compile(decode_(pattern)).search(title)
+        return match.group(1) if match else None
 
 def get_media_title(title):
     patterns = PATTERNS_FOR_DELETE.split(",") if PATTERNS_FOR_DELETE else []
@@ -107,6 +114,8 @@ def main():
     _media_title_ = get_media_title(_orig_title_)
     _image_ = get_image()
     _year_ = get_media_year()
+    if _year_:
+        _orig_title_ = "{0} [{1}]".format(_media_title_, _year_)
 
     if _kp_id_:
         uri = "plugin://{0}?mode=context&kp_id={1}&orig_title={2}&media_title={3}&image={4}".format(ID, _kp_id_, urllib.quote_plus(encode_(_orig_title_)), urllib.quote_plus(encode_(_media_title_)), urllib.quote_plus(encode_(_image_)))
