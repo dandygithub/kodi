@@ -10,6 +10,7 @@ import xbmcaddon
 import xbmcplugin
 import xbmcgui
 import re
+import time
 import Translit as translit
 import XbmcHelpers
 
@@ -204,8 +205,8 @@ def get_addon_id(uri):
     return uri.split('?')[0].replace("plugin://", '').replace('/', '')
 
 def run(uris):
-    playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-    playlist.clear()
+    xbmc.executebuiltin("Playlist.Clear")
+    #xbmc.PlayList(xbmc.PLAYLIST_VIDEO).clear()
     cwnd = xbmcgui.getCurrentWindowId()
     
     uri = uris
@@ -224,8 +225,14 @@ def run(uris):
     else:
         return
 
-    #xbmc.executebuiltin("ActivateWindow({0}, {1})".format("10025", uri))
-    xbmc.executebuiltin("Container.Update({0})".format(uri))
+    if (cwnd == 10000): 
+        if ("plugin.video.united.search" in uri):
+            show_message("Do not run in this mode")
+        else:    
+            xbmc.executebuiltin("ActivateWindow({0}, {1})".format("videos", uri))
+    else:
+        xbmc.executebuiltin("Container.Update({0})".format(uri))
+    time.sleep(0.1)
 
 def decode_(param):
     try:
