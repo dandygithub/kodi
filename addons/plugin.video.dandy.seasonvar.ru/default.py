@@ -21,7 +21,6 @@ import xbmcaddon
 import XbmcHelpers
 common = XbmcHelpers
 
-
 import Translit as translit
 translit = translit.Translit()
 
@@ -225,8 +224,8 @@ class Seasonvar():
             item = xbmcgui.ListItem(title_, iconImage=image, thumbnailImage=image)
             item.setInfo(type='Video', infoLabels={'title': title_})
             commands = []
-            uricmd = sys.argv[0] + '?mode=search&keyword=%s&strong=1' % (title)
-            commands.append(('[COLOR=FFFFD700]' + self.language(2000) + '[/COLOR]', "Container.Update(%s)" % (uricmd), ))
+            uricmd = sys.argv[0] + '?mode=search&keyword=%s&strong=1' % (title.split('/')[0].strip())
+            commands.append((self.language(2000), "Container.Update(%s)" % (uricmd), ))
             item.addContextMenuItems(commands)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
             
@@ -295,8 +294,8 @@ class Seasonvar():
                 item.setInfo(type='Video', infoLabels={'title': title_})
 
                 commands = []
-                uricmd = sys.argv[0] + '?mode=search&url=%s&keyword=%s&strong=1' % (self.url, title)                
-                commands.append(('[COLOR=FFFFD700]' + self.language(2000) + '[/COLOR]', "Container.Update(%s)" % (uricmd), ))
+                uricmd = sys.argv[0] + '?mode=search&url=%s&keyword=%s&strong=1' % (self.url, title.split('/')[0].strip())                
+                commands.append((self.language(2000), "Container.Update(%s)" % (uricmd), ))
                 item.addContextMenuItems(commands)
 
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)

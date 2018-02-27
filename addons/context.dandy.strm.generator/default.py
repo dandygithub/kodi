@@ -114,7 +114,7 @@ def generate_strm(category, media_title):
 
     uri = path
     action = "Generated " 
-    if ("(ts)" in category) and (GENERATE_US == "false"):
+    if ("(ts)" in category):
         namedir = dirlib + "/" + encode_(media_title)
         namefile = dirlib + "/" + encode_(media_title) + "/s1e1.strm"        
         name = namedir
