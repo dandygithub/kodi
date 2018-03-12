@@ -28,7 +28,11 @@ CATEGORIES = ADDON.getSetting('categories') if ADDON.getSetting('categories') el
 DIRECTORY = ADDON.getSetting('directory') if ADDON.getSetting('directory') else PATH
 TRANSLIT = ADDON.getSetting('translit') if ADDON.getSetting('translit') else "false"
 GENERATE_NFO = ADDON.getSetting('nfo') if ADDON.getSetting('nfo') else "false"
-GENERATE_US = ADDON.getSetting('us') if ADDON.getSetting('us') else "false"
+SUPPORT_US = ADDON.getSetting('us') if ADDON.getSetting('us') else "false"
+PLAYABLE = ADDON.getSetting('playable') if ADDON.getSetting('playable') else "false"
+
+try    : HANDLE = int(sys.argv[1])
+except : HANDLE = -1 
 
 _kp_id_ = ''
 _media_title_ = ''
@@ -112,7 +116,11 @@ def generate_strm(category, media_title):
     if not os.path.exists(dirlib):
         os.makedirs(dirlib)
 
-    uri = path
+    playable = ''
+    if  (PLAYABLE == "true") and (xbmcgui.Dialog().yesno(".strm", "", "Is it playable content?") == True):
+        playable = '#'
+    uri = playable + path
+
     action = "Generated " 
     if ("(ts)" in category):
         namedir = dirlib + "/" + encode_(media_title)
@@ -205,7 +213,12 @@ def generate():
         generate_nfo(category, media_title)
 
 def get_addon_id(uri):
-    return uri.split('?')[0].replace("plugin://", '').replace('/', '')
+    return uri.replace('#', "").split('?')[0].replace("plugin://", '').replace('/', '')
+
+def run_as_content(url):
+    listitem = xbmcgui.ListItem (path=url)
+    listitem.setProperty('IsPlayable', 'true')
+    xbmcplugin.setResolvedUrl(HANDLE, True, listitem)
 
 def run(uris, title):
     xbmc.executebuiltin("Playlist.Clear")
@@ -218,7 +231,7 @@ def run(uris, title):
     for item in uril:
         titles.append(get_addon_id(item))
         
-    if (GENERATE_US == "true") and (title) and (cwnd != 10000):
+    if (SUPPORT_US == "true") and (title) and (cwnd != 10000):
             titles.append("Search with United Search ...")  
             uril.append("plugin://plugin.video.united.search/?action=search&keyword={0}".format(title))
         
@@ -233,10 +246,15 @@ def run(uris, title):
     else:
         return
 
-    if (cwnd == 10000): 
-        xbmc.executebuiltin("ActivateWindow({0}, {1})".format("videos", uri))
-    else:
-        xbmc.executebuiltin("Container.Update({0})".format(uri))
+    playable = ('#' == uri[0])
+    uri = uri.replace('#', '')
+    if (playable == True):
+        run_as_content(uri)
+    else: 
+        if (cwnd == 10000): 
+            xbmc.executebuiltin("ActivateWindow({0}, {1})".format("videos", uri))
+        else:
+            xbmc.executebuiltin("Container.Update({0})".format(uri))
     time.sleep(0.1)
 
 def decode_(param):
@@ -260,7 +278,7 @@ def main():
         PARAMS = common.getParameters(sys.argv[2])
         mode = PARAMS['mode'] if 'mode' in PARAMS else None
         uris = urllib.unquote_plus(PARAMS['uri']) if 'uri' in PARAMS else None
-        title = urllib.unquote_plus(PARAMS['title']) if 'title' in PARAMS else None        
+        title = urllib.unquote_plus(PARAMS['title']) if 'title' in PARAMS else None
 
     if (not mode):
         generate()
