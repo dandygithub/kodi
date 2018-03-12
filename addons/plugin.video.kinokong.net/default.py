@@ -29,8 +29,6 @@ try:
     from unified_search import UnifiedSearch
 except:
     pass
-#    xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("Warning", 'Please install UnifiedSearch add-on!', str(10 * 1000)))
-
 
 class Kinokong():
     def __init__(self):
@@ -45,7 +43,8 @@ class Kinokong():
         self.handle = int(sys.argv[1])
         self.params = sys.argv[2]
 
-        self.url = 'http://kinokong.cc'
+        self.domain = self.addon.getSetting('domain')
+        self.url = 'http://'  + self.domain
 
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.debug = False
@@ -88,7 +87,7 @@ class Kinokong():
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getCategoryItems('http://kinokong.cc/films/novinki-kinos', 1)
+        self.getCategoryItems(self.url + '/films/novinki-kinos', 1)
 
     def getCategoryItems(self, url, page):
         print "*** Get category items %s" % url
@@ -138,8 +137,6 @@ class Kinokong():
 
     def getFilmInfo(self, url):
         print "*** getFilmInfo for url %s " % url
-
-
         response = common.fetchPage({"link": url})
         container = common.parseDOM(response["content"], "div", attrs={"id": "container"})
         js_container = common.parseDOM(response["content"], "div", attrs={"class": "section"})
@@ -171,7 +168,6 @@ class Kinokong():
             for i, link in enumerate(links):
                 if '_720' in link:
 		    quality = '720P'
-#                    quality = link.replace('.mp4', 'P').split('_720')[-1]
                 else:
                     quality = '480P'
 
@@ -234,12 +230,12 @@ class Kinokong():
         genres = common.parseDOM(menu, "li")
 
         links = [
-          'http://kinokong.cc/films',
-          'http://kinokong.cc/films/novinki',
-          'http://kinokong.cc/serial',
-          'http://kinokong.cc/multfilm',
-          'http://kinokong.cc/anime',
-          'http://kinokong.cc/dokumentalnyy'
+          self.url + '/films/',
+          self.url + '/films/novinki-kinos/',
+          self.url + '/serial/',
+          self.url + '/multfilmi/',
+          self.url + '/anime/',
+          self.url + '/dokumentalnyy/'
         ]
 
         for i, genre in enumerate(genres[:-1]):
@@ -279,16 +275,13 @@ class Kinokong():
                 keyword = kbd.getText()
         return keyword
 
-    #def search(self, keyword, unified):
-    #    self.showErrorMessage('Not yet implemented')
-
     def search(self, keyword, external):
         keyword = keyword if (external != None) else self.getUserInput()
         keyword = translit.rus(keyword) if (external == 'unified') else urllib.unquote_plus(keyword)
         unified_search_results = []
 
         if keyword:
-            url = 'http://kinokong.cc/index.php?do=search'
+            url = self.url + '/index.php?do=search'
 
             # Advanced search: titles only
             values = {
@@ -311,8 +304,9 @@ class Kinokong():
             }
 
             headers = {
-                "Host" : "kinokong.cc",
-                "Referer" : 'http://kinokong.cc/index.php?do=search',
+                "Host" : self.domain,
+                "Origin" : self.domain,                
+                "Referer" : self.url + '/',
                 "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0"
             }
 
@@ -353,7 +347,6 @@ class Kinokong():
             self.menu()
 
 
-
     # *** Add-on helpers
     def log(self, message):
         if self.debug:
@@ -378,17 +371,6 @@ class Kinokong():
     def strip(self, string):
         return common.stripTags(string)
 
-# class URLParser():
-#     def parse(self, string):
-#         links = re.findall(r'(?:http://|www.).*?["]', string)
-#         return list(set(self.filter(links)))
-
-#     def filter(self, links):
-#         links = self.strip(links)
-#         return [l for l in links if l.endswith('.mp4') or l.endswith('.mp4') or l.endswith('.txt')]
-
-#     def strip(self, links):
-#         return [l.replace('"', '') for l in links]
 
 Kinokong = Kinokong()
 Kinokong.main()
