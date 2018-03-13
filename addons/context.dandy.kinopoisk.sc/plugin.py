@@ -114,6 +114,8 @@ def get_engine(data):
         return 'kodik'
     elif 'videoframe' in data:
         return 'videoframe'
+    elif 'hdnow' in data:
+        return 'hdnow'
     else:
         return 'none'
 
@@ -156,6 +158,10 @@ def process(kp_id, media_title, image):
         li[0] = li[0] + ("&media_title=%s&image=%s&engine=%s" % ((urllib.quote_plus(media_title)) if (media_title != "") else "", image, engine))
         li[1].setIconImage(image)
         li[1].setThumbnailImage(image)
+        if (li[1].getLabel().split(']')[-1].strip() == ''):
+            title = li[1].getLabel() + ' ' + media_title
+            li[1].setLabel(title)
+            li[0] = li[0] + ("&title=%s" % (urllib.quote_plus(title)))
         li[1].setInfo(type='Video', infoLabels={'title': media_title, 'label': media_title, 'plot': media_title})
         xbmcplugin.addDirectoryItem(HANDLE, li[0], li[1], li[2])
     xbmcplugin.setContent(HANDLE, 'movies')
@@ -179,7 +185,7 @@ def show(url, title, media_title, image, engine):
     if (not media_title):
         media_title = title
     direct = 0
-    if 'moonwalk' in engine:
+    if ('moonwalk' in engine) or ('hdnow' in engine):
         manifest_links, subtitles, season, episode = show_moonwalk(url, title)
         direct = 1
     elif 'hdgo' in engine:

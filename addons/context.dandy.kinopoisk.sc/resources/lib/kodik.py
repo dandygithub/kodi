@@ -11,13 +11,9 @@ common = XbmcHelpers
 socket.setdefaulttimeout(120)
 
 def select_season(data):
-    xbmc.log("data=" + repr(data))
     tvshow = common.parseDOM(data, "div", attrs={"class": "serial-seasons-box"})[0]
-    xbmc.log("tvshow=" + repr(tvshow))    
     seasons = common.parseDOM(tvshow, "option")
-    xbmc.log("s=" + repr(seasons))        
     values = common.parseDOM(tvshow, "option", ret="value")
-    xbmc.log("v=" + repr(values))            
     if len(seasons) > 1:
         dialog = xbmcgui.Dialog()
         index_ = dialog.select("Select season", seasons)
@@ -151,6 +147,13 @@ def get_playlist(url):
         response = urllib2.urlopen(request).read()
     except:
         return manifest_links, subtitles, season, episode, 0
+    iframe = "http:" + common.parseDOM(response, "iframe", ret="src")[0]
+    try: 
+        request = urllib2.Request(iframe, "", headers)
+        request.get_method = lambda: 'GET'
+        response = urllib2.urlopen(request).read()
+    except:
+        return manifest_links, subtitles, season, episode, 0
 
     #tvshow
     tvshow = common.parseDOM(response, "div", attrs={"class": "serial-panel"})
@@ -177,7 +180,6 @@ def get_playlist(url):
             return parse_alt(response, url, season, episode)
         except:
             return manifest_links, subtitles, season, episode, 0
-
 
     urls = []
     qualities = []
