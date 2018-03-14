@@ -13,6 +13,10 @@ import simplejson as json
 
 sys.path.append(os.path.dirname(__file__)+ '/../script.extendedinfo/resources/lib')
 try:
+    sys.path.append(os.path.dirname(__file__)+ '/../script.module.urllib3/lib')
+    sys.path.append(os.path.dirname(__file__)+ '/../script.module.chardet/lib')
+    sys.path.append(os.path.dirname(__file__)+ '/../script.module.certifi/lib')
+    sys.path.append(os.path.dirname(__file__)+ '/../script.module.idna/lib')
     sys.path.append(os.path.dirname(__file__)+ '/../script.module.kodi65/lib')
     sys.path.append(os.path.dirname(__file__)+ '/../script.module.requests/lib')
     sys.path.append(os.path.dirname(__file__)+ '/../script.module.youtube.dl/lib')
