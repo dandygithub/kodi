@@ -98,7 +98,7 @@ def select_category():
     return category
 
 def update_uri(content, uri):
-    uril = content.split("&uri=")[1].replace("\n", "").split('@')
+    uril = content.split("&uri=")[1].split("&title=")[0].replace("\n", "").split('@')
     uriout = ""
     for item in uril:
         if get_addon_id(item) != get_addon_id(uri):
@@ -117,7 +117,7 @@ def generate_strm(category, media_title):
         os.makedirs(dirlib)
 
     playable = ''
-    if  (PLAYABLE == "true") and (xbmcgui.Dialog().yesno(".strm", "", "Is it playable content?") == True):
+    if  (PLAYABLE == "true") and ((xbmc.getCondVisibility("ListItem.IsFolder") == False) or (xbmcgui.Dialog().yesno(".strm", "", "Is it playable content?") == True)):
         playable = '#'
     uri = playable + path
 
@@ -213,16 +213,28 @@ def generate():
         generate_nfo(category, media_title)
 
 def get_addon_id(uri):
-    return uri.replace('#', "").split('?')[0].replace("plugin://", '').replace('/', '')
+    return uri.replace('#', "").replace("plugin://", '').split('/')[0].replace('?', '').replace('/', '')
 
 def run_as_content(url):
     listitem = xbmcgui.ListItem (path=url)
     listitem.setProperty('IsPlayable', 'true')
     xbmcplugin.setResolvedUrl(HANDLE, True, listitem)
 
+def init_run():
+    try:
+        playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+    except: 
+        playlist = Empty
+    if playlist: 
+        playlist.clear()
+    #xbmc.executebuiltin("Playlist.Clear")
+    xbmc.executebuiltin("PlayerControl(Stop)", True)    
+    xbmc.executebuiltin("seek(0)" , True)    
+
 def run(uris, title):
-    xbmc.executebuiltin("Playlist.Clear")
-    #xbmc.PlayList(xbmc.PLAYLIST_VIDEO).clear()
+    init_run()
+
+    time.sleep(1)
     cwnd = xbmcgui.getCurrentWindowId()
     
     uri = uris
