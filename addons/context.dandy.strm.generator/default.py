@@ -70,7 +70,7 @@ def get_media_title():
     patterns = PATTERNS_FOR_DELETE.split(",") if PATTERNS_FOR_DELETE else []
     for pattern in patterns:
         title = re.compile(decode_(pattern)).sub("", title).strip()
-    title = title.replace(":", ".")
+    title = title.replace(":", ".").split("/")[0].strip()
     if year:
         title = "{0} [{1}]".format(title, year)
     title = edit_title(title) 
@@ -181,6 +181,7 @@ def generate_nfo(category, media_title):
     nfo = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n'
     nfo += '<movie>\n'
     nfo += "    <title>" + encode_(media_title_orig) + "</title>\n"
+    year = get_media_year(media_title_orig)
     if year:
         nfo += "    <year>" + year + "</year>\n"
     nfo += "</movie>\n"
