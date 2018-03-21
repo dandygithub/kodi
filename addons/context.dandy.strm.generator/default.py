@@ -112,7 +112,9 @@ def generate_strm(category, media_title):
 
     path = xbmc.getInfoLabel('ListItem.FileNameAndPath')
 
-    dirlib = os.path.join(DIRECTORY.decode("utf-8"), 'lib/' + category.replace("(ts)", "").strip())
+    dirlib = os.path.join(DIRECTORY.decode("utf-8"), category.replace("(ts)", "").strip())
+    xbmc.log("dir=" + dirlib)
+    xbmc.log("dir2=" + DIRECTORY)    
     if not os.path.exists(dirlib):
         os.makedirs(dirlib)
 
@@ -186,7 +188,7 @@ def generate_nfo(category, media_title):
         nfo += "    <year>" + year + "</year>\n"
     nfo += "</movie>\n"
 
-    dirlib = os.path.join(DIRECTORY.decode("utf-8"), 'lib/' + category)
+    dirlib = os.path.join(DIRECTORY.decode("utf-8"), category)
     if not os.path.exists(dirlib):
         os.makedirs(dirlib)
     name = dirlib + "/" + encode_(media_title) + ".nfo"
