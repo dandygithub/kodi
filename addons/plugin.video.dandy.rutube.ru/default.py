@@ -232,7 +232,7 @@ class RuTube():
             if (external == 'unified'):
                 UnifiedSearch().collect(unified_search_results)
             else: 
-                xbmc.executebuiltin('Container.SetViewMode(50)')
+                xbmcplugin.setContent(self.handle, 'movies')
                 xbmcplugin.endOfDirectory(self.handle, True)
 
     def getGroups(self):
@@ -287,7 +287,7 @@ class RuTube():
             item.setInfo(type='Video', infoLabels={'title': title})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        xbmc.executebuiltin('Container.SetViewMode(50)')
+        xbmcplugin.setContent(self.handle, 'movies')
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def listItems(self, ictlg, films=False):
@@ -304,7 +304,7 @@ class RuTube():
             self.log("ctTitle: %s"  % ctTitle) 
             self.log("ctIcon: %s"  % ctIcon) 
 
-        xbmc.executebuiltin('Container.SetViewMode(50)')
+        xbmcplugin.setContent(self.handle, 'movies')
         xbmcplugin.endOfDirectory(self.handle)
 
     def tabs(self, url, main = False):
