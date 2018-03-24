@@ -25,7 +25,7 @@ def get_access_attrs(content):
     values = {}
     attrs = {}
 
-    script = "http://s4.cdnapponline.com" + common.parseDOM(content, "script", ret="src")[0]
+    script = "http://s9.cdnapponline.com" + common.parseDOM(content, "script", ret="src")[0]
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
     }
@@ -39,13 +39,15 @@ def get_access_attrs(content):
     values['ad_attr'] = response.split('ad_attr:')[-1].split(',')[0] 
     values['iframe_version'] = response.split('iframe_version:"')[-1].split('"')[0] 
 
-    values['p_domain_id'] = content.split("domain_id: ")[-1].split(",")[0] 
+    values[response.split('partner_id,')[-1].split(':this')[0]] = content.split("domain_id: ")[-1].split(",")[0] 
     values['mw_pid'] = content.split("partner_id: ")[-1].split(",")[0] 
+
+    values['adb'] = 'false'
 
     key, value = get_key(content, response) 
 
     values[key] = value
 
-    #attrs['X-Access-Level'] = content.split("user_token: '")[-1].split("',")[0] 
+    xbmc.log("param=" + repr(values) + " " + repr(attrs))
 
     return values, attrs

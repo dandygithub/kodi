@@ -173,11 +173,11 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="2.1.11" provider-name="MrStealth, dandy">
+<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="2.1.12" provider-name="MrStealth, dandy">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
-        <import addon="script.module.xbmc.helpers" version="2.0.0"/>
-        <import addon="script.module.translit" version="2.0.1"/>
+        <import addon="script.module.xbmc.helpers" version="2.1.0"/>
+        <import addon="script.module.translit" version="2.1.0"/>
         <import addon="script.module.videohosts" version="1.0.0"/>
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">>
@@ -338,10 +338,10 @@
   <extension point='xbmc.python.module' library='lib' />
 </addon>
 
-<addon id="script.module.videohosts" name="VideoHosts" version="1.0.12" provider-name="dandy">
+<addon id="script.module.videohosts" name="VideoHosts" version="1.0.13" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.xbmc.helpers" version="2.0.0"/>
+    <import addon="script.module.xbmc.helpers" version="2.1.0"/>
   </requires>
   <extension point='xbmc.service' library="default.py" />
   <extension point="xbmc.python.module" library="lib" />

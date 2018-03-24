@@ -340,7 +340,7 @@ class HdrezkaTV():
     def get_video_link_from_iframe(self, url, mainurl):
 
         playlist_domain = 'streamblast.cc'
-        playlist_domain2 = 's4.cdnapponline.com'
+        playlist_domain2 = 's9.cdnapponline.com'
 
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
