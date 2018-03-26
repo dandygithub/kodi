@@ -41,6 +41,9 @@ def get_access_attrs(content):
 
     values[response.split('partner_id,')[-1].split(':this')[0]] = content.split("domain_id: ")[-1].split(",")[0] 
     values['mw_pid'] = content.split("partner_id: ")[-1].split(",")[0] 
+    
+    param = response.split('=r,n.')[-1].split('";var')[0]
+    values[param.split('="')[0]] = param.split('="')[1]
 
     values['adb'] = 'false'
 
