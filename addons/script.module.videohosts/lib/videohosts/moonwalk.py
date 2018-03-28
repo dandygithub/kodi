@@ -38,18 +38,20 @@ def get_access_attrs(content):
     values['mw_key'] = response.split('mw_key:"')[-1].split('",')[0] 
     values['ad_attr'] = response.split('ad_attr:')[-1].split(',')[0] 
     values['iframe_version'] = response.split('iframe_version:"')[-1].split('"')[0] 
-
-    values[response.split('partner_id,')[-1].split(':this')[0]] = content.split("domain_id: ")[-1].split(",")[0] 
     values['mw_pid'] = content.split("partner_id: ")[-1].split(",")[0] 
+    values['adb'] = 'false'    
     
-    param = response.split('=r,n.')[-1].split('";var')[0]
+    values[response.split(',mw_pid:this.options.partner_id,')[-1].split(':this.options.domain_id')[0]] = content.split("domain_id: ")[-1].split(",")[0]     
+    
+    param = response.split('t,e.')[-1].split('";var')[0]
     values[param.split('="')[0]] = param.split('="')[1]
 
-    values['adb'] = 'false'
+    param = response.split('window._mw_adb};e.')[-1].split('=window[')[0]
+    value = response.split('"]="')[-1].split('"},loadSecondLayer')[0]
+    values[param] = value
 
-    key, value = get_key(content, response) 
-
-    values[key] = value
+    #key, value = get_key(content, response) 
+    #values[key] = value
 
     xbmc.log("param=" + repr(values) + " " + repr(attrs))
 
