@@ -158,8 +158,8 @@ def process(kp_id, media_title, image):
         li[0] = li[0] + ("&media_title=%s&image=%s&engine=%s" % ((urllib.quote_plus(media_title)) if (media_title != "") else "", image, engine))
         li[1].setIconImage(image)
         li[1].setThumbnailImage(image)
-        if (li[1].getLabel().split(']')[-1].strip() == ''):
-            title = li[1].getLabel() + ' ' + media_title
+        if ("*T*" in li[1].getLabel()):
+            title = li[1].getLabel().replace("*T*", media_title)
             li[1].setLabel(title)
             li[0] = li[0] + ("&title=%s" % (urllib.quote_plus(title)))
         li[1].setInfo(type='Video', infoLabels={'title': media_title, 'label': media_title, 'plot': media_title})

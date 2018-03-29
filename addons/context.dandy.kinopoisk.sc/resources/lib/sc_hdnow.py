@@ -45,7 +45,7 @@ def get_content():
         
     if response:
         iframe = common.parseDOM(response, "iframe", ret="src")[0]
-        title_ = ""
+        title_ = "*T*"
         title = "[COLOR=orange][{0}][/COLOR] {1}".format(vh_title, title_)
         uri = sys.argv[0] + "?mode=show&url={0}".format(urllib.quote_plus(iframe))
         item = xbmcgui.ListItem(title)
