@@ -30,12 +30,6 @@ from MyFavorites import MyFavorites
 # YouTube module
 sys.path.append(os.path.join(os.path.dirname(__file__), "lib"))
 
-# Exception => Dieses Video enthaelt Content von CTB Film Company. Es darf auf bestimmten Websites nicht wiedergegeben werden
-#from youtube_module import YoutubeModule
-#from youtube_module import YoutubeModuleException
-#youtube = YoutubeModule()
-
-
 from pytube import YouTube
 yt = YouTube()
 
@@ -51,7 +45,6 @@ class URLParser():
     def strip(self, links):
         return [l.replace('"', '') for l in links]
 
-
 class OnlineLife():
     def __init__(self):
         self.id = 'plugin.video.online-life.cc'
@@ -62,7 +55,8 @@ class OnlineLife():
 
         self.language = self.addon.getLocalizedString
         self.handle = int(sys.argv[1])
-        self.url = 'http://www.online-life.cc'
+        self.domain = self.addon.getSetting('domain')
+        self.url = 'http://' + self.addon.getSetting('domain')
 
         self.favorites = MyFavorites(self.id)
 
@@ -108,17 +102,15 @@ class OnlineLife():
         item = xbmcgui.ListItem("[B][COLOR=FF00FFF0]%s[/COLOR][/B]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        uri = sys.argv[0] + '?mode=%s&url=%s' % ("category", "http://www.online-life.cc/kino-multserial/")
+        uri = sys.argv[0] + '?mode=%s&url=%s' % ("category",  self.url + "/kino-multserial/")
         item = xbmcgui.ListItem("[B][COLOR=FF00FFF0]%s[/COLOR][/B]" % self.language(1004), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getCategoryItems('http://www.online-life.cc/kino-new/', 1)
+        self.getCategoryItems(self.url + '/kino-new/', 1)
 
     def getCategoryItems(self, url, page):
         page_url = url if page == 0 else "%s/page/%s/" % (url, str(int(page)))
         response = common.fetchPage({"link": page_url})
-
-        print page_url
 
         if response["status"] == 200:
             container = common.parseDOM(response["content"], "div", attrs={"id": "container"})
@@ -135,7 +127,7 @@ class OnlineLife():
                 poster = common.parseDOM(post, "div", attrs={"class": "custom-poster"})
                 media_data = common.parseDOM(extras[i], "div", attrs={"class": "media-data text-overflow"})
 
-                title = self.encode(common.stripTags(common.parseDOM(poster, "a")[0]))
+                title = self.encode(common.stripTags(common.parseDOM(poster, "a")[0]).split(']')[0] + ']')
                 link = common.parseDOM(poster, "a", ret="href")[0]
                 image = common.parseDOM(poster, "img", ret="src")[0]
 
@@ -201,8 +193,8 @@ class OnlineLife():
             print "This is a season %s" % season
 
             headers = {
-                "Host": "dterod.com",
-                "Referer": "http://dterod.com/player.php?newsid=" + self.getVideoID(url),
+                "Host": "play.cidwo.com",
+                "Referer": "http://play.cidwo.com/player.php?newsid=" + self.getVideoID(url),
                 "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
             }
 
@@ -257,32 +249,15 @@ class OnlineLife():
     def getVideoSource(self, url):
         id = self.getVideoID(url)
 
-        print "***** ID %s" % id
-        url = "http://dterod.com/js.php?id=%s" % id
-        print "************ URL %s" % url
+        url = "http://play.cidwo.com/js.php?id=%s" % id
 
         request = urllib2.Request(url)
-        request.add_header('Referer', 'http://dterod.com/player.php?newsid=' + id)
-        request.add_header('Host', 'dterod.com')
+        request.add_header('Referer', 'http://play.cidwo.com/player.php?newsid=' + id)
+        request.add_header('Host', 'play.cidwo.com')
 
-        #request.add_header('Referer', 'http://www.online-life.cc/')
-        #request.add_header('Host', 'www.online-life.cc')
         response = urllib2.urlopen(request).read()
 
-        # print "dterod"
-        # print URLParser().parse(response)[0]
-        #
-        # url = 'http://www.online-life.cc/js.php?id=%s' % id
-        #
-        # request = urllib2.Request(url)
-        # request.add_header('Referer', 'http://www.online-life.cc/')
-        # request.add_header('Host', 'www.online-life.cc')
-        # response = urllib2.urlopen(request).read()
-        #
-        # print "online"
-        # print URLParser().parse(response)[0]
         return URLParser().parse(response)[0]
-
 
     def listGenres(self, url):
         response = common.fetchPage({"link": url})
@@ -298,7 +273,7 @@ class OnlineLife():
         titles += common.parseDOM(cats, "a")
         links += common.parseDOM(cats, "a", ret="href")
 
-        uri = sys.argv[0] + '?mode=category&url=%s' % "http://www.online-life.cc/kino-new/"
+        uri = sys.argv[0] + '?mode=category&url=%s' % (self.url + "/kino-new/")
         item = xbmcgui.ListItem(self.language(1007), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
@@ -307,10 +282,6 @@ class OnlineLife():
             uri = sys.argv[0] + '?mode=category&url=%s' % link
             item = xbmcgui.ListItem(self.encode(title), thumbnailImage=self.icon)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-
-        # uri = sys.argv[0] + '?mode=category&url=%s' % "http://www.online-life.cc/kino-tv/"
-        # item = xbmcgui.ListItem(self.language(1006), thumbnailImage=self.icon)
-        # xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
@@ -329,18 +300,8 @@ class OnlineLife():
 
         try:
             if 'youtube' in url:
-                # url =  youtube.get_youtube_url(url, hd) if 'youtube' in url else url
                 yt.url = url
                 video_url = yt.videos[-1].url
-                # for video in yt.videos:
-                #     extension = video.__dict__['extension']
-                #     resolution = video.__dict__['resolution']
-
-                #     if resolution in supported_resolutions and extension == 'mp4':
-                #         # print "%s %s" % (video.extension, video.resolution)
-                #         video_url = yt.videos[0].url
-                #     else:
-                #         print "Unsupported resolution or video format: %s %s" % (resolution, extension)
             else:
                 video_url = url
 
@@ -372,7 +333,7 @@ class OnlineLife():
         unified_search_results = []
 
         if keyword:
-            url = 'http://www.online-life.club/index.php?do=search'
+            url = self.url + '/index.php?do=search'
 
             # Advanced search: titles only
             values = {
@@ -389,7 +350,7 @@ class OnlineLife():
                 "searchuser": "",
                 "showposts": "0",
                 "sortby": "date",
-                "story": keyword.encode('cp1251'),
+                "story": keyword.encode("cp1251"),
                 "subaction": "search",
                 "titleonly": "3"
             }
@@ -447,7 +408,7 @@ class OnlineLife():
         else:
             self.menu()
 
-    # === Addon helpers
+    # Addon helpers
     def log(self, message):
         if self.debug:
             print "### %s: %s" % (self.id, message)
