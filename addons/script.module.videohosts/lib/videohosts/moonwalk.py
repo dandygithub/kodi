@@ -7,7 +7,83 @@ import XbmcHelpers
 import socket
 common = XbmcHelpers
 
+import re
+import json
+import base64
+import binascii
+import pyaes
+
+USER_AGENT = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0"
+
 socket.setdefaulttimeout(120)
+
+class EncryptedData:
+    def __init__(self):
+        pass
+
+    def to_json(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, separators=(',', ':'))
+
+def get_cookies(content):
+    cookie = re.compile(r"window\[\'(\w*)\'\]\s=\s\'(\w*)\';").findall(content)[0]
+    cookie_header = cookie[0]
+    cookie_header = re.sub('\'|\s|\+', '', cookie_header)
+    cookie_data = cookie[1]
+    cookie_data = re.sub('\'|\s|\+', '', cookie_data)
+    cookies = [cookie_header, cookie_data]
+    return cookies
+
+def get_access_attrs(content, url):
+    values = {}
+    attrs = {}
+
+    mw_pid = re.compile(r"partner_id:\s*(\w*),").findall(content)[0]
+    p_domain_id = re.compile(r"domain_id:\s*(\w*),").findall(content)[0]
+
+    _mw_adb = False
+
+    video_token = re.compile(r"video_token:\s*\S?\'([0-9a-f]*)\S?\'").findall(content)[0]
+
+    cookies = get_cookies(content)
+
+    js_path = re.compile(r'script src=\"(.*)\"').findall(content)[0]
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
+    }
+    request = urllib2.Request("http://" + url.split('/')[2] + js_path, "", headers)
+    request.get_method = lambda: 'GET'
+    js_page = urllib2.urlopen(request).read()
+
+    regex_window_value = r'eval\("window"\)\["' + cookies[0] + r'"\]="(\w+)"'
+    window_value = re.compile(regex_window_value).findall(js_page)[0]  # d value
+
+    e_value = re.compile(r'getVideoManifests:function\(\){var e="(\w+)"').findall(js_page)[0]  # key
+
+    n_value = re.compile(r'userAgent},n="(\w+)"').findall(js_page)[0]  # iv
+
+    t = EncryptedData()
+    t.a = mw_pid
+    t.b = p_domain_id
+    t.c = _mw_adb
+    t.d = window_value
+    t.e = video_token
+    t.f = USER_AGENT
+
+    json_string = t.to_json()
+
+    encrypt_mode = pyaes.AESModeOfOperationCBC(binascii.a2b_hex(e_value), binascii.a2b_hex(n_value))
+    encrypter = pyaes.Encrypter(encrypt_mode)
+    encrypted = ''
+    encrypted += encrypter.feed(json_string)
+    encrypted += encrypter.feed()
+
+    attrs['purl'] = "http://" + url.split('/')[2] + "/vs"
+    values["q"] = base64.standard_b64encode(encrypted)
+
+    xbmc.log("param=" + repr(values) + " " + repr(attrs))
+    return values, attrs
+
 
 def get_key(content, content2):
     key = ''
@@ -20,8 +96,7 @@ def get_key(content, content2):
         pass 
     return key, value
 
-
-def get_access_attrs(content):
+def get_access_attrs_old(content):
     values = {}
     attrs = {}
 

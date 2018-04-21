@@ -15,6 +15,8 @@ common = XbmcHelpers
 import Translit as translit
 translit = translit.Translit()
 
+USER_AGENT = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0"
+
 try:
     sys.path.append(os.path.dirname(__file__)+ '/../plugin.video.unified.search')
     from unified_search import UnifiedSearch
@@ -356,22 +358,17 @@ class HdrezkaTV():
             subtitles = response.split('subtitles: {"master_vtt":"')[-1].split('"')[0]
 
         ###################################################
-        values, attrs = moonwalk.get_access_attrs(response)
+        values, attrs = moonwalk.get_access_attrs(response, url)
         ###################################################
 
-        headers = {
-            "Host": playlist_domain2,
-            "Origin": "http://" + playlist_domain2,
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
-            "Referer": url,
-            "X-Requested-With": "XMLHttpRequest"
-        }
-        headers.update(attrs)
-
-        request = urllib2.Request('http://' + playlist_domain2 + attrs["purl"], urllib.urlencode(values), headers)
-        response = urllib2.urlopen(request).read()
+        headers = {}
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
+        opener.addheaders = [("User-Agent", USER_AGENT)]
+        request = urllib2.Request(attrs["purl"], urllib.urlencode(values), headers)
+        connection = opener.open(request)
+        response = connection.read()
         data = json.loads(response.decode('unicode-escape'))
-        playlisturl = data['mans']['manifest_m3u8']
+        playlisturl = data["m3u8"]
 
         headers = {
             "Host": playlist_domain2,
