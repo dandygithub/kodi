@@ -107,7 +107,7 @@ def update_uri(content, uri):
     return uriout
 
 def generate_strm(category, media_title):
-    if (TRANSLIT == "true") and (GENERATE_US == "false"):
+    if TRANSLIT == "true":
         media_title = translit.eng(media_title)
 
     path = xbmc.getInfoLabel('ListItem.FileNameAndPath')
