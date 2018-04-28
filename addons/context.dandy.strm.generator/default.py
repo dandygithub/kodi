@@ -107,6 +107,7 @@ def update_uri(content, uri):
     return uriout
 
 def generate_strm(category, media_title):
+    media_title_orig = media_title
     if TRANSLIT == "true":
         media_title = translit.eng(media_title)
 
@@ -142,7 +143,7 @@ def generate_strm(category, media_title):
                     action = "Updated "                    
         try:
             f = open(namefile, "w+")
-            uri = "plugin://{0}?mode=run&uri={1}&title={2}".format(ID, urllib.quote_plus(uri), encode_(media_title.split('[')[0].split('(')[0].split('/')[0].strip()))
+            uri = "plugin://{0}?mode=run&uri={1}&title={2}".format(ID, urllib.quote_plus(uri), encode_(media_title_orig.split('[')[0].split('(')[0].split('/')[0].strip()))
             f.write(uri + "\n")
             f.close()
         except Exception, e:
@@ -164,7 +165,7 @@ def generate_strm(category, media_title):
                     action = "Updated "
         try:
             f = open(name, "w+")
-            uri = "plugin://{0}?mode=run&uri={1}&title={2}".format(ID, urllib.quote_plus(uri), encode_(media_title.split('[')[0].split('(')[0].split('/')[0].strip()))
+            uri = "plugin://{0}?mode=run&uri={1}&title={2}".format(ID, urllib.quote_plus(uri), encode_(media_title_orig.split('[')[0].split('(')[0].split('/')[0].strip()))
             f.write(uri + "\n")
             f.close()
         except Exception, e:
@@ -182,7 +183,7 @@ def generate_nfo(category, media_title):
 
     nfo = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n'
     nfo += '<movie>\n'
-    nfo += "    <title>" + encode_(media_title_orig) + "</title>\n"
+    nfo += "    <title>" + encode_(encode_(media_title_orig.split('[')[0].split('(')[0].split('/')[0].strip())) + "</title>\n"
     year = get_media_year(media_title_orig)
     if year:
         nfo += "    <year>" + year + "</year>\n"
