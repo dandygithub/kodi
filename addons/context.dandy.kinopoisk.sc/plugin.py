@@ -162,7 +162,7 @@ def process(kp_id, media_title, image):
             title = li[1].getLabel().replace("*T*", media_title)
             li[1].setLabel(title)
             li[0] = li[0] + ("&title=%s" % (urllib.quote_plus(title)))
-        li[1].setInfo(type='Video', infoLabels={'title': media_title, 'label': media_title, 'plot': media_title})
+        li[1].setInfo(type='Video', infoLabels={'title': li[1].getLabel(), 'label': media_title, 'plot': media_title})
         xbmcplugin.addDirectoryItem(HANDLE, li[0], li[1], li[2])
     xbmcplugin.setContent(HANDLE, 'movies')
     xbmcplugin.endOfDirectory(HANDLE, True)
