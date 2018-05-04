@@ -87,10 +87,10 @@ class Kinokong():
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getCategoryItems(self.url + '/films/novinki-kinos', 1)
+        self.getCategoryItems(self.url + '/film/novinki-kinos', 1)
 
     def getCategoryItems(self, url, page):
-        print "*** Get category items %s" % url
+        #print "*** Get category items %s" % url
         page_url = "%s/page/%s/" % (url, str(int(page)))
         response = common.fetchPage({"link": page_url})
         per_page = 0
@@ -184,8 +184,17 @@ class Kinokong():
             xbmcplugin.setContent(self.handle, 'files')
 
         else:
-            response = common.fetchPage({"link": playlist})
-            response = eval(response["content"])
+            headers = {
+                "Host": self.domain,
+                "Referer": url,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
+            }
+            request = urllib2.Request(playlist, "", headers)
+            request.get_method = lambda: 'GET'
+            response = eval(urllib2.urlopen(request).read())
+
+#            response = common.fetchPage({"link": playlist})
+#            response = eval(response["content"])
 
             if 'playlist' in response['playlist'][0]:
                 print "This is a season multiple seasons"
@@ -194,10 +203,10 @@ class Kinokong():
                     episods = season['playlist']
 
                     for episode in episods:
-                        etitle =  episode['comment'].replace('<br>', ' ')
+                        etitle =  episode['comment'].replace('<br>', '  ')
                         url = episode['file'].split(',')[-1] if '_720' in episode['file'] else episode['file'].split(',')[0]
                         uri = sys.argv[0] + '?mode=play&url=%s' % url
-                        item = xbmcgui.ListItem(common.stripTags(etitle), iconImage=image, thumbnailImage=image)
+                        item = xbmcgui.ListItem(etitle.replace('<br>', '  '), iconImage=image, thumbnailImage=image)
 
                         item.setInfo(type='Video', infoLabels=labels)
                         item.setProperty('IsPlayable', 'true')
@@ -212,7 +221,7 @@ class Kinokong():
 
                     url = episode['file'].split(',')[-1] if '_720' in episode['file'] else episode['file'].split(',')[0]
                     uri = sys.argv[0] + '?mode=play&url=%s' % url
-                    item = xbmcgui.ListItem(common.stripTags(etitle), iconImage=image, thumbnailImage=image)
+                    item = xbmcgui.ListItem(etitle.replace('<br>', '  '), iconImage=image, thumbnailImage=image)
 
                     item.setInfo(type='Video', infoLabels=labels)
                     item.setProperty('IsPlayable', 'true')
@@ -230,12 +239,12 @@ class Kinokong():
         genres = common.parseDOM(menu, "li")
 
         links = [
-          self.url + '/films/',
-          self.url + '/films/novinki-kinos/',
-          self.url + '/serial/',
-          self.url + '/multfilmi/',
-          self.url + '/anime/',
-          self.url + '/dokumentalnyy/'
+          self.url + '/film/',
+          self.url + '/film/novinki-kinos/',
+          self.url + '/series/',
+          self.url + '/cartoons/',
+          self.url + '/animes/',
+          self.url + '/documentary/'
         ]
 
         for i, genre in enumerate(genres[:-1]):
@@ -340,9 +349,8 @@ class Kinokong():
                     item = xbmcgui.ListItem(self.encode(self.strip(title)), thumbnailImage=image)
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-                xbmcplugin.setContent(self.handle, 'files')
+                xbmcplugin.setContent(self.handle, 'movies')
                 xbmcplugin.endOfDirectory(self.handle, True)
-
         else:
             self.menu()
 
@@ -367,10 +375,6 @@ class Kinokong():
 
     def decode(self, string):
         return string.decode('utf-8').encode('cp1251')
-
-    def strip(self, string):
-        return common.stripTags(string)
-
 
 Kinokong = Kinokong()
 Kinokong.main()
