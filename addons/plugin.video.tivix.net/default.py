@@ -1,26 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#/*
-# *  Copyright (C) 2011 MrStealth
-# *
-# *  This Program is free software; you can redistribute it and/or modify
-# *  it under the terms of the GNU General Public License as published by
-# *  the Free Software Foundation; either version 2, or (at your option)
-# *  any later version.
-# *
-# *  This Program is distributed in the hope that it will be useful,
-# *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-# *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# *  GNU General Public License for more details.
-# *
-# *  You should have received a copy of the GNU General Public License
-# *  along with this program; see the file COPYING.  If not, write to
-# *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-# *  http://www.gnu.org/copyleft/gpl.html
-# */
-#
-# Writer (c) 2014, MrStealth
-# Rev. 2.1.0
 
 import urllib, urllib2, sys, socket
 import xbmc, xbmcgui, xbmcaddon, xbmcplugin
@@ -29,7 +8,7 @@ import json
 import datetime, time
 from resources.lib.decoder import decoder
 
-socket.setdefaulttimeout(30)
+socket.setdefaulttimeout(120)
 common = XbmcHelpers
 
 class Tivix():
@@ -53,13 +32,14 @@ class Tivix():
         mode = url = None
         mode = params['mode'] if 'mode' in params else None
         url = urllib.unquote_plus(params['url']) if 'url' in params else None
+        url2 = urllib.unquote_plus(params['url2']) if 'url2' in params else None
         page = params['page'] if 'page' in params else 1
         image = urllib.unquote_plus(params['image']) if 'image' in params else self.icon
         name = urllib.unquote_plus(params['name']) if 'name' in params else None
         cid = params['cid'] if 'cid' in params else None
 
         if mode == 'play':
-            self.play(url)
+            self.play(url, url2)
         if mode == 'show':
             self.show(url, image, name)
         if mode == 'index':
@@ -241,7 +221,7 @@ class Tivix():
             description = self.strip(response['content'].split("<!--dle_image_end-->")[1].split("<div")[0])
             #description = common.parseDOM(response['content'], "meta", attrs={"name": "description"}, ret = "content")[0]
             currname, duration, listItems = self.getEPG(cid = cid, cname=name, image=image)
-            uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote_plus(streams[0])
+            uri = sys.argv[0] + '?mode=play&url=%s&url2=%s' % (urllib.quote_plus(streams[0]), link)
             item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(1004),  iconImage=image, thumbnailImage=image)
             item.setInfo(type='Video', infoLabels={'title': currname if currname != '' else name, 'plot': description, 'duration': duration})
             item.setProperty('IsPlayable', 'true')
@@ -295,7 +275,7 @@ class Tivix():
 
         return streams
 
-    def play(self, stream):
+    def play(self, stream, url_main):
         if 'm3u8' in stream:
             print "M3U8"
             url = stream
@@ -307,7 +287,7 @@ class Tivix():
             url += " swfVfy=true live=true"
 
         try:         
-            item = xbmcgui.ListItem(path = url)
+            item = xbmcgui.ListItem(path = url + "|Referer="+url_main)
             xbmcplugin.setResolvedUrl(self.handle, True, item)
         except:
             self.showErrorMessage("The channel is not available")
@@ -321,10 +301,7 @@ class Tivix():
         keyword = None
 
         if kbd.isConfirmed():
-            if self.addon.getSetting('translit') == 'true':
-                keyword = translit.rus(kbd.getText())
-            else:
-                keyword = kbd.getText()
+            keyword = kbd.getText()
         return keyword
 
     def search(self, url):

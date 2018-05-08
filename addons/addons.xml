@@ -240,11 +240,10 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.tivix.net" name="Tivix.net" version="2.2.5" provider-name="mrstealth, dandy">
+<addon id="plugin.video.tivix.net" name="Tivix.net" version="2.2.6" provider-name="mrstealth, dandy">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
-        <import addon="script.module.xbmc.helpers" version="2.0.0"/>
-        <import addon="script.module.translit" version="2.0.1"/>
+        <import addon="script.module.xbmc.helpers" version="2.1.0"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">>
         <provides>video</provides>
