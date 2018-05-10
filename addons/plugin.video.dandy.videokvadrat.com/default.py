@@ -129,16 +129,18 @@ class Videokvadrat():
         try:
             self.show_(url)
         except:
-            self.showErrorMessage("Source not supported")
+            self.showErrorMessage("Source is not supported or unavailable")
 
     def show__(self, content, i):
-        #title = common.parseDOM(content, "title")[0]
+        #title_main = common.parseDOM(content, "title")[0]
         title = "Video #" + str(i)
     
 	if 'youtube.com/embed' in content:
+                title = title + " (youtube)"
 		videoId = re.findall('youtube.com/embed/(.*?)[\"\']', content)[0].split('?')[0]
 		link = urllib.quote_plus('plugin://plugin.video.youtube/play/?video_id=' + videoId)
 	elif '1tv.ru/embed/' in content:
+                title = title + " (1tv.ru)"
 		videoId = re.findall('1tv.ru/embed/(.*?)[\"\']', content)[0]
 		player = videoId.split(':')[-1]
 		if '11' in player:
@@ -158,6 +160,7 @@ class Videokvadrat():
 		jsonDict = json.loads(resp)
 		link = urllib.quote_plus('http:'+jsonDict[0]['mbr'][0]['src'])
 	elif 'player.stb.ua/embed' in content or 'player.ictv.ua/embed' in content:
+                title = title + " (stb.ua, ictv.ua)"
 		if 'player.ictv.ua/embed' in content:
 			url = re.findall('(player.ictv.ua/embed/.*?)[\"\']', content)[0]
 			url = 'http://'+url
@@ -165,11 +168,13 @@ class Videokvadrat():
 			url = re.findall('(player.stb.ua/embed/.*?)[\"\']', content)[0]
 			url = 'http://'+url
 		request = urllib2.Request(url)
+		request.add_header('Referer', self.url)
 		request.add_header('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36')
 		response = urllib2.urlopen(request)
 		resp = response.read()
 		link = urllib.quote_plus(common.parseDOM(resp, "source", attrs={"label": "mq"}, ret="src")[0])
 	elif 'ovva.tv/video/embed' in content:
+                title = title + " (ovva.tv)"
 		url = re.findall('(ovva.tv/video/embed/.*?)[\"\']', content)[0]
 		url = 'https://'+url
 		request = urllib2.Request(url)
@@ -185,6 +190,7 @@ class Videokvadrat():
 		resp = response.read()
 		link = urllib.quote_plus(resp.split('=')[-1])
 	elif 'player.vgtrk.com/iframe' in content:
+                title = title + " (vgtrk)"
 		videoId = re.findall('player.vgtrk.com/iframe/video/id/(.*?)/', content)[0]
 		url = 'http://player.vgtrk.com/iframe/datavideo/id/'+videoId+'/sid/russiatv'
 		request = urllib2.Request(url)
@@ -194,6 +200,7 @@ class Videokvadrat():
 		jsonDict = json.loads(resp)
 		link = urllib.quote_plus(jsonDict['data']['playlist']['medialist'][0]['sources']['m3u8']['auto'])
 	elif 'tvc.ru/video/iframe' in content:
+                title = title + " (tvc.ru)"
 		videoId = re.findall('tvc.ru/video/iframe/id/(.*?)/', content)[0]
 		url = 'http://www.tvc.ru/video/json/id/'+videoId
 		request = urllib2.Request(url)
@@ -203,6 +210,7 @@ class Videokvadrat():
 		jsonDict = json.loads(resp)
 		link = urllib.quote_plus('http:'+jsonDict['path']['quality'][0]['url'])
 	elif 'rutube.ru/play/embed/' in content:
+                title = title + " (rutube)"
 		videoId = re.findall('rutube.ru/play/embed/(.*?)[\"\']', content)[0]
 		url = 'http://rutube.ru/api/play/options/'+videoId+'?format=json'
 		request = urllib2.Request(url)
@@ -211,8 +219,9 @@ class Videokvadrat():
 		resp = response.read()
 		jsonDict = json.loads(resp)
 		link = urllib.quote_plus(jsonDict['video_balancer']['m3u8'])
-	elif 'ntv.ru/video/embed/' in content:
-		url = re.findall('(ntv.ru/video/embed/.*?)[\"\']', content)[0]
+	elif 'ntv.ru' in content:
+                title = title + " (ntv)"
+                url = re.findall('(ntv.ru\w*/embed/.*?)[\"\']', content)[0]
 		url = 'http://'+url
 		request = urllib2.Request(url)
 		request.add_header('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36')
@@ -224,8 +233,13 @@ class Videokvadrat():
 				link = urllib.quote_plus('http://media.ntv.ru/vod'+r)
 				break
 	elif 'videomore' in content:
-		videoId = re.findall('videomore.ru/embed/(.*?)[\"\']', content)[0].split('?')[0]
-		link = urllib.quote_plus('https://player.videomore.ru/?partner_id=97&track_id=%s&autoplay=1&userToken=' % videoId)
+                title = "[COLOR=gray]" + title + " (videomore) [/COLOR]" 
+                link = "*"  
+#		videoId = re.findall('videomore.ru/embed/(.*?)[\"\']', content)[0].split('?')[0]
+#		link = urllib.quote_plus('https://player.videomore.ru/?partner_id=97&track_id=%s&autoplay=1&userToken=' % videoId)
+        elif '1plus1.video' in content:
+                title = "[COLOR=gray]" + title + " (1plus1) [/COLOR]" 
+                link = "*"  
 	else:	
 		player = common.parseDOM(content, "div", attrs={"class": "player"})[0]
 		link = player.split("'video': [{'url': '")[-1].split("'}],")[0]
@@ -236,8 +250,8 @@ class Videokvadrat():
         response = common.fetchPage({"link": url})
 	content = response["content"]
 	
-#	divtitle = common.parseDOM(content, "div", attrs={"class": "row"})[0]
-#	title = common.parseDOM(divtitle, "h1")[0]
+	divtitle = common.parseDOM(content, "div", attrs={"class": "row"})[0]
+	title_main = common.parseDOM(divtitle, "h1")[0]
 	
         videos = common.parseDOM(content, "iframe", ret="src") 
         if len(videos) == 0:
@@ -250,7 +264,7 @@ class Videokvadrat():
 	
             uri = sys.argv[0] + '?mode=play&url=%s' % link
 	    item = xbmcgui.ListItem(title, thumbnailImage=self.icon, iconImage=self.icon)
-	    item.setInfo(type='Video', infoLabels={'title': title, 'plot': description, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
+	    item.setInfo(type='Video', infoLabels={'title': title, 'label': title_main, 'plot': description, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
 	    item.setProperty('IsPlayable', 'true')
 	    xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 	
