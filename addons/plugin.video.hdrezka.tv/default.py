@@ -197,8 +197,7 @@ class HdrezkaTV():
                 item.setInfo(type='Video', infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
                 item.setProperty('IsPlayable', 'true')
                 if subtitles: 
-                    urls = subtitles
-                    item.setSubtitles(urls)
+                    item.setSubtitles([subtitles])
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
 
@@ -356,7 +355,7 @@ class HdrezkaTV():
         subtitles = None
         if 'subtitles: {"master_vtt":"' in response:
             subtitles = response.split('subtitles: {"master_vtt":"')[-1].split('"')[0]
-
+            
         ###################################################
         values, attrs = moonwalk.get_access_attrs(response, url)
         ###################################################
@@ -516,8 +515,7 @@ class HdrezkaTV():
     def play(self, url, subtitles = None):
         item = xbmcgui.ListItem(path = url)
         if subtitles:
-            urls = re.compile('http:\/\/.*?\.srt').findall(subtitles)
-            item.setSubtitles(urls)
+            item.setSubtitles([subtitles])
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
     def play_episode(self, url, referer, post_id, season_id, episode_id, title, image):
