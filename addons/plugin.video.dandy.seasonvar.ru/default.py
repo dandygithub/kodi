@@ -339,7 +339,7 @@ class Seasonvar():
             dialog = xbmcgui.Dialog()
             index_ = dialog.select(self.language(6000), titles)
             if int(index_) < 0:
-                index_ = 0    
+                index_ = 0
         else:
             index_ = 0    
         playlist = playlist0 if index_ == 0 else playlists[index_-1]
@@ -421,15 +421,19 @@ class Seasonvar():
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
             else:    
                 uri = sys.argv[0] + '?mode=play&url=%s' % url
+                sub_name = None
+                subtitle = None
                 try:
-                    subtitle = episode["sub"]
+                    sub_name = episode["subtitle"].split(']')[0].replace('[', '')
+                    subtitle = episode["subtitle"].split(']')[1]
                 except:
-                    subtitle = None 
+                    pass
+                xbmc.log("subtitle=" + repr(subtitle))                    
                 item = xbmcgui.ListItem(label=self.getTitle(title, etitle, title_orig, season), iconImage=image, thumbnailImage=image)
                 labels = {'title': self.getTitle(title, etitle, title_orig, season, 1), 'plot': description, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0}
                 item.setInfo(type='Video', infoLabels=labels)
                 item.setProperty('IsPlayable', 'true')
-                if subtitle:
+                if subtitle and (subtitle != ''):
                     item.setSubtitles([subtitle])
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
