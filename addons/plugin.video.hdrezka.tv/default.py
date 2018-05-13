@@ -295,7 +295,7 @@ class HdrezkaTV():
                 videoplayer = common.parseDOM(content, 'div', attrs={'id': 'videoplayer'})
                 iframe = common.parseDOM(content, 'iframe', ret='src')[0]
                 links, subtitles = self.get_video_link_from_iframe(iframe, url)
-                self.selectQuality(links, title, image)
+                self.selectQuality(links, title, image, subtitles)
 
         xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
@@ -355,7 +355,7 @@ class HdrezkaTV():
         subtitles = None
         if 'subtitles: {"master_vtt":"' in response:
             subtitles = response.split('subtitles: {"master_vtt":"')[-1].split('"')[0]
-            
+
         ###################################################
         values, attrs = moonwalk.get_access_attrs(response, url)
         ###################################################
