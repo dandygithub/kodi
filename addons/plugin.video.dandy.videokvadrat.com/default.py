@@ -6,6 +6,7 @@ import os, urllib, urllib2, sys
 import xbmc, xbmcplugin,xbmcgui,xbmcaddon
 import re
 import json
+from operator import itemgetter
 
 import XbmcHelpers
 common = XbmcHelpers
@@ -31,7 +32,8 @@ class Videokvadrat():
         mode = url = page = None
         mode = params['mode'] if 'mode' in params else None
         url = urllib.unquote_plus(params['url']) if 'url' in params else None
-        page = params['page'] if 'page' in params else 1
+        page = int(params['page']) if 'page' in params else 1
+        kind = int(params['kind']) if 'kind' in params else 0        
         keyword = urllib.unquote_plus(params['keyword']) if 'keyword' in params else None
 
         if mode == None:
@@ -41,13 +43,15 @@ class Videokvadrat():
         if mode == 'show':
             self.show(url)
         if mode == 'index':
-            self.index(url, page)
+            self.index(url, page, kind)
         if mode == 'history':
             self.history()
         if mode == 'clean':
             self.clean()
         if (mode == 'search') or (mode == 'search_main'):
             self.search(url, keyword, mode == "search_main")
+        if (mode == 'parts'):
+            self.parts(url)
 
     def menu(self):
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("search_main", self.url)
@@ -64,6 +68,10 @@ class Videokvadrat():
 		
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("index", self.url + "publ/")
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1004), iconImage=self.icon, thumbnailImage=self.icon)
+        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        uri = sys.argv[0] + '?mode=%s&url=%s' % ("parts", self.url)
+        item = xbmcgui.ListItem("[COLOR=orange]%s[/COLOR]" % self.language(1006), iconImage=self.icon, thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         self.index(self.url, 0)
@@ -103,11 +111,17 @@ class Videokvadrat():
             item = xbmcgui.ListItem("%s" % (title), iconImage = self.icon, thumbnailImage = self.icon)
             item.setInfo(type='Video', infoLabels={'title': title})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+            
+        return len(titles)    
       
-    def index(self, url, page):
-        if page == 1:
+    def index(self, url, page, kind = 0):
+        if (kind == 0) and (page == 1):
             uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", url)
             item = xbmcgui.ListItem("[COLOR=FF00FF00][%s][/COLOR]" % self.language(1000), iconImage=self.icon, thumbnailImage=self.icon)
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+            uri = sys.argv[0] + '?mode=%s&url=%s' % ("parts", url)
+            item = xbmcgui.ListItem("[COLOR=orange]%s[/COLOR]" % self.language(1006), iconImage=self.icon, thumbnailImage=self.icon)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         page_url = "%s%s" % (url, "" if (page == 0) else '?page' + str(page))
@@ -115,12 +129,13 @@ class Videokvadrat():
         response = common.fetchPage({"link": page_url})
         content = response["content"]
 
-        self.index_(content)
+        count = self.index_(content)
 
-        if page > 0:
-            uri = sys.argv[0] + '?mode=%s&url=%s&page=%s' % ("index", url, str(int(page) + 1))
-            item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1005), iconImage=self.inext)
-            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+        if (page > 0):
+            if (count == 10):
+                uri = sys.argv[0] + '?mode=%s&url=%s&page=%s' % ("index", url, str(int(page) + 1))
+                item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1005), iconImage=self.inext)
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
             xbmcplugin.setContent(self.handle, "movies")
             xbmcplugin.endOfDirectory(self.handle, True)
@@ -238,8 +253,20 @@ class Videokvadrat():
 #		videoId = re.findall('videomore.ru/embed/(.*?)[\"\']', content)[0].split('?')[0]
 #		link = urllib.quote_plus('https://player.videomore.ru/?partner_id=97&track_id=%s&autoplay=1&userToken=' % videoId)
         elif '1plus1.video' in content:
-                title = "[COLOR=gray]" + title + " (1plus1) [/COLOR]" 
-                link = "*"  
+                title = title + " (1plus1)"         
+		url = content.replace('"', '')
+		request = urllib2.Request(url)
+		request.add_header('Referer', self.url)
+		request.add_header('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36')
+		response = urllib2.urlopen(request).read()
+		content = response.split('new OVVA("ovva-player","')[-1].split('")};')[0]
+		import base64
+		resp = base64.b64decode(content)
+		jsonDict = json.loads(resp)
+		link = jsonDict['balancer']
+		response = urllib2.urlopen(link)
+		resp = response.read()
+		link = urllib.quote_plus(resp.split('=')[-1])
 	else:	
 		player = common.parseDOM(content, "div", attrs={"class": "player"})[0]
 		link = player.split("'video': [{'url': '")[-1].split("'}],")[0]
@@ -264,7 +291,7 @@ class Videokvadrat():
 	
             uri = sys.argv[0] + '?mode=play&url=%s' % link
 	    item = xbmcgui.ListItem(title, thumbnailImage=self.icon, iconImage=self.icon)
-	    item.setInfo(type='Video', infoLabels={'title': title, 'label': title_main, 'plot': description, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
+	    item.setInfo(type='Video', infoLabels={'title': title_main + " [" + title + "]", 'label': title_main + " [" + title + "]", 'plot': description, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
 	    item.setProperty('IsPlayable', 'true')
 	    xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 	
@@ -324,6 +351,30 @@ class Videokvadrat():
     def play(self, url):
         item = xbmcgui.ListItem(path = url)
         xbmcplugin.setResolvedUrl(self.handle, True, item)
+
+    def parts(self, url):
+        response = common.fetchPage({"link": url})
+        content = response["content"]
+        
+	divparts = common.parseDOM(content, "div", attrs={"class": "block"})[0]
+	parts = common.parseDOM(divparts, "a", attrs={"class": "catName"})
+	partlinks = common.parseDOM(divparts, "a", attrs={"class": "catName"}, ret="href")
+	
+	partsfull = []
+        for i, part in enumerate(parts):
+            item = [part, partlinks[i]]
+            partsfull.append(item) 
+
+        partssort = sorted(partsfull, key=itemgetter(0))
+
+        for i, part in enumerate(partssort):
+            title = part[0]
+            uri = sys.argv[0] + '?mode=%s&url=%s&kind=%s' % ("index",  self.url + part[1], "1")
+            item = xbmcgui.ListItem("%s" % (title), iconImage = self.icon, thumbnailImage = self.icon)
+            item.setInfo(type='Video', infoLabels={'title': title})
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+	
+	xbmcplugin.endOfDirectory(self.handle, True)
 
     # XBMC helpers
     def showMessage(self, msg):
