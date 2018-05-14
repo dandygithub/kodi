@@ -150,6 +150,8 @@ class Videokvadrat():
         #title_main = common.parseDOM(content, "title")[0]
         title = "Video #" + str(i)
     
+        xbmc.log("content=" + repr(content))
+
 	if 'youtube.com/embed' in content:
                 title = title + " (youtube)"
 		videoId = re.findall('youtube.com/embed/(.*?)[\"\']', content)[0].split('?')[0]
@@ -175,13 +177,14 @@ class Videokvadrat():
 		jsonDict = json.loads(resp)
 		link = urllib.quote_plus('http:'+jsonDict[0]['mbr'][0]['src'])
 	elif 'player.stb.ua/embed' in content or 'player.ictv.ua/embed' in content:
-                title = title + " (stb.ua, ictv.ua)"
 		if 'player.ictv.ua/embed' in content:
-			url = re.findall('(player.ictv.ua/embed/.*?)[\"\']', content)[0]
-			url = 'http://'+url
+                    title = title + " (ictv.ua)"
+	            url = re.findall('(player.ictv.ua/embed/.*?)[\"\']', content)[0]
+		    url = 'http://'+url
 		if 'player.stb.ua/embed' in content:
-			url = re.findall('(player.stb.ua/embed/.*?)[\"\']', content)[0]
-			url = 'http://'+url
+                    title = title + " (stb.ua)"
+		    url = re.findall('(player.stb.ua/embed/.*?)[\"\']', content)[0]
+		    url = 'http://'+url
 		request = urllib2.Request(url)
 		request.add_header('Referer', self.url)
 		request.add_header('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36')
@@ -254,7 +257,8 @@ class Videokvadrat():
 #		link = urllib.quote_plus('https://player.videomore.ru/?partner_id=97&track_id=%s&autoplay=1&userToken=' % videoId)
         elif '1plus1.video' in content:
                 title = title + " (1plus1)"         
-		url = content.replace('"', '')
+		url = re.findall('(1plus1.video/video/embed/.*?)[\"\']', content)[0]
+		url = 'http://'+url
 		request = urllib2.Request(url)
 		request.add_header('Referer', self.url)
 		request.add_header('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36')
