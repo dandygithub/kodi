@@ -182,15 +182,18 @@ class HdrezkaTV():
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def selectQuality(self, links, title, image, subtitles = None):
-        if self.quality != 'select': 
-            try:
-                self.play(links[int(self.quality[:-1])], subtitles)
-            except:
-                self.play(links[720], subtitles)
-        else:
-            list = sorted(links.iteritems(), key=itemgetter(0))
-            for quality, link in list:
-                print "quality: %s link %s" % (quality, link)
+        list = sorted(links.iteritems(), key=itemgetter(0))
+        i = 0
+        for quality, link in list:
+            #print "quality: %s link %s" % (quality, link)
+            i += 1
+            if self.quality != 'select':
+                if quality > int(self.quality[:-1]):
+                    self.play(links[quality_prev], subtitles)
+                    break
+                elif (len(list) == i):
+                    self.play(links[quality], subtitles)
+            else:
                 film_title = "%s (%s)" % (title, str(quality) + 'p')
                 uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote(link)
                 item = xbmcgui.ListItem(film_title, iconImage=image)
@@ -199,7 +202,7 @@ class HdrezkaTV():
                 if subtitles: 
                     item.setSubtitles([subtitles])
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
-
+            quality_prev = quality 
 
     def selectTranslator(self, content, post_id):
         iframe0 = common.parseDOM(content, 'iframe', ret='src')[0]
