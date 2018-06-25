@@ -10,6 +10,7 @@ import urllib2
 import sys
 import socket
 import json
+import re
 
 from urllib2 import Request, build_opener, HTTPCookieProcessor, HTTPHandler
 import cookielib
@@ -410,7 +411,10 @@ class Seasonvar():
             etitle = self.strip(episode['title'].replace("<br>", "  "))
             playlist_ = None
             try:
-                url = episode['file']
+                regex = r"(\/\/.*?=)"
+                url = re.sub(regex, '', episode['file']);
+                import base64
+                url = base64.b64decode(url[2:])
             except:
                 playlist_ = episode['playlist']
             if playlist_:
