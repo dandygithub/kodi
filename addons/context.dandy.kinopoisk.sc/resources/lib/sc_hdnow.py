@@ -57,7 +57,11 @@ def process(kp_id):
     global _kp_id_
     _kp_id_ = kp_id
     xbmc.log("kp_id=" + kp_id)
-    list_li = get_content()
+    list_li = []
+    try:
+	    list_li = get_content()
+    except:
+    	    pass		    
     return list_li
 
 def encode_(param):
