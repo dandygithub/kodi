@@ -189,7 +189,7 @@ def get_playlist(url):
         for i, item in enumerate(json_playlist["links"]):
             item2 = json_playlist["links"][item]
             qualities.append(item)
-            urls.append(item2["src"])
+            urls.append(item2[0]["src"])
     else:
         link = response.split('"link":"')[-1].split('","')[0]
         if not ("http:" in link):
