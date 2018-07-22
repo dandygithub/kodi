@@ -60,6 +60,7 @@ def get_access_attrs(content, url):
 
     e_value = re.compile(r'getVideoManifests:function\(\){var e="(\w+)"').findall(js_page)[0]  # key
     e_value = '7316d0c4'+e_value   
+
     n_value = re.compile(r'i\.SohoMd\[e\]=t\):t=r,t},r="(\w+)"').findall(js_page)[0]  # iv 
 
     t = EncryptedData()
