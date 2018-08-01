@@ -44,8 +44,6 @@ def get_access_attrs(content, url):
 
     video_token = re.compile(r"video_token:\s*\S?\'([0-9a-f]*)\S?\'").findall(content)[0]
 
-    cookies = get_cookies(content)
-
     js_path = re.compile(r'script src=\"(.*)\"').findall(content)[0]
 
     headers = {
@@ -54,20 +52,16 @@ def get_access_attrs(content, url):
     request = urllib2.Request("http://" + url.split('/')[2] + js_path, "", headers)
     request.get_method = lambda: 'GET'
     js_page = urllib2.urlopen(request).read()
+    
+    e_value = "19f15a0031b8548acfa8da1f2cdf7f73179ac13f3c4938c8bad5a1c93dd8fc06"    
 
-    regex_window_value = r'eval\("window"\)\["' + cookies[0] + r'"\]="(\w+)"'
-    window_value = re.compile(regex_window_value).findall(js_page)[0]  # d value
-
-    e_value = re.compile(r'getVideoManifests:function\(\){var e="(\w+)"').findall(js_page)[0]  # key
-    e_value = '7316d0c4'+e_value   
-
-    n_value = re.compile(r'i\.SohoMd\[e\]=t\):t=r,t},r="(\w+)"').findall(js_page)[0]  # iv 
+    n_value = "79e4add175162a762071a11fe45d249f"
 
     t = EncryptedData()
     t.a = mw_pid
     t.b = p_domain_id
     t.c = _mw_adb
-    t.d = window_value
+    #t.d = window_value
     t.e = video_token
     t.f = USER_AGENT
 
