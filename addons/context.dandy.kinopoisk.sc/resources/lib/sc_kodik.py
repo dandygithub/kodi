@@ -66,7 +66,7 @@ def get_content(part):
             for item in rows:
                 try: 
                     tds = common.parseDOM(item, "td")
-                    url_ = "https:" + common.parseDOM(item, "a", attrs={"class": "btn btn-info btn-xs copycode"}, ret="data-code")[0]
+                    url_ = "https:" + common.parseDOM(item, "a", attrs={"class": "btn btn-success btn-xs copypreview"}, ret="data-link")[0]
                 except:
                     continue
                 url = prepare_url(url_)
@@ -77,14 +77,13 @@ def get_content(part):
                 list_li.append([uri, item, True]) 
         except:
             pass 
-
     return list_li
 
 
 def process(kp_id):
     global _kp_id_
     _kp_id_ = kp_id
-    xbmc.log("kp_id=" + kp_id)
+    xbmc.log("kodik:kp_id=" + kp_id)
     list_li = []
     for part in PARTS:
         list_li += get_content(part)
