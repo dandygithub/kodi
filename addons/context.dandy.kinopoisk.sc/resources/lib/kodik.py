@@ -147,7 +147,9 @@ def get_playlist(url):
         response = urllib2.urlopen(request).read()
     except:
         return manifest_links, subtitles, season, episode, 0
-    iframe = "http:" + common.parseDOM(response, "iframe", ret="src")[0]
+
+    iframe = "http:" + response.split('iframe.src = "')[-1].split('";\n')[0]
+    #iframe = "http:" + common.parseDOM(response, "iframe", ret="src")[0]
     try: 
         request = urllib2.Request(iframe, "", headers)
         request.get_method = lambda: 'GET'
