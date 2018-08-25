@@ -149,7 +149,6 @@ def get_playlist(url):
         return manifest_links, subtitles, season, episode, 0
 
     iframe = "http:" + response.split('iframe.src = "')[-1].split('";\n')[0]
-    #iframe = "http:" + common.parseDOM(response, "iframe", ret="src")[0]
     try: 
         request = urllib2.Request(iframe, "", headers)
         request.get_method = lambda: 'GET'
@@ -158,11 +157,30 @@ def get_playlist(url):
         return manifest_links, subtitles, season, episode, 0
 
     #tvshow
-    tvshow = common.parseDOM(response, "div", attrs={"class": "serial-panel"})
-    if tvshow:
-        response, season, episode = select_episode(response, url)
-        if response == "":
-            return manifest_links, subtitles, season, episode, 0
+    div = common.parseDOM(response, "div", attrs={"class": "get_code_main"})[0]
+    
+    xbmc.log("div=" + div)
+    
+    if div:
+        iframe = common.parseDOM(div,  "input", ret="value")[0]
+        iframe = iframe.split('<iframe src="')[-1].split('"')[0]    
+        request = urllib2.Request(iframe, "", headers)
+        request.get_method = lambda: 'GET'
+        response = urllib2.urlopen(request).read()
+        #tvshow
+        tvshow = common.parseDOM(response, "div", attrs={"class": "serial-panel"})
+        if tvshow:
+            response, season, episode = select_episode(response, url)
+            if response == "":
+                return manifest_links, subtitles, season, episode, 0
+        else:
+            iframe = "http:" + response.split('iframe.src = "')[-1].split('";\n')[0]
+            try: 
+                request = urllib2.Request(iframe, "", headers)
+                request.get_method = lambda: 'GET'
+                response = urllib2.urlopen(request).read()
+            except:
+                return manifest_links, subtitles, season, episode, 0
 
     values, attrs = get_attrs(response)
 
