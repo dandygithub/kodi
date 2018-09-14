@@ -132,7 +132,7 @@ class Videokvadrat():
         count = self.index_(content)
 
         if (page > 0):
-            if (count == 10):
+            if (("publ" in url) and (count == 10)) or (("news" in url) and (count == 16)): 
                 uri = sys.argv[0] + '?mode=%s&url=%s&page=%s' % ("index", url, str(int(page) + 1))
                 item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1005), iconImage=self.inext)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
