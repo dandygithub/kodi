@@ -307,7 +307,7 @@
     </extension>
 </addon>
 
-<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.1.19" provider-name="dandy">
+<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.1.20" provider-name="dandy">
         <requires>
                 <import addon="xbmc.addon" version="13.0.0"/>
         </requires>
@@ -327,6 +327,24 @@
 		<disclaimer>Add-ons for home usage in Kodi</disclaimer>
 		<platform>all</platform>
 	</extension>
+</addon>
+
+<addon id="script.dandy.strm.marker" name="STRM Marker" version="1.0.0" provider-name="dandy">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.simplejson" version="3.3.0"/>
+  </requires>
+  <extension point="xbmc.python.script" library="default.py">
+  	<provides>executable</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">STRM Marker</summary>
+    <description lang="en">Mark STRM content in Libraries</description>
+    <disclaimer lang="en"></disclaimer>
+    <language></language>
+    <license>GNU GPL v.3</license>
+  </extension>
 </addon>
 
 <addon id='script.module.favorites' name='Favorites for xbmc plugins' provider-name='mrstealth, dandy' version='2.1.0'>

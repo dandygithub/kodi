@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <setting label="Library: Movies" type="bool" id="movies" default="true"/>
+    <setting label="Library: TVShows" type="bool" id="tvshows" default="false"/>
+    <setting type="sep"/>
+    <setting label="Action" type="enum" id="action" lvalues="mark|clear" default="0"/>
+    <setting label="Type" type="enum" id="type" lvalues="before title|after title" default="0"/>
+    <setting label="Text" type="text" id="text" default="*strm*"/>
+</settings>
