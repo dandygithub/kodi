@@ -80,7 +80,7 @@ def get_content():
 def process(kp_id):
     global _kp_id_
     _kp_id_ = kp_id
-    xbmc.log("kp_id=" + kp_id)
+    xbmc.log("moonwalk:kp_id=" + kp_id)
     list_li = []
     list_li += get_content()
     return list_li

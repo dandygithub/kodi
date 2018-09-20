@@ -145,7 +145,7 @@ def get_playlist(url):
 
     response = response.split("media: [")[-1].split("]")[0]
    
-    urls = re.compile("http:\/\/.*?[']").findall(response)
+    urls = re.compile("https:\/\/.*?[']").findall(response)
     for i, url in enumerate(urls):
         manifest_links[QUALITY_TYPES[i]] = url.replace("'", "") + "|Referer="+url_;
 

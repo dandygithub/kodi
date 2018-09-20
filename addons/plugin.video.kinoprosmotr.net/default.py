@@ -269,11 +269,12 @@ class Kinoprosmotr():
                     except: 
                         pass
                 if iframe:
-                    import urlparse
-                    linkparse = urlparse.urlsplit(iframe)
+                    link=iframe
+                    #import urlparse
+                    #linkparse = urlparse.urlsplit(iframe)
                     host = "km396z9t3.xyz"
-                    iframe = urlparse.urlunsplit((linkparse.scheme, host, linkparse.path, '', ''))
-                    link = iframe + '?ref=' + self.domain
+                    #iframe = urlparse.urlunsplit((linkparse.scheme, host, linkparse.path, '', ''))
+                    #link = iframe + '?ref=' + self.domain
                     url2 = urllib.quote_plus(link)
                     headers = {
                        'Host': host,
@@ -286,6 +287,11 @@ class Kinoprosmotr():
                         response = urllib2.urlopen(request)
                         data = response.read()
 
+                        iframe = "http:" + common.parseDOM(data, "iframe", ret="src")[0]
+                        request = urllib2.Request(iframe, "", headers)
+                        request.get_method = lambda: 'GET'
+                        data = urllib2.urlopen(request).read()
+
                         #tvshow
                         tvshow = common.parseDOM(data, "select", attrs={"name": "season"})
                         if tvshow:
@@ -293,6 +299,7 @@ class Kinoprosmotr():
 
                         data = data.split('media: [')[-1].split('],')[0]
                         data = data.split('},{')
+                        xbmc.log("urls=" + repr(data))
                         for item in data:
                             url_ = item.split("url: '")[-1].split("'")[0]
                             links.append(url_)

@@ -93,7 +93,7 @@ def get_content(part):
 def process(kp_id):
     global _kp_id_
     _kp_id_ = kp_id
-    xbmc.log("kp_id=" + kp_id)
+    xbmc.log("hdgo:kp_id=" + kp_id)
     list_li = []
     for part in PARTS:
         list_li += get_content(part)
