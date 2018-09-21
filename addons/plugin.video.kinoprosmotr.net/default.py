@@ -301,7 +301,7 @@ class Kinoprosmotr():
                         data = data.split('},{')
                         xbmc.log("urls=" + repr(data))
                         for item in data:
-                            url_ = item.split("url: '")[-1].split("'")[0]
+                            url_ = "http:" + item.split("url: '")[-1].split("'")[0]
                             links.append(url_)
                     except:
                         self.showErrorMessage('No media source (YouTube, ...)')

@@ -143,11 +143,11 @@ def get_playlist(url):
         if response == "":
             return manifest_links, subtitles, season, episode
 
-    response = response.split("media: [")[-1].split("]")[0]
-   
-    urls = re.compile("https:\/\/.*?[']").findall(response)
-    for i, url in enumerate(urls):
-        manifest_links[QUALITY_TYPES[i]] = url.replace("'", "") + "|Referer="+url_;
+    data = response.split("media: [")[-1].split("]")[0]
+    data = data.split('},{')
+    for i, item in enumerate(data):
+        url_ = "http:" + item.split("url: '")[-1].split("'")[0]
+        manifest_links[QUALITY_TYPES[i]] = url_ + "|Referer="+url_;
 
     return manifest_links, subtitles, season, episode 
    

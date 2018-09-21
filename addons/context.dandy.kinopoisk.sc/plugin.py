@@ -138,17 +138,16 @@ def main_(mode, kp_id, orig_title, media_title, image):
     kp_id, orig_title, media_title, image = prepare(mode, kp_id, orig_title, media_title, image)
     if (not kp_id):
         return
-    if mode == "search":
-        process(kp_id, media_title, image)
-    else:    
-        film_title = " %s" % (orig_title)
-        uri = sys.argv[0] + '?mode=process&kp_id=%s&media_title=%s&image=%s' % (kp_id, urllib.quote_plus(media_title), urllib.quote_plus(image))
-        item = xbmcgui.ListItem(film_title, iconImage=image, thumbnailImage=image)
-        item.setInfo(type='Video', infoLabels={'title': film_title, 'label': film_title, 'plot': film_title})
-        xbmcplugin.addDirectoryItem(HANDLE, uri, item, True)
-        xbmcplugin.setContent(HANDLE, 'movies')
-        xbmcplugin.endOfDirectory(HANDLE, True)
-
+    #if mode == "search":
+    #    process(kp_id, media_title, image)
+    #else:    
+    film_title = " %s" % (orig_title)
+    uri = sys.argv[0] + '?mode=process&kp_id=%s&media_title=%s&image=%s' % (kp_id, urllib.quote_plus(media_title), urllib.quote_plus(image))
+    item = xbmcgui.ListItem(film_title, iconImage=image, thumbnailImage=image)
+    item.setInfo(type='Video', infoLabels={'title': film_title, 'label': film_title, 'plot': film_title})
+    xbmcplugin.addDirectoryItem(HANDLE, uri, item, True)
+    xbmcplugin.setContent(HANDLE, 'movies')
+    xbmcplugin.endOfDirectory(HANDLE, True)
 
 def process(kp_id, media_title, image):
     list_li = []
