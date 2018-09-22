@@ -169,25 +169,26 @@ class Kinoprosmotr():
         else:
             index_ = 0    
         if index_ < 0:
-            return ""
+            return "", ""
         else:
-            return values[index_], str(index_ + 1)
+            return values[index_], str(int(seasons[index_].split(" ")[-1]))
 
     def select_episode(self, data, url, headers):
         sindex = None
         eindex = None
         season, sindex = self.select_season(data)
+
         if season == "":
             return ""
 
         values = {
-            "season": season,
+            "season": sindex,
             "ref": self.domain
         }  
         encoded_kwargs = urllib.urlencode(values.items())
         argStr = "?%s" %(encoded_kwargs)
         try: 
-            request = urllib2.Request(url + argStr, "", headers)
+            request = urllib2.Request(url.split('?')[0] + argStr, "", headers)
             request.get_method = lambda: 'GET'
             data = urllib2.urlopen(request).read()
         except:
@@ -204,11 +205,10 @@ class Kinoprosmotr():
                 index_ = -1    
         else:
             index_ = 0  
+        if int(index_) < 0:            
+            return ""        
         episode = evalues[int(index_)]
         eindex = str(int(index_) + 1)
-        if int(index_) < 0:
-            return ""
-
 
         values = {
             "season": season,
@@ -255,8 +255,6 @@ class Kinoprosmotr():
                     link2 = vp[0].split(';pl=')[-1].split('&')[0]
                     values = common.fetchPage({"link": link2})
 
-            xbmc.log("values=" + repr(values))
-
             if not values and not links:
                 iframe = None
                 try:
@@ -296,10 +294,11 @@ class Kinoprosmotr():
                         tvshow = common.parseDOM(data, "select", attrs={"name": "season"})
                         if tvshow:
                             data = self.select_episode(data, iframe, headers)
+                            if (data == ""):
+                                return False
 
                         data = data.split('media: [')[-1].split('],')[0]
                         data = data.split('},{')
-                        xbmc.log("urls=" + repr(data))
                         for item in data:
                             url_ = "http:" + item.split("url: '")[-1].split("'")[0]
                             links.append(url_)
@@ -314,7 +313,6 @@ class Kinoprosmotr():
 
             image = common.parseDOM(poster, "img", ret="src")[0]
             image = self.url+image
-
 
             year = infos[2].split('</span>')[-1].split("(")[0].strip()
 
