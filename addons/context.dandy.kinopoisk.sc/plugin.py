@@ -150,11 +150,15 @@ def main_(mode, kp_id, orig_title, media_title, image):
     xbmcplugin.endOfDirectory(HANDLE, True)
 
 def process(kp_id, media_title, image):
+    if (not kp_id):
+        kp_id, media_title, media_title, image = prepare("process", kp_id, media_title, media_title, image)
+    if (not kp_id):
+        return
     list_li = []
     list_li = search.process(kp_id)
     for li in list_li:
         engine = get_engine(li[1].getLabel())
-        li[0] = li[0] + ("&media_title=%s&image=%s&engine=%s" % ((urllib.quote_plus(media_title)) if (media_title != "") else "", image, engine))
+        li[0] = li[0] + ("&media_title=%s&image=%s&engine=%s" % ((urllib.quote_plus(encode_("utf-8", media_title))) if (media_title != "") else "", image, engine))
         li[1].setIconImage(image)
         li[1].setThumbnailImage(image)
         if ("*T*" in li[1].getLabel()):

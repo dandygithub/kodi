@@ -159,8 +159,6 @@ def get_playlist(url):
     #tvshow
     div = common.parseDOM(response, "div", attrs={"class": "get_code_main"})[0]
     
-    xbmc.log("div=" + div)
-    
     if div:
         iframe = common.parseDOM(div,  "input", ret="value")[0]
         iframe = iframe.split('<iframe src="')[-1].split('"')[0]    

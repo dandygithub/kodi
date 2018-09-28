@@ -14,5 +14,5 @@ def process(kp_id):
     list_li += sc_kodik.process(kp_id)
 #    list_li += sc_videoframe.process(kp_id)
 #    list_li += sc_getmovie.process(kp_id)
-    list_li += sc_hdnow.process(kp_id)
+#    list_li += sc_hdnow.process(kp_id)
     return list_li 

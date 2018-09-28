@@ -50,6 +50,12 @@ def prepare_url(url):
     else:
         return url
 
+def encode_(param):
+    try:
+        return unicode(param).encode('utf-8')
+    except:
+        return param
+
 def get_content(part):
     vh_title = "kodik.top"
     list_li = []
@@ -71,7 +77,7 @@ def get_content(part):
                     continue
                 url = prepare_url(url_)
                 title_ = strip_(tds[0]) + " (" + strip_(tds[1]) + ", " + strip_(tds[2]) + ")"
-                title = "[COLOR=orange][{0}][/COLOR] {1}".format(vh_title, title_)
+                title = "[COLOR=orange][{0}][/COLOR] {1}".format(vh_title, encode_(title_))
                 uri = sys.argv[0] + "?mode=show&url={0}&title={1}".format(urllib.quote_plus(url), urllib.quote_plus(title))
                 item = xbmcgui.ListItem(title)
                 list_li.append([uri, item, True]) 

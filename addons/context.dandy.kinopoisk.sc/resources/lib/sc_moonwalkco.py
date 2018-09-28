@@ -47,6 +47,18 @@ def prepare_url(url):
     except:
         return url
 
+def encode_(param):
+    try:
+        return unicode(param).encode('utf-8')
+    except:
+        return param
+
+def decode_(param):
+    try:
+        return param.decode('utf-8')
+    except:
+        return param
+
 def get_content():
     vh_title = "moonwalk.co"
     list_li = []
@@ -67,7 +79,7 @@ def get_content():
                     continue
                 url = "http:" + prepare_url("http:" + data.split("<iframe src=\\\'")[-1].split("\\\'")[0])
                 title_ = common.parseDOM(row, "td")[0] + " (" + common.parseDOM(row, "td")[2] + ", " + common.parseDOM(row, "td")[3] + ", " + common.parseDOM(row, "td")[4] + ")"
-                title = "[COLOR=orange][{0}][/COLOR] {1}".format(vh_title, title_)
+                title = "[COLOR=orange][{0}][/COLOR] {1}".format(vh_title, encode_(title_))
                 uri = sys.argv[0] + "?mode=show&url={0}&title={1}".format(urllib.quote_plus(url), urllib.quote_plus(title))
                 item = xbmcgui.ListItem(title)
                 list_li.append([uri, item, True]) 
