@@ -13,11 +13,8 @@ QUALITY_TYPES = (360, 480, 720, 1080)
 
 
 def select_season(data):
-    xbmc.log("data=" + repr(data))    
     tvshow = common.parseDOM(data, "select", attrs={"name": "season"})[0]
-    xbmc.log("tvshow=" + repr(tvshow))
     seasons = common.parseDOM(tvshow, "option")
-    xbmc.log("seasons=" + repr(seasons))
     values = common.parseDOM(tvshow, "option", ret="value")
     if len(seasons) > 1:
         dialog = xbmcgui.Dialog()
@@ -46,7 +43,7 @@ def select_episode(data, url):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
     }
     values = {
-        "season": season
+        "season": sindex
     }  
     encoded_kwargs = urllib.urlencode(values.items())
     argStr = "?%s" %(encoded_kwargs)

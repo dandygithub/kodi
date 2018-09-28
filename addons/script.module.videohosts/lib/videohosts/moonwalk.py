@@ -3,6 +3,7 @@
 
 import urllib, urllib2
 import xbmc
+import xbmcaddon
 import XbmcHelpers
 import socket
 common = XbmcHelpers
@@ -16,6 +17,11 @@ import pyaes
 USER_AGENT = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0"
 
 socket.setdefaulttimeout(120)
+
+id = 'script.module.videohosts'
+addon = xbmcaddon.Addon(id)
+e_value = addon.getSetting('value1')
+n_value = addon.getSetting('value2')
 
 class EncryptedData:
     def __init__(self):
@@ -52,10 +58,6 @@ def get_access_attrs(content, url):
     request = urllib2.Request("http://" + url.split('/')[2] + js_path, "", headers)
     request.get_method = lambda: 'GET'
     js_page = urllib2.urlopen(request).read()
-    
-    e_value = "19f15a0031b8548acfa8da1f2cdf7f73179ac13f3c4938c8bad5a1c93dd8fe06"
-
-    n_value = "79e4add175162a762071a11fe45d249f"
 
     t = EncryptedData()
     t.a = mw_pid
