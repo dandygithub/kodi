@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+    <string id="1000">Поиск</string>
+    <string id="1001">Исполнители по алфавиту</string>
+
+    <string id="2000">Следующая страница (%s) >>></string>
+    <string id="2001">В начало >>></string>
+
+    <string id="3000">Аккорды</string>
+    <string id="3001">Видео</string>
+    <string id="3002">Аппликатуры аккордов</string>
+    <string id="3003">Тональность</string>
+    
+    <string id="4000">Не найдено видеоматериалов или ошибка при воспроизведении</string>    
+</strings>
