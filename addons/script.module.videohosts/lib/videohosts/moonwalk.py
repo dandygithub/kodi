@@ -20,8 +20,7 @@ socket.setdefaulttimeout(120)
 
 id = 'script.module.videohosts'
 addon = xbmcaddon.Addon(id)
-e_value = addon.getSetting('value1')
-n_value = addon.getSetting('value2')
+vurl =  addon.getSetting('vurl')
 
 class EncryptedData:
     def __init__(self):
@@ -29,6 +28,24 @@ class EncryptedData:
 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, separators=(',', ':'))
+
+def reload_values(content, url):
+    i = 3
+    e_value = None
+    n_value = None
+    while (i > 0): 
+        response = common.fetchPage({"link": vurl})
+        if response["status"] == 200:
+          data = response["content"]
+          if data and "value1" in data:
+              e_value = data.split("value2=")[0].replace("value1=", "").strip()
+              n_value = data.split("value2=")[1]
+              break  
+        i-=1
+    if e_value and n_value:
+      addon.setSetting('value1', e_value)
+      addon.setSetting('value2', n_value)
+    return get_access_attrs(content, url, False)
 
 def get_cookies(content):
     cookie = re.compile(r"window\[\'(\w*)\'\]\s=\s\'(\w*)\';").findall(content)[0]
@@ -39,7 +56,7 @@ def get_cookies(content):
     cookies = [cookie_header, cookie_data]
     return cookies
 
-def get_access_attrs(content, url):
+def get_access_attrs(content, url, check=True):
     values = {}
     attrs = {}
 
@@ -69,6 +86,9 @@ def get_access_attrs(content, url):
 
     json_string = t.to_json()
 
+    e_value = addon.getSetting('value1')
+    n_value = addon.getSetting('value2')
+
     encrypt_mode = pyaes.AESModeOfOperationCBC(binascii.a2b_hex(e_value), binascii.a2b_hex(n_value))
     encrypter = pyaes.Encrypter(encrypt_mode)
     encrypted = ''
@@ -77,6 +97,17 @@ def get_access_attrs(content, url):
 
     attrs['purl'] = "http://" + url.split('/')[2] + "/vs"
     values["q"] = base64.standard_b64encode(encrypted)
+
+#check
+    if (check == True) and vurl:
+        try: 
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
+            opener.addheaders = [("User-Agent", USER_AGENT)]
+            request = urllib2.Request(attrs["purl"], urllib.urlencode(values), {})
+            connection = opener.open(request)
+            response = connection.read()
+        except:
+            values, attrs = reload_values(content, url);
 
     xbmc.log("param=" + repr(values) + " " + repr(attrs))
     return values, attrs
