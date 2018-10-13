@@ -187,7 +187,7 @@ class RuTube():
                 "created": "",
                 "only_hd": "false",
                 "no_adult": "false",
-                "query": unicode(keyword),
+                "query": encode2(keyword),
                 "page": str(page),
                 "perPage": "10"
             }
@@ -714,6 +714,12 @@ def showErrorMessage(msg):
 
 def encode(string):
     return string.decode('cp1251').encode('utf-8')
+
+def encode2(param):
+    try:
+        return unicode(param).encode('utf-8')
+    except:
+        return param
 
 ruTube = RuTube()
 ruTube.main()  
