@@ -200,7 +200,7 @@ class RuTube():
                 "X-Requested-With": "XMLHttpRequest",
                 "X-Ally": "1",
                 "X-CSRFToken": "4qb8a9ysuvpxudljpz3o6ngljciy8pl2",
-                "Referer": "https://rutube.ru/search/?query=" + unicode(keyword),
+                "Referer": "https://rutube.ru/search/?query=" + encode2(keyword),
                 "Accept-Language": "ru-RU,ru;q=0.8,en-US;q=0.6,en;q=0.4",
             }
 
