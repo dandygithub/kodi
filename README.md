@@ -1,1 +1,1 @@
-# kodi
+# KODI Addons Project
