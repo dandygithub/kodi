@@ -290,8 +290,6 @@ class Kinokong():
         unified_search_results = []
 
         if keyword:
-            url = self.url + '/index.php?do=search'
-
             # Advanced search: titles only
             values = {
                 "beforeafter":  "after",
@@ -313,11 +311,12 @@ class Kinokong():
             }
 
             headers = {
-                "Host" : self.domain,
-                "Origin" : self.domain,                
-                "Referer" : self.url + '/',
                 "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0"
             }
+
+            # Find redirected URL
+            redirection = urllib2.Request(self.url, None, headers)
+            url = urllib2.urlopen(redirection).geturl()
 
             # Send request to server
             request = urllib2.Request(url, urllib.urlencode(values), headers)
