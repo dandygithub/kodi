@@ -113,6 +113,15 @@ class Videokvadrat():
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
             
         return len(titles)    
+
+    def checkNextPage(self, content, page):
+        res = True
+        nav = common.parseDOM(content, "div", attrs={"class": "catPages1"})
+        if (not nav):
+            nav = common.parseDOM(content, "span", attrs={"class": "pagesBlockuz1"})
+        if nav:
+           res = (">" + str(int(page) + 1) + "<" in nav[0])
+        return res
       
     def index(self, url, page, kind = 0):
         if (kind == 0) and (page == 1):
@@ -132,7 +141,7 @@ class Videokvadrat():
         count = self.index_(content)
 
         if (page > 0):
-            if (("publ" in url) and (count == 10)) or (("news" in url) and (count == 16)): 
+            if (self.checkNextPage(content, page) == True):
                 uri = sys.argv[0] + '?mode=%s&url=%s&page=%s' % ("index", url, str(int(page) + 1))
                 item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1005), iconImage=self.inext)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
