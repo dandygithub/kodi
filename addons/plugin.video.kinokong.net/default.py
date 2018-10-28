@@ -138,16 +138,23 @@ class Kinokong():
     def getFilmInfo(self, url):
         print "*** getFilmInfo for url %s " % url
         response = common.fetchPage({"link": url})
+
         container = common.parseDOM(response["content"], "div", attrs={"id": "container"})
         js_container = common.parseDOM(response["content"], "div", attrs={"class": "section"})
-        source = common.parseDOM(js_container, "script", attrs={"type": "text/javascript"})[6]
+        source2 = common.parseDOM(response["content"], "div", attrs={"id": "players"})[0]
+        try:
+            source = common.parseDOM(js_container, "script", attrs={"type": "text/javascript"})[6]
+        except:
+            source = source2    
 
         title = self.encode(common.parseDOM(container, "h1")[0])
         image = common.parseDOM(container, "img", attrs={"id": "imgbigp"}, ret="src")[0]
         quality = common.parseDOM(container, "div", attrs={"class": "full-quality"})
-
-
+    
         movie = source.split('file":"')[-1].split('"};')[0] if 'file":"' in source else None
+        if (not movie):
+            movie = source2.split('file:"')[-1].split('"')[0] if 'file:"' in source2 else None
+    
         playlist = source.split(',pl:"')[-1].split('"};')[0] if ',pl:"' in source else None
         playlist = playlist.split('",')[0] if playlist and '",' in playlist else playlist
 
@@ -166,6 +173,9 @@ class Kinokong():
             format = quality[0] if quality else ''
 
             for i, link in enumerate(links):
+                if ("]" in link):
+                    link = link.split("]")[1]
+            
                 if '_720' in link:
 		    quality = '720P'
                 else:
