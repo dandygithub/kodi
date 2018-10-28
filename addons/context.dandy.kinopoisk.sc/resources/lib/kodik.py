@@ -10,6 +10,35 @@ common = XbmcHelpers
 
 socket.setdefaulttimeout(120)
 
+def select_translator(data, url):
+    try:
+        tr_div = common.parseDOM(data, "div", attrs={"class": "serial-translations-box"})[0]
+    except:
+        return data, url    
+    translators = common.parseDOM(tr_div, "option")
+    tr_values = common.parseDOM(tr_div, "option", ret="value")
+
+    if len(translators) > 1:
+        dialog = xbmcgui.Dialog()
+        index_ = dialog.select("Select translator", translators)
+        if int(index_) < 0:
+            index_ = 0    
+    else:
+        index_ = 0    
+    tr_value = tr_values[index_]
+
+    headers = {
+        "Referer": url,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
+    }
+
+    url_ =  "https:" + tr_value
+
+    request = urllib2.Request(url_, "", headers)
+    request.get_method = lambda: 'GET'
+    response = urllib2.urlopen(request).read()
+    return response, url_
+
 def select_season(data):
     tvshow = common.parseDOM(data, "div", attrs={"class": "serial-seasons-box"})[0]
     seasons = common.parseDOM(tvshow, "option")
@@ -22,7 +51,7 @@ def select_season(data):
     else:
         index_ = 0    
     if index_ < 0:
-        return ""
+        return "", ""
     else:
         return values[index_], str(index_ + 1)
 
@@ -30,12 +59,13 @@ def select_season(data):
 def select_episode(data, url):
     sindex = None
     eindex = None
+    data_, url_ = select_translator(data, url)
 
-    season, sindex = select_season(data)
+    season, sindex = select_season(data_)
     if season == "":
         return "", sindex, eindex
 
-    tvshow = common.parseDOM(data, "div", attrs={"class": "serial-panel"})
+    tvshow = common.parseDOM(data_, "div", attrs={"class": "serial-panel"})
     episodesbox = common.parseDOM(tvshow[0], "div", attrs={"class": "season-" + season})[0]
     episodes = common.parseDOM(episodesbox, "option")
     urls = common.parseDOM(episodesbox, "option", ret="value")
@@ -51,8 +81,6 @@ def select_episode(data, url):
     eindex = str(index_ + 1)
     if index_ < 0:
         return "", sindex, eindex
-
-    xbmc.log("eurl=" + repr(eurl))       
 
     headers = {
         "Referer": url,
@@ -156,9 +184,7 @@ def get_playlist(url):
     except:
         return manifest_links, subtitles, season, episode, 0
 
-    #tvshow
     div = common.parseDOM(response, "div", attrs={"class": "get_code_main"})[0]
-    
     if div:
         iframe = common.parseDOM(div,  "input", ret="value")[0]
         iframe = iframe.split('<iframe src="')[-1].split('"')[0]    

@@ -16,6 +16,8 @@ import resources.lib.moonwalk as moonwalk
 import resources.lib.hdgo as hdgo
 import resources.lib.kodik as kodik
 import resources.lib.videoframe as videoframe
+import resources.lib.iframe as iframe
+import resources.lib.hdbaza as hdbaza
 
 socket.setdefaulttimeout(120)
 
@@ -47,7 +49,7 @@ def get_media_title(kp_id, media_title):
             media_title_ = strip_(encode_('utf-8', decode_('cp1251', common.parseDOM(div, "h1")[0])))
         except:
             pass
-    return media_title_
+    return replace_(media_title_)
 
 
 def get_media_image(kp_id):
@@ -91,13 +93,34 @@ def search_kp_id(media_title, mode):
     else:
         return None
 
-def get_user_input():
+def get_user_input_id():
     dialog = xbmcgui.Dialog()
     kp_id = None
     result = dialog.input('Input Kinopoisk ID', '', type = xbmcgui.INPUT_NUMERIC)
     if result:
         kp_id = result
     return kp_id
+
+def get_user_input_title():
+    dialog = xbmcgui.Dialog()
+    title = None
+    result = dialog.input('Input Title', '')
+    if result:
+        title = result
+    return title
+
+def get_user_input():
+    variants = ["Search by ID", "Search by Title"]
+    dialog = xbmcgui.Dialog()
+    index_ = dialog.select("Select search type", variants)
+    if (index_ == 0):
+        return get_user_input_id()
+    elif (index_ == 1):
+        title = get_user_input_title()
+        if title:
+            return search_kp_id(title, None)
+        else: 
+            return None    
 
 def get_kp_id(media_title, mode):
     if media_title:
@@ -116,6 +139,12 @@ def get_engine(data):
         return 'videoframe'
     elif 'hdnow' in data:
         return 'hdnow'
+    elif 'czx' in data:
+        return 'czx'
+    elif 'iframe' in data:
+        return 'iframe'
+    elif 'hdbaza' in data:
+        return 'hdbaza'
     else:
         return 'none'
 
@@ -156,8 +185,10 @@ def process(kp_id, media_title, image):
         return
     list_li = []
     list_li = search.process(kp_id)
+    
     for li in list_li:
         engine = get_engine(li[1].getLabel())
+        
         li[0] = li[0] + ("&media_title=%s&image=%s&engine=%s" % ((urllib.quote_plus(encode_("utf-8", media_title))) if (media_title != "") else "", image, engine))
         li[1].setIconImage(image)
         li[1].setThumbnailImage(image)
@@ -165,6 +196,7 @@ def process(kp_id, media_title, image):
             title = li[1].getLabel().replace("*T*", media_title)
             li[1].setLabel(title)
             li[0] = li[0] + ("&title=%s" % (urllib.quote_plus(title)))
+                
         li[1].setInfo(type='Video', infoLabels={'title': li[1].getLabel(), 'label': media_title, 'plot': media_title})
         xbmcplugin.addDirectoryItem(HANDLE, li[0], li[1], li[2])
     xbmcplugin.setContent(HANDLE, 'movies')
@@ -182,21 +214,31 @@ def show_kodik(url, title):
 def show_videoframe(url, title):
     return videoframe.get_playlist(url)
 
+def show_iframe(url, title):
+    return iframe.get_playlist(url)
+
+def show_hdbaza(url, title):
+    return hdbaza.get_playlist(url)
+
 def show(url, title, media_title, image, engine):
     manifest_links = {} 
     subtitles = None
     if (not media_title):
         media_title = title
     direct = 0
-    if ('moonwalk' in engine) or ('hdnow' in engine):
+    if ('moonwalk' in engine) or ('hdnow' in engine) or ('czx' in engine):
         manifest_links, subtitles, season, episode = show_moonwalk(url, title)
         direct = 1
     elif 'hdgo' in engine:
         manifest_links, subtitles, season, episode = show_hdgo(url, title)
     elif 'kodik' in engine:
         manifest_links, subtitles, season, episode, direct = show_kodik(url, title)
-    elif 'videoframe' in engine:
+    elif ('videoframe' in engine):
         manifest_links, subtitles, season, episode = show_videoframe(url, title)
+    elif ('iframe' in engine):
+        manifest_links, subtitles, season, episode = show_iframe(url, title)
+    elif ('hdbaza' in engine):
+        manifest_links, subtitles, season, episode = show_hdbaza(url, title)
 
     if manifest_links:
         list = sorted(manifest_links.iteritems(), key=itemgetter(0))
@@ -209,8 +251,8 @@ def show(url, title, media_title, image, engine):
             item.setInfo(type='Video', infoLabels={'title': film_title, 'label': film_title, 'plot': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
             item.setProperty('IsPlayable', 'true')
             if subtitles: 
-                urls = re.compile('http:\/\/.*?\.srt').findall(subtitles)
-                item.setSubtitles(urls)
+                #urls = re.compile('http:\/\/.*?\.srt').findall(subtitles)
+                item.setSubtitles([subtitles])
             xbmcplugin.addDirectoryItem(HANDLE, uri, item, False)
         xbmcplugin.setContent(HANDLE, 'movies')
         xbmcplugin.endOfDirectory(HANDLE, True)
@@ -253,7 +295,7 @@ def strip_(string):
     return common.stripTags(string)
 
 def replace_(string):
-    return string.replace("&ndash;", "/")
+    return string.replace("&ndash;", "/").replace("&nbsp;", " ")
 
 def main():
     PARAMS = common.getParameters(sys.argv[2])

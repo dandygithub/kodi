@@ -7,6 +7,7 @@ import xbmcgui
 from videohosts import moonwalk
 import XbmcHelpers
 common = XbmcHelpers
+import tools
 
 socket.setdefaulttimeout(120)
 
@@ -17,13 +18,14 @@ PLAYLIST_DOMAIN = "moonwalk.cc"
 PLAYLIST_DOMAIN2 = "streamblast.cc"
 
 def select_translator(content, url):
-    try:
-        tr_div = common.parseDOM(content, 'select', attrs={"name": "translator"})[0]
-    except:
-        return content, url
+    translators = []
+    tr_values = []
 
-    translators = common.parseDOM(tr_div, 'option')
-    tr_values = common.parseDOM(tr_div, 'option', ret="value")
+    data = content.split("translations: [[")[-1].split("]],")[0]
+    datal = data.split("],[")
+    for item in datal:
+        translators.append(item.split(',')[1].replace('"', ''))
+        tr_values.append(item.split(',')[0].replace('"', ''))
 
     if len(translators) > 1:
         dialog = xbmcgui.Dialog()
@@ -35,9 +37,7 @@ def select_translator(content, url):
     tr_value = tr_values[index_]
 
     headers = {
-        "Host": "moonwalk.cc",
         "Referer": url,
-        "Upgrade-Insecure-Requests": "1",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
     }
 
@@ -47,7 +47,6 @@ def select_translator(content, url):
     request.get_method = lambda: 'GET'
     response = urllib2.urlopen(request).read()
     return response, url_
-
 
 def select_season(data):
     seasons =  data.split("seasons: [")[-1].split("],")[0].split(",")
@@ -66,26 +65,23 @@ def select_season(data):
 
 
 def select_episode(data, url):
-    #data_, url_ = select_translator(data, url)
+    data_, url_ = select_translator(data, url)
+    url_ = url_.split('?')[0]
     sindex = None
     eindex = None
-    url_ = url
-    season, sindex = select_season(data)
+    season, sindex = select_season(data_)
     if season == "":
         return "", sindex, eindex
 
     headers = {
-        "Referer": url
+        "Referer": url,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
     }
     values = {
         "season": season,
-        "episode": "1",
-        "nocontrols_translations": ""
+        "episode": "1"
     }  
-
-    request = urllib2.Request(url_, urllib.urlencode(values), headers)
-    request.get_method = lambda: 'GET'
-    response = urllib2.urlopen(request).read()
+    response = tools.get_response(url_, headers, values, "GET")
     
     series = []
     series_ =  response.split("episodes: [")[-1].split("],")[0].split(",")
@@ -106,22 +102,10 @@ def select_episode(data, url):
 
     values = {
         "season": season,
-        "episode": episode,
-        "nocontrols_translations": ""
+        "episode": episode
     }  
-    encoded_kwargs = urllib.urlencode(values.items())
-    argStr = "?%s" %(encoded_kwargs)
-
-    headers = {
-        "Host": PLAYLIST_DOMAIN,
-        "Referer": url + argStr,
-        "Upgrade-Insecure-Requests": "1",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
-    }
     try: 
-        request = urllib2.Request(url + argStr, "", headers)
-        request.get_method = lambda: 'GET'
-        return urllib2.urlopen(request).read(), season, episode
+        return tools.get_response(url_, headers, values, "GET"), season, episode
     except:
         return "", season, episode
 
@@ -156,8 +140,8 @@ def get_playlist(url):
         if response == "":
             return manifest_links, subtitles, season, episode 
 
-    if "master_vtt" in response:
-        subtitles = response.split('master_vtt":"')[-1].split('"')[0]
+    if 'subtitles: {"master_vtt":"' in response:
+        subtitles = response.split('subtitles: {"master_vtt":"')[-1].split('"')[0]
 
     ###################################################
     values, attrs = moonwalk.get_access_attrs(response, url)

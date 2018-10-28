@@ -4,6 +4,7 @@ import xbmc
 import xbmcgui
 import XbmcHelpers
 common = XbmcHelpers
+import tools
 
 URL = "http://hdgo.club"
 PARTS = ("/films/", "/serials/")
@@ -28,22 +29,10 @@ VALUES = {
 
 _kp_id_ = ''
 
-def get_response(url, headers, values, method):
-    if method == 'GET':
-        encoded_kwargs = urllib.urlencode(values.items())
-        argStr = ""
-        if encoded_kwargs:
-            argStr = "?%s" %(encoded_kwargs)
-        request = urllib2.Request(url + argStr, "", headers)
-    else:
-        request = urllib2.Request(url, urllib.urlencode(values.items()), headers)
-    request.get_method = lambda: method
-    return urllib2.urlopen(request).read()
-
 def prepare_url(url):
     if not url:
         return ""
-    response = get_response(url, HEADERS2, {}, 'GET')
+    response = tools.get_response(url, HEADERS2, {}, 'GET')
     if response:
         return "http:" + common.parseDOM(response, "iframe", ret="src")[0]
     else:
@@ -54,18 +43,12 @@ def add_title_info(info):
     if info[2] or info[3]:
         result = " ("
     if info[2]:
-        result = result + strip_(info[2])
+        result = result + tools.strip(info[2])
     if info[3]:
-        result = result + ", " + strip_(info[3])
+        result = result + ", " + tools.strip(info[3])
     if result != "":
         result = result + ")"
     return result
-
-def encode_(param):
-    try:
-        return unicode(param).encode('utf-8')
-    except:
-        return param
 
 def get_content(part):
     vh_title = "hdgo.club"
@@ -85,8 +68,8 @@ def get_content(part):
                 except:
                     continue
                 url = prepare_url(url_)
-                title_ = strip_(divs[1].split("\n")[0]) + add_title_info(divs)
-                title = "[COLOR=orange][{0}][/COLOR] {1}".format(vh_title, encode_(title_))
+                title_ = tools.strip(divs[1].split("\n")[0]) + add_title_info(divs)
+                title = "[COLOR=orange][{0}][/COLOR] {1}".format(vh_title, tools.encode(title_))
                 uri = sys.argv[0] + "?mode=show&url={0}&title={1}".format(urllib.quote_plus(url), urllib.quote_plus(title))
                 item = xbmcgui.ListItem(title)
                 list_li.append([uri, item, True]) 
@@ -104,18 +87,3 @@ def process(kp_id):
     for part in PARTS:
         list_li += get_content(part)
     return list_li
-
-def encode_(param):
-    try:
-        return unicode(param).encode('utf-8')
-    except:
-        return param
-
-def decode_(param):
-    try:
-        return param.decode('utf-8')
-    except:
-        return param
-
-def strip_(string):
-    return common.stripTags(string)
