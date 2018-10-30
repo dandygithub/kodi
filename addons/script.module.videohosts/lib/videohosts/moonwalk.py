@@ -66,6 +66,7 @@ def get_access_attrs(content, url, check=True):
     _mw_adb = False
 
     video_token = re.compile(r"video_token:\s*\S?\'([0-9a-f]*)\S?\'").findall(content)[0]
+    ref = re.compile('ref: \'(.+?)\'').findall(content)[0]
 
     js_path = re.compile(r'script src=\"(.*)\"').findall(content)[0]
 
@@ -97,6 +98,7 @@ def get_access_attrs(content, url, check=True):
 
     attrs['purl'] = "http://" + url.split('/')[2] + "/vs"
     values["q"] = base64.standard_b64encode(encrypted)
+    values["ref"] = ref
 
 #check
     if (check == True) and vurl:
