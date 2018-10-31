@@ -19,13 +19,16 @@ class Tivix():
         self.fanart = self.addon.getAddonInfo('fanart')
         self.path = self.addon.getAddonInfo('path')
         self.profile = self.addon.getAddonInfo('profile')
+
         self.time_zone = int(self.addon.getSetting('time_zone'))
+        self.use_epg = self.addon.getSetting('epg') if self.addon.getSetting('epg') else "true"
 
         self.language = self.addon.getLocalizedString
         self.handle = int(sys.argv[1])
         self.url = 'http://tivix.co'
-        
-        self.epg = self.loadEPG()
+
+        if (self.use_epg == "true"):
+            self.epg = self.loadEPG()
 
     def main(self):
         params = common.getParameters(sys.argv[2])
@@ -55,9 +58,10 @@ class Tivix():
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", self.url)
         item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-        uri = sys.argv[0] + '?mode=%s' % ("epg")
-        item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(1005), thumbnailImage=self.icon)
-        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+        if (self.use_epg == "true"):
+            uri = sys.argv[0] + '?mode=%s' % ("epg")
+            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(1005), thumbnailImage=self.icon)
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         self.genres()
 
@@ -121,7 +125,7 @@ class Tivix():
         channels = json.loads(response)
 #{"11":{"title":"\u0421\u0422\u0421","image_url":"http:\/\/tivix.co\/uploads\/posts\/2016-04\/1461317169_sts.png","id":"11","alt_name":"sts","cat":"29,27,24,16,17","tv_link":"https:\/\/tv.mail.ru\/channel\/1112\/73\/"},        
 
-        url = 'http://schedule.tivix.co/channels/tivix/program/nearest/'
+        url = 'http://s.programma.space/channels/tivix/program/nearest/'
         headers = {
             "Accept": "application/json, text/javascript, */*; q=0.01",
             "Host": "schedule.tivix.co",
@@ -219,15 +223,19 @@ class Tivix():
         streams = self.getStreamURL(response['content'])
         if streams:
             description = self.strip(response['content'].split("<!--dle_image_end-->")[1].split("<div")[0])
+            currname = '' 
+            duration = ''
             #description = common.parseDOM(response['content'], "meta", attrs={"name": "description"}, ret = "content")[0]
-            currname, duration, listItems = self.getEPG(cid = cid, cname=name, image=image)
+            if (self.use_epg == "true"):
+                currname, duration, listItems = self.getEPG(cid = cid, cname=name, image=image)
             uri = sys.argv[0] + '?mode=play&url=%s&url2=%s' % (urllib.quote_plus(streams[0]), link)
             item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(1004),  iconImage=image, thumbnailImage=image)
             item.setInfo(type='Video', infoLabels={'title': currname if currname != '' else name, 'plot': description, 'duration': duration})
             item.setProperty('IsPlayable', 'true')
             xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
     
-            xbmcplugin.addDirectoryItems(self.handle, listItems)
+            if (self.use_epg == "true"):
+                xbmcplugin.addDirectoryItems(self.handle, listItems)
     
             xbmcplugin.setContent(self.handle, 'files')
             xbmcplugin.endOfDirectory(self.handle, True)

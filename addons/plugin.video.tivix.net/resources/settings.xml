@@ -1,3 +1,4 @@
 ﻿<settings>
   <setting id="time_zone" type="slider" label="2000" default="3" range="-12, 1, 12" option="int" />
+  <setting id="epg" type="bool" label="Use EPG" default="true" />
 </settings>
