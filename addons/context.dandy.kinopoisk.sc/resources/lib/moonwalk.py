@@ -18,11 +18,15 @@ PLAYLIST_DOMAIN = "moonwalk.cc"
 PLAYLIST_DOMAIN2 = "streamblast.cc"
 
 def select_translator(content, url):
+    if not ("translations: [[" in content):
+        return content, url
+
     translators = []
     tr_values = []
 
     data = content.split("translations: [[")[-1].split("]],")[0]
     datal = data.split("],[")
+
     for item in datal:
         translators.append(item.split(',')[1].replace('"', ''))
         tr_values.append(item.split(',')[0].replace('"', ''))
@@ -42,7 +46,6 @@ def select_translator(content, url):
     }
 
     url_ =  url.replace(url.split("serial/")[-1].split("/iframe")[0], tr_value)
-
     request = urllib2.Request(url_, "", headers)
     request.get_method = lambda: 'GET'
     response = urllib2.urlopen(request).read()
