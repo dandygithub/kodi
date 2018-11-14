@@ -87,7 +87,7 @@ class Kinokong():
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getCategoryItems(self.url + '/film/novinki-kinos', 1)
+        self.getCategoryItems(self.url + '/film/novinki-kinoo', 1)
 
     def getCategoryItems(self, url, page):
         #print "*** Get category items %s" % url
@@ -250,7 +250,7 @@ class Kinokong():
 
         links = [
           self.url + '/film/',
-          self.url + '/film/novinki-kinos/',
+          self.url + '/film/novinki-kinoo/',
           self.url + '/series/',
           self.url + '/cartoons/',
           self.url + '/animes/',
