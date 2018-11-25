@@ -54,9 +54,14 @@ def select_translator(data, url):
     response = tools.get_response(url, HEADERS, VALUES, "GET")
     return response, tr_value
 
-def select_season(data):
-    seasons = data.split("seasons: [")[-1].split("]")[0].split(",")
-    values = seasons
+def select_season(data, value):
+    sss = data.split("soundsList: ")[-1].split("selected_options:")[0].replace(' ', '').replace("\n", '').replace("],}", "]}").replace("},}", "}}").replace("'", '"')
+    seasonsjson = json.loads(sss[:len(sss)-1])
+    seasons = []
+    for season in seasonsjson[value]:
+        seasons.append(season)
+    seasons.sort()
+    values = seasons    
     if len(seasons) > 1:
         dialog = xbmcgui.Dialog()
         index_ = dialog.select("Select season", seasons)
@@ -74,7 +79,7 @@ def select_episode(data, url):
     sindex = None
     eindex = None
     data_, tr_value = select_translator(data, url)
-    season, sindex = select_season(data_)
+    season, sindex = select_season(data_, tr_value)
     if season == "":
         return "", sindex, eindex
 
@@ -86,7 +91,12 @@ def select_episode(data, url):
     except:
         return "", sindex, eindex
 
-    series = data.split("episodes: [")[-1].split("]")[0].split(",")
+    sss = response.split("soundsList: ")[-1].split("selected_options:")[0].replace(' ', '').replace("\n", '').replace("],}", "]}").replace("},}", "}}").replace("'", '"')
+    seriesjson = json.loads(sss[:len(sss)-1])
+    series = []
+    
+    for episode in seriesjson[tr_value][season]:
+        series.append(str(episode))
     evalues = series
 
     if len(series) > 1:
@@ -123,7 +133,7 @@ def get_playlist(url):
         return manifest_links, subtitles, season, episode 
 
     #tvshow
-    tvshow = response.split("episodes:")[-1].split(",")[0].replace(" ", "")
+    tvshow = response.split("season:")[1].split(",")[0].replace(" ", "")
     if (tvshow != "null"):
         response, season, episode = select_episode(response, url)
         if response == "":
