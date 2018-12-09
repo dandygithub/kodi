@@ -24,6 +24,7 @@ class Videokvadrat():
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.handle = int(sys.argv[1])
         self.domain = self.addon.getSetting('domain')
+        self.quality = self.addon.getSetting('quality')        
         self.url = 'http://' + self.addon.getSetting('domain') + '/'
 
     def main(self):
@@ -255,10 +256,19 @@ class Videokvadrat():
 		response = urllib2.urlopen(request)
 		resp = response.read()
 		resp = re.findall("CDATA\[(.*?)\]", resp)
+		link = None
+		rmp4 = None
 		for r in resp:
-			if 'mp4' in r and '_lo' not in r and 'mobile' not in r:
-				link = urllib.quote_plus('http://media.ntv.ru/vod'+r)
-				break
+			if ('mp4' in r):
+			    rmp4 = r
+			    if ('_lo' in r) and (self.quality in ["low", "medium"]):
+			        link = urllib.quote_plus('http://media.ntv.ru/vod'+r)
+			    elif ('mobile' in r) and (self.quality in ["low"]):
+			        link = urllib.quote_plus('http://media.ntv.ru/vod'+r)
+			    elif (self.quality in ["high"]):
+			        link = urllib.quote_plus('http://media.ntv.ru/vod'+r)
+   	        if (not link) and (rmp4):
+			        link = urllib.quote_plus('http://media.ntv.ru/vod'+rmp4)
 	elif 'videomore' in content:
                 title = "[COLOR=gray]" + title + " (videomore) [/COLOR]" 
                 link = "*"  
