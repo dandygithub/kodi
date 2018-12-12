@@ -69,6 +69,13 @@ class Seasonvar():
         self.quality = self.addon.getSetting('quality') if self.addon.getSetting('quality') else "sd"
         self.translator = self.addon.getSetting('translator') if self.addon.getSetting('translator') else "standard"
         self.addtolib = self.addon.getSetting('addtolib') if self.addon.getSetting('addtolib') else None
+
+        self.authcookie = ''        
+        self.vip = False
+        self.cookie=self.addon.getSetting('cookie') if self.addon.getSetting('cookie') else None 
+        if self.cookie and (self.cookie > ''):
+            self.authcookie = "svid1=" + self.cookie
+            self.vip = True
         
         self.headers = {
                 "Host" : "seasonvar.ru",
@@ -78,9 +85,6 @@ class Seasonvar():
                 "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0"
                 }    
                 
-        self.authcookie = ''        
-        self.vip = False
-                
         # cache
         self.contentMain   = ''
         self.contentBegin  = None                
@@ -88,7 +92,7 @@ class Seasonvar():
 
         self.addplaylists = []                   
         
-        self.login()
+        #self.login()
 
     def getMainContent(self):
         if self.contentMain == "":
@@ -99,19 +103,14 @@ class Seasonvar():
 
     def login(self):
         print "*** Login"
-        
         login = self.addon.getSetting('login')
         if login:
             password = self.addon.getSetting('password')
-            url = self.url + '/?mod=login'
             headers = {
                 "Host" : "seasonvar.ru",
-                "Connection" : "keep-alive",
-                "Referer" : url,
-                "Content-Type" : "application/x-www-form-urlencoded",
-                "Upgrade-Insecure-Requests" : "1",
-                "Origin" : "http://seasonvar.ru",
-                "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0"
+                "Referer" : self.url + '/',
+                "Origin" : self.url,
+                "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36"
                 }                    
             values = {
                 "login": login,
@@ -126,8 +125,9 @@ class Seasonvar():
             for cookie in cj:
                 cookie = str(cookie).split('svid1=')[-1].split(' ')[0].strip()
                 if cookie and (cookie > ""):
-                    self.authcookie = "svid1=" + cookie
-                    self.vip = True
+                    self.addon.setSetting('cookie', cookie)
+                    #self.authcookie = "svid1=" + cookie
+                    #self.vip = True
 
     def main(self):
         self.log("Addon: %s"  % self.id)
@@ -175,6 +175,13 @@ class Seasonvar():
             self.mainMenu()
 
     def mainMenu(self):
+        #self.addon.setSetting('cookie', '')
+        self.login()
+        self.cookie=self.addon.getSetting('cookie') if self.addon.getSetting('cookie') else None 
+        if self.cookie and (self.cookie > ''):
+            self.authcookie = "svid1=" + self.cookie
+            self.vip = True
+
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", self.url)
         item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(2000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
@@ -415,6 +422,7 @@ class Seasonvar():
                 url = re.sub(regex, '', episode['file']);
                 import base64
                 url = base64.b64decode(url[2:])
+                url = url.split(" ")[0]
             except:
                 playlist_ = episode['playlist']
             if playlist_:
@@ -432,7 +440,7 @@ class Seasonvar():
                     subtitle = episode["subtitle"].split(']')[1]
                 except:
                     pass
-                xbmc.log("subtitle=" + repr(subtitle))                    
+                #xbmc.log("subtitle=" + repr(subtitle))                    
                 item = xbmcgui.ListItem(label=self.getTitle(title, etitle, title_orig, season), iconImage=image, thumbnailImage=image)
                 labels = {'title': self.getTitle(title, etitle, title_orig, season, 1), 'plot': description, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0}
                 item.setInfo(type='Video', infoLabels=labels)
@@ -515,9 +523,13 @@ class Seasonvar():
                 return
             playlist = json_playlist
             if not playlist:
-                response = common.fetchPage({"link": self.getURLPlayList(url, content, 1), "cookie": self.getCookies()})
-                json_playlist = json.loads(response["content"])
-                playlist = json_playlist['playlist']
+                try:
+                    response = common.fetchPage({"link": self.getURLPlayList(url, content, 1), "cookie": self.getCookies()})
+                    json_playlist = json.loads(response["content"])
+                    playlist = json_playlist['playlist']
+                except:
+                    self.showErrorMessage("Content unavailable")
+                    return
 
             self.parsePlaylist(url, playlist, image, description, title, season, title_orig)
 
