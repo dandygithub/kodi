@@ -2,6 +2,7 @@ import urllib, urllib2
 import json
 import re
 import socket
+import ssl
 import xbmc
 import xbmcgui
 import XbmcHelpers
@@ -125,6 +126,7 @@ def get_playlist(url):
     season = None
     episode = None
 
+    ssl._create_default_https_context = ssl._create_unverified_context
     try: 
         response = tools.get_response(url, HEADERS, {}, "GET")    
     except:
