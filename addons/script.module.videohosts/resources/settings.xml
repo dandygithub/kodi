@@ -1,5 +1,6 @@
 ﻿<settings>
     <setting id="value1" type="text" label="Value 1" default="19f15a0031b8548acfa8da1f2cdf7f73179aa13f3c4938c8bad5a1c93dd8fe06" />
     <setting id="value2" type="text" label="Value 2" default="79e4add175162a762071a11fe45d249f" />
-    <setting id="vurl" type="text" label="Values URL" default="http://www.u2csp01.ml/hdrez/hdr_key.php" />
+    <setting id="vurl" type="text" label="Values URL" default="http://wonky.lostcut.net/moonwalk_key.php" />
+    <setting id="vurl2" type="text" label="Values URL 2" default="http://www.u2csp01.ml/hdrez/hdr_key.php" />
 </settings>

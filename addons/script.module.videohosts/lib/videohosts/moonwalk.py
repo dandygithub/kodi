@@ -43,6 +43,28 @@ def reload_values(content, url):
               break  
         i-=1
     if e_value and n_value:
+      xbmc.log("v1=" + repr(e_value) + " v2=" + repr(n_value)) 	
+      addon.setSetting('value1', e_value)
+      addon.setSetting('value2', n_value)
+    return get_access_attrs(content, url, False)
+
+#http://wonky.lostcut.net/moonwalk_key.php
+def reload_values2(content, url):
+    i = 3
+    e_value = None
+    n_value = None
+    while (i > 0): 
+        response = common.fetchPage({"link": vurl})
+        if response["status"] == 200:
+          data = response["content"]
+          if data and "key" in data:
+              json_data = json.loads(data)
+              e_value = json_data["key"]
+              n_value = json_data["iv"]
+              break  
+        i-=1
+    if e_value and n_value:
+      xbmc.log("v1=" + repr(e_value) + " v2=" + repr(n_value))    
       addon.setSetting('value1', e_value)
       addon.setSetting('value2', n_value)
     return get_access_attrs(content, url, False)
@@ -89,19 +111,24 @@ def get_access_attrs(content, url, check=True):
 
     e_value = addon.getSetting('value1')
     n_value = addon.getSetting('value2')
-
-    encrypt_mode = pyaes.AESModeOfOperationCBC(binascii.a2b_hex(e_value), binascii.a2b_hex(n_value))
-    encrypter = pyaes.Encrypter(encrypt_mode)
     encrypted = ''
-    encrypted += encrypter.feed(json_string)
-    encrypted += encrypter.feed()
 
-    attrs['purl'] = "http://" + url.split('/')[2] + "/vs"
+    try:
+        encrypt_mode = pyaes.AESModeOfOperationCBC(binascii.a2b_hex(e_value), binascii.a2b_hex(n_value))
+        encrypter = pyaes.Encrypter(encrypt_mode)
+        encrypted += encrypter.feed(json_string)
+        encrypted += encrypter.feed()
+    except:
+        pass
+
+    host = re.compile(r"host: \'(.+?)\'").findall(content)[0]
+    attrs['purl'] = "http://" + host + "/vs"
     values["q"] = base64.standard_b64encode(encrypted)
     values["ref"] = ref
 
 #check
     if (check == True) and vurl:
+        response = ''
         try: 
             opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
             opener.addheaders = [("User-Agent", USER_AGENT)]
@@ -109,7 +136,9 @@ def get_access_attrs(content, url, check=True):
             connection = opener.open(request)
             response = connection.read()
         except:
-            values, attrs = reload_values(content, url);
+            values, attrs = reload_values2(content, url)
+        if response and (not ("mp4" in response)):
+            values, attrs = reload_values2(content, url)
 
     xbmc.log("param=" + repr(values) + " " + repr(attrs))
     return values, attrs
