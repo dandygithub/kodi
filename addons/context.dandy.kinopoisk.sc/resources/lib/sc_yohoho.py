@@ -38,7 +38,7 @@ def prepare_url(host, url):
         return url
     response = tools.get_response(url, HEADERS2, {}, 'GET')
     if response:
-        return "http:" + common.parseDOM(response, "iframe", ret="src")[0]
+        return common.parseDOM(response, "iframe", ret="src")[0]
     else:
         return url
 
