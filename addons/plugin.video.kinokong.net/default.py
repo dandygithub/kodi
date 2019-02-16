@@ -87,7 +87,7 @@ class Kinokong():
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getCategoryItems(self.url + '/film/novinki-kinoo', 1)
+        self.getCategoryItems(self.url + '/film/novinki-2019', 1)
 
     def getCategoryItems(self, url, page):
         #print "*** Get category items %s" % url
@@ -199,12 +199,10 @@ class Kinokong():
                 "Referer": url,
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
             }
+            
             request = urllib2.Request(playlist, "", headers)
             request.get_method = lambda: 'GET'
             response = eval(urllib2.urlopen(request).read())
-
-#            response = common.fetchPage({"link": playlist})
-#            response = eval(response["content"])
 
             if 'playlist' in response['playlist'][0]:
                 print "This is a season multiple seasons"
