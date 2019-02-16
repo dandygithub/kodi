@@ -279,32 +279,33 @@ class Kinoprosmotr():
                        'Referer': iframe,
                        'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
                     }
-                    try:  
-                        request = urllib2.Request(link, "", headers)
-                        request.get_method = lambda: 'GET'
-                        response = urllib2.urlopen(request)
-                        data = response.read()
+                    #try:  
+                    request = urllib2.Request(link, "", headers)
+                    request.get_method = lambda: 'GET'
+                    response = urllib2.urlopen(request)
+                    data = response.read()
 
-                        iframe = "http:" + common.parseDOM(data, "iframe", ret="src")[0]
-                        request = urllib2.Request(iframe, "", headers)
-                        request.get_method = lambda: 'GET'
-                        data = urllib2.urlopen(request).read()
+                    #iframe = common.parseDOM(data, "iframe", ret="src")[0]
+                    #request = urllib2.Request(iframe, "", headers)
+                    #request.get_method = lambda: 'GET'
+                    #data = urllib2.urlopen(request).read()
 
-                        #tvshow
-                        tvshow = common.parseDOM(data, "select", attrs={"name": "season"})
-                        if tvshow:
-                            data = self.select_episode(data, iframe, headers)
-                            if (data == ""):
-                                return False
+                    #tvshow
+                    tvshow = common.parseDOM(data, "select", attrs={"name": "season"})
+                    
+                    if tvshow:
+                        data = self.select_episode(data, iframe, headers)
+                        if (data == ""):
+                           return False
 
-                        data = data.split('media: [')[-1].split('],')[0]
-                        data = data.split('},{')
-                        for item in data:
-                            url_ = "http:" + item.split("url: '")[-1].split("'")[0]
-                            links.append(url_)
-                    except:
-                        self.showErrorMessage('No media source (YouTube, ...)')
-                        return False
+                    data = data.split('media: [')[-1].split('],')[0]
+                    data = data.split('},{')
+                    for item in data:
+                        url_ = "http:" + item.split("url: '")[-1].split("'")[0]
+                        links.append(url_)
+                    #except:
+                    #    self.showErrorMessage('No media source (YouTube, ...)')
+                    #    return False
 
             poster = common.parseDOM(movie, "div", attrs={"class": "full_movie_poster"})
             description = common.parseDOM(movie, "div", attrs={"class": "full_movie_desc"})
