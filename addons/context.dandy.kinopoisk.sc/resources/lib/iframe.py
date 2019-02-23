@@ -152,16 +152,21 @@ def get_playlist(url):
 
     jdata = json.loads(response)
 
-    try:
-        v_id = jdata["show"]["youtube"]["videoId"]
-        link = 'plugin://plugin.video.youtube/play/?video_id=' + v_id
-        manifest_links["ad"] = link
-        return manifest_links, subtitles, season, episode        
-    except:
-        pass
+    #try:
+    #    v_id = jdata["show"]["youtube"]["videoId"]
+    #    link = 'plugin://plugin.video.youtube/play/?video_id=' + v_id
+    #    manifest_links["ad"] = link
+    #    return manifest_links, subtitles, season, episode        
+    #except:
+    #    pass
     
+    #try:
+    #    url_ = jdata["show"]["links"]["url"]
+    #except:    
+    #    return manifest_links, subtitles, season, episode 
+
     try:
-        url_ = jdata["show"]["links"]["url"]
+        url_ = jdata["src"]
     except:    
         return manifest_links, subtitles, season, episode 
 
