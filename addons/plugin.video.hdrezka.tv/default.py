@@ -280,6 +280,7 @@ class HdrezkaTV():
                 url_episode = iframe.split("?")[0]
                 uri = sys.argv[0] + '?mode=play_episode&url=%s&urlm=%s&post_id=%s&season_id=%s&episode_id=%s&title=%s&image=%s' % (url_episode, url, ids[i], seasons[i], episodes[i], title, image)
                 item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
+                item.setInfo(type='Video', infoLabels={'title': title})                
                 if self.quality != 'select':
                     item.setProperty('IsPlayable', 'true')
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True if self.quality == 'select' else False)
