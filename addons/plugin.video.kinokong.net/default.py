@@ -87,7 +87,7 @@ class Kinokong():
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getCategoryItems(self.url + '/film/novinki-2019', 1)
+        self.getCategoryItems(self.url + '/film/2019', 1)
 
     def getCategoryItems(self, url, page):
         #print "*** Get category items %s" % url
@@ -100,7 +100,7 @@ class Kinokong():
             content = common.parseDOM(response["content"], "div", attrs={"id": "container"})
             items = common.parseDOM(content, "div", attrs={"class": "owl-item"})
 
-            link_container = common.parseDOM(items, "div", attrs={"class": "main-sliders-title"})
+            link_container = common.parseDOM(items, "h2", attrs={"class": "main-sliders-title"})
             titles = common.parseDOM(link_container, "a")
             links = common.parseDOM(link_container, "a", ret="href")
             images = common.parseDOM(items, "img", ret="src")
@@ -248,7 +248,7 @@ class Kinokong():
 
         links = [
           self.url + '/film/',
-          self.url + '/film/novinki-kinoo/',
+          self.url + '/film/2019/',
           self.url + '/series/',
           self.url + '/cartoons/',
           self.url + '/animes/',
