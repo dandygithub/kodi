@@ -248,6 +248,29 @@ class HdrezkaTV():
         playlist = common.parseDOM(episodes, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
         return iframe, playlist
 
+    def selectTranslator2(self, content):
+        iframe0 = common.parseDOM(content, 'iframe', ret='src')[0]
+        if self.translator != "select":
+            return iframe0
+        try:
+            div = common.parseDOM(content, 'ul', attrs={'id': 'translators-list'})[0]
+        except:
+            return iframe0
+        titles = common.parseDOM(div, 'li', ret="title")
+        iframes = common.parseDOM(div, 'li', ret = "data-cdn_url")
+        if len(titles) > 1:
+            dialog = xbmcgui.Dialog()
+            index_ = dialog.select(self.language(1006), titles)
+            if int(index_) < 0:
+                index_ = 0    
+        else:
+            index_ = 0    
+        iframe = iframes[index_]
+
+        return iframe
+
+    def getIFrame(self, content):
+        return self.selectTranslator2(content)
 
     def show(self, url):
         print "Get video %s" % url
@@ -297,7 +320,7 @@ class HdrezkaTV():
             except:
                 print "GET LINK FROM IFRAME"
                 videoplayer = common.parseDOM(content, 'div', attrs={'id': 'videoplayer'})
-                iframe = common.parseDOM(content, 'iframe', ret='src')[0]
+                iframe = self.getIFrame(content)
                 links, subtitles = self.get_video_link_from_iframe(iframe, url)
                 self.selectQuality(links, title, image, subtitles)
 
