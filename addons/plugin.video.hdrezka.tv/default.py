@@ -4,83 +4,102 @@
 # Writer (c) 2012-2017, MrStealth, dandy
 # Rev. 2.1.0
 
-import os, urllib, urllib2, sys #, socket, cookielib, errno
-import xbmc, xbmcplugin,xbmcgui,xbmcaddon
-import re, json,socket
+import json
+import os
+import re
+import socket
+import sys
+import urllib
+import urllib2
 from operator import itemgetter
+import requests
 
+from Translit import Translit
 import XbmcHelpers
-common = XbmcHelpers
-
-import Translit as translit
-translit = translit.Translit()
-
-USER_AGENT = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0"
-
-try:
-    sys.path.append(os.path.dirname(__file__)+ '/../plugin.video.unified.search')
-    from unified_search import UnifiedSearch
-except:
-    pass
-
+import xbmc
+import xbmcaddon
+import xbmcgui
+import xbmcplugin
 from videohosts import moonwalk
 
+try:
+    sys.path.append(os.path.dirname(__file__) + '/../plugin.video.unified.search')
+    from unified_search import UnifiedSearch
+except ImportError:
+    pass
+
+common = XbmcHelpers
+transliterate = Translit()
 socket.setdefaulttimeout(120)
 
+USER_AGENT = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0"
+PLAYLIST_DOMAIN = 's9.cdnapponline.com'
 QUALITY_TYPES = (360, 480, 720, 1080)
 
-class HdrezkaTV():
+
+class HdrezkaTV:
     def __init__(self):
         self.id = 'plugin.video.hdrezka.tv'
         self.addon = xbmcaddon.Addon(self.id)
         self.icon = self.addon.getAddonInfo('icon')
-        self.fanart = self.addon.getAddonInfo('fanart')
-        self.path = self.addon.getAddonInfo('path')
-        self.profile = self.addon.getAddonInfo('profile')
 
         self.language = self.addon.getLocalizedString
-        self.inext = os.path.join(self.path, 'resources/icons/next.png')
+        self.inext = os.path.join(self.addon.getAddonInfo('path'), 'resources/icons/next.png')
         self.handle = int(sys.argv[1])
         self.domain = self.addon.getSetting('domain')
-        self.url = 'http://' + self.addon.getSetting('domain')
-
+        self.url = 'http://' + self.domain
+        self.proxies = self._load_proxy_settings()
         self.quality = self.addon.getSetting('quality')
-        self.translator = self.addon.getSetting('translator') if self.addon.getSetting('translator') else "default"
-        self.description = self.addon.getSetting('description') if self.addon.getSetting('translator') else "true"
+        self.translator = self.addon.getSetting('translator')
+        self.description = self.addon.getSetting('description')
+
+    def _load_proxy_settings(self):
+        if self.addon.getSetting('use_proxy') == 'false':
+            return False
+        proxy_protocol = self.addon.getSetting('protocol')
+        proxy_url = self.addon.getSetting('proxy_url')
+        return {'http': proxy_protocol + '://' + proxy_url}
+
+    def get_response(self, url, data=None, referer='http://www.random.org'):
+        headers = {
+            "Host": self.domain,
+            "Referer": referer,
+            "User-Agent": USER_AGENT,
+        }
+        return requests.get(url, params=data, headers=headers, proxies=self.proxies)
 
     def main(self):
         params = common.getParameters(sys.argv[2])
-        mode = url = page = None
-
-        mode = params['mode'] if 'mode' in params else None
+        mode = params.get('mode')
         url = urllib.unquote_plus(params['url']) if 'url' in params else None
-        urlm = urllib.unquote_plus(params['urlm']) if 'urlm' in params else None
-        page = int(params['page']) if 'page' in params else 1
 
-        post_id = params['post_id'] if 'post_id' in params else None
-        season_id = params['season_id'] if 'season_id' in params else None
-        episode_id = params['episode_id'] if 'episode_id' in params else None
-        title = urllib.unquote_plus(params['title']) if 'title' in params else None
-        image = params['image'] if 'image' in params else None
-
-        keyword = params['keyword'] if 'keyword' in params else None
         external = 'unified' if 'unified' in params else None
-        if external == None:
-            external = 'usearch' if 'usearch' in params else None    
+        if external is None:
+            external = 'usearch' if 'usearch' in params else None
 
         if mode == 'play':
             self.play(url)
         if mode == 'play_episode':
-            self.play_episode(url, urlm, post_id, season_id, episode_id, title, image)
+            self.play_episode(
+                url,
+                urllib.unquote_plus(params['urlm']),
+                params.get('post_id'),
+                params.get('season_id'),
+                params.get('episode_id'),
+                urllib.unquote_plus(params['title']),
+                params.get('image')
+            )
         if mode == 'show':
             self.show(url)
         if mode == 'index':
-            self.index(url, page)
+            self.index(url, int(params.get('page', 1)))
         if mode == 'categories':
             self.categories()
+        if mode == 'sub_categories':
+            self.sub_categories(url)
         if mode == 'search':
-            self.search(keyword, external)
-        elif mode == None:
+            self.search(params.get('keyword'), external)
+        elif mode is None:
             self.menu()
 
     def menu(self):
@@ -95,36 +114,38 @@ class HdrezkaTV():
         self.index(self.url + '/films', 1)
 
     def categories(self):
-        response = common.fetchPage({"link": self.url})
-        genres = common.parseDOM(response["content"], "ul", attrs={"id": "topnav-menu"})
+        response = self.get_response(self.url)
+        genres = common.parseDOM(response.text, "ul", attrs={"id": "topnav-menu"})
 
         titles = common.parseDOM(genres, "a", attrs={"class": "b-topnav__item-link"})
         links = common.parseDOM(genres, "a", attrs={"class": "b-topnav__item-link"}, ret='href')
-
         for i, title in enumerate(titles):
             title = common.stripTags(title)
             link = self.url + links[i]
-
-            uri = sys.argv[0] + '?mode=%s&url=%s' % ("index", link)
+            uri = sys.argv[0] + '?mode=%s&url=%s' % ("sub_categories", link)
             item = xbmcgui.ListItem(title, thumbnailImage=self.icon)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def sub_categories(self, category_id):
-        response = common.fetchPage({"link": self.url})
-        genres = common.parseDOM(response["content"], "ul", attrs={"id": "topnav-menu"})
+    def sub_categories(self, url):
+        response = self.get_response(url)
+        genres = common.parseDOM(response.text, "ul", attrs={"class": "left"})
 
         titles = common.parseDOM(genres, "a")
         links = common.parseDOM(genres, "a", ret='href')
 
-        for i, title in enumerate(titles):
-            if 'http' in links[i]:
-                link = links[i]
-            else:
-                link = self.url + links[i]
+        clean_url = url.replace(self.url, '')
 
+        uri = sys.argv[0] + '?mode=%s&url=%s' % ("index", url)
+        item = xbmcgui.ListItem('[COLOR=FF00FFF0][%s][/COLOR]' % self.language(1007), thumbnailImage=self.icon)
+        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        for i, title in enumerate(titles):
+            if not links[i].startswith(clean_url):
+                continue
+            link = self.url + links[i]
             uri = sys.argv[0] + '?mode=%s&url=%s' % ("index", link)
             item = xbmcgui.ListItem(title, thumbnailImage=self.icon)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
@@ -132,17 +153,15 @@ class HdrezkaTV():
         xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
 
-
     def index(self, url, page):
-        if(page == 1):
+        if page == 1:
             page_url = url
         else:
             page_url = "%s/page/%s/" % (url, page)
 
-        print page_url
+        response = self.get_response(page_url)
+        content = common.parseDOM(response.text, "div", attrs={"class": "b-content__inline_items"})
 
-        response = common.fetchPage({"link": page_url})
-        content = common.parseDOM(response["content"], "div", attrs={"class": "b-content__inline_items"})
         items = common.parseDOM(content, "div", attrs={"class": "b-content__inline_item"})
         post_ids = common.parseDOM(content, "div", attrs={"class": "b-content__inline_item"}, ret="data-id")
 
@@ -150,23 +169,32 @@ class HdrezkaTV():
 
         links = common.parseDOM(link_containers, "a", ret='href')
         titles = common.parseDOM(link_containers, "a")
-        divcovers = common.parseDOM(items, "div", attrs={"class": "b-content__inline_item-cover"})
+        div_covers = common.parseDOM(items, "div", attrs={"class": "b-content__inline_item-cover"})
 
         country_years = common.parseDOM(link_containers, "div")
         items_count = 0
 
-        for i, title in enumerate(titles):
+        for i, name in enumerate(titles):
             items_count += 1
 
-            infos = self.get_item_description(url, post_ids[i])
-
-            country_year = country_years[i].split(',')[0].replace('.', '').replace('-', '').replace(' ', '')
-            title = "%s [COLOR=55FFFFFF](%s)[/COLOR]" % (title, country_year)
-            image = common.parseDOM(divcovers[i], "img", ret='src')[0]
+            info = self.get_item_description(post_ids[i])
+            title = "%s %s [COLOR=55FFFFFF](%s)[/COLOR]" % (name, color_rating(info['rating']), country_years[i])
+            image = common.parseDOM(div_covers[i], "img", ret='src')[0]
 
             uri = sys.argv[0] + '?mode=show&url=%s' % links[i]
+            year, country, genre = country_years[i].split(',')
             item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
-            item.setInfo(type='Video', infoLabels={'title': title, 'genre': country_years[i], 'plot': infos['description'], 'rating': infos['rating']})
+            item.setInfo(
+                type='video',
+                infoLabels={
+                    'title': name,
+                    'genre': genre,
+                    'year': year,
+                    'country': country,
+                    'plot': info['description'],
+                    'rating': info['rating']
+                }
+            )
             if (self.quality != 'select') and (not ('/series/' in url)) and (not ('/show/' in url)):
                 item.setProperty('IsPlayable', 'true')
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
@@ -174,76 +202,69 @@ class HdrezkaTV():
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         if not items_count < 16:
-            uri = sys.argv[0] + '?mode=%s&url=%s&page=%s' % ("index", url, str(int(page) + 1))
+            uri = sys.argv[0] + '?mode=%s&url=%s&page=%d' % ("index", url, int(page) + 1)
             item = xbmcgui.ListItem(self.language(1004), iconImage=self.inext)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'movies')
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def selectQuality(self, links, title, image, subtitles = None):
-        list = sorted(links.iteritems(), key=itemgetter(0))
+    def selectQuality(self, links, title, image, subtitles=None):
+        lst = sorted(links.iteritems(), key=itemgetter(0))
         i = 0
-        for quality, link in list:
-            #print "quality: %s link %s" % (quality, link)
+        for quality, link in lst:
             i += 1
             if self.quality != 'select':
                 if quality > int(self.quality[:-1]):
                     self.play(links[quality_prev], subtitles)
                     break
-                elif (len(list) == i):
+                elif len(lst) == i:
                     self.play(links[quality], subtitles)
             else:
                 film_title = "%s (%s)" % (title, str(quality) + 'p')
                 uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote(link)
                 item = xbmcgui.ListItem(film_title, iconImage=image)
-                item.setInfo(type='Video', infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
+                item.setInfo(
+                    type='Video',
+                    infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0}
+                )
                 item.setProperty('IsPlayable', 'true')
-                if subtitles: 
+                if subtitles:
                     item.setSubtitles([subtitles])
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
-            quality_prev = quality 
+            quality_prev = quality
 
     def selectTranslator(self, content, post_id):
         iframe0 = common.parseDOM(content, 'iframe', ret='src')[0]
         try:
             playlist0 = common.parseDOM(content, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
         except:
-            playlist0 = ""  
+            playlist0 = ""
         try:
             div = common.parseDOM(content, 'ul', attrs={'id': 'translators-list'})[0]
         except:
             return iframe0, playlist0
         titles = common.parseDOM(div, 'li')
-        ids = common.parseDOM(div, 'li', ret = "data-translator_id")
+        ids = common.parseDOM(div, 'li', ret="data-translator_id")
         if len(titles) > 1:
             dialog = xbmcgui.Dialog()
             index_ = dialog.select(self.language(1006), titles)
             if int(index_) < 0:
-                index_ = 0    
+                index_ = 0
         else:
-            index_ = 0    
+            index_ = 0
         idt = ids[index_]
 
-        headers = {
-            "Host": self.domain,
-            "Origin": self.url,
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
-            "X-Requested-With": "XMLHttpRequest"
-        }
-
-        values = {
+        data = {
             "id": post_id,
             "translator_id": idt
         }
 
-        request = urllib2.Request(self.url + "/ajax/get_cdn_series/", urllib.urlencode(values), headers)
-        response = urllib2.urlopen(request).read()
+        response = self.get_response(self.url + "/ajax/get_cdn_series/", data).json()
 
-        data = json.loads(response)
-        player = data["player"]
-        seasons = data["seasons"]
-        episodes = data["episodes"]
+        player = response["player"]
+        seasons = response["seasons"]
+        episodes = response["episodes"]
         iframe = common.parseDOM(player, 'iframe', ret='src')[0]
         playlist = common.parseDOM(episodes, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
         return iframe, playlist
@@ -257,14 +278,14 @@ class HdrezkaTV():
         except:
             return iframe0
         titles = common.parseDOM(div, 'li', ret="title")
-        iframes = common.parseDOM(div, 'li', ret = "data-cdn_url")
+        iframes = common.parseDOM(div, 'li', ret="data-cdn_url")
         if len(titles) > 1:
             dialog = xbmcgui.Dialog()
             index_ = dialog.select(self.language(1006), titles)
             if int(index_) < 0:
-                index_ = 0    
+                index_ = 0
         else:
-            index_ = 0    
+            index_ = 0
         iframe = iframes[index_]
 
         return iframe
@@ -273,17 +294,17 @@ class HdrezkaTV():
         return self.selectTranslator2(content)
 
     def show(self, url):
-        print "Get video %s" % url
-        response = common.fetchPage({"link": url})
+        log("*** Show video %s" % url)
+        response = self.get_response(url)
 
-        content = common.parseDOM(response["content"], "div", attrs={"id": "wrapper"})
+        content = common.parseDOM(response.text, "div", attrs={"id": "wrapper"})
         image_container = common.parseDOM(content, "div", attrs={"class": "b-sidecover"})
         title = common.parseDOM(content, "h1")[0]
         image = common.parseDOM(image_container, "img", ret='src')[0]
-        post_id = common.parseDOM(content, "input", attrs={"id": "post_id" }, ret="value")[0]
+        post_id = common.parseDOM(content, "input", attrs={"id": "post_id"}, ret="value")[0]
 
         playlist = common.parseDOM(content, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
-        iframe = common.parseDOM(content, 'iframe', ret='src')[0]
+        iframe = self.getIFrame(content)
         if playlist:
             if self.translator == "select":
                 iframe, playlist = self.selectTranslator(content, post_id)
@@ -291,88 +312,51 @@ class HdrezkaTV():
             ids = common.parseDOM(playlist, "li", ret='data-id')
             seasons = common.parseDOM(playlist, "li", ret='data-season_id')
             episodes = common.parseDOM(playlist, "li", ret='data-episode_id')
-
-        print "POST ID %s " % post_id
-        #print "Image %s" % image
-
-        if playlist:
-            #print "This is a season"
-            videoplayer = common.parseDOM(content, 'div', attrs={'id': 'videoplayer'})
             for i, title in enumerate(titles):
                 title = "%s (%s %s)" % (title, self.language(1005), seasons[i])
                 url_episode = iframe.split("?")[0]
-                uri = sys.argv[0] + '?mode=play_episode&url=%s&urlm=%s&post_id=%s&season_id=%s&episode_id=%s&title=%s&image=%s' % (url_episode, url, ids[i], seasons[i], episodes[i], title, image)
+                uri = sys.argv[0] + '?mode=play_episode&url=%s&urlm=%s&post_id=%s&season_id=%s&episode_id=%s&title=%s' \
+                                    '&image=%s' % (
+                          url_episode, url, ids[i], seasons[i], episodes[i], title, image)
                 item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
-                item.setInfo(type='Video', infoLabels={'title': title})                
+                item.setInfo(type='Video', infoLabels={'title': title})
                 if self.quality != 'select':
                     item.setProperty('IsPlayable', 'true')
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True if self.quality == 'select' else False)
         else:
-            try:
-                link = self.get_video_link(url, post_id)
-
-                uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote(link)
-                item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
-                item.setInfo(type='Video', infoLabels={'title': title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
-                item.setProperty('IsPlayable', 'true')
-                xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
-
-            except:
-                print "GET LINK FROM IFRAME"
-                videoplayer = common.parseDOM(content, 'div', attrs={'id': 'videoplayer'})
-                iframe = self.getIFrame(content)
-                links, subtitles = self.get_video_link_from_iframe(iframe, url)
-                self.selectQuality(links, title, image, subtitles)
+            iframe = common.parseDOM(content, 'iframe', ret='src')[0]
+            links, subtitles = self.get_video_link_from_iframe(iframe)
+            self.selectQuality(links, title, image, subtitles)
 
         xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def get_item_description(self, referer, post_id):
+    def get_item_description(self, post_id):
         if self.description == "false":
-            return { 'rating' : '', 'description' : '' }
-
-        url = self.url + '/engine/ajax/quick_content.php'
-
-        headers = {
-            "Accept" : "text/plain, */*; q=0.01",
-            "Content-Type" : "application/x-www-form-urlencoded; charset=UTF-8",
-            "Host" : self.domain,
-            "Referer" : referer,
-            "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:27.0) Gecko/20100101 Firefox/27.0",
-            "X-Requested-With" : "XMLHttpRequest"
+            return {'rating': '', 'description': ''}
+        data = {
+            "id": post_id,
+            "is_touch": 1
         }
-
-        data = urllib.urlencode({
-            "id" : post_id,
-            "is_touch" : 0
-        })
-
-        request = urllib2.Request(url, data, headers)
-        response = urllib2.urlopen(request).read()
-
-        description = common.parseDOM(response, 'div', attrs={'class': 'b-content__bubble_text'})[0]
+        response = self.get_response(self.url + '/engine/ajax/quick_content.php', data)
+        description = common.parseDOM(response.text, 'div', attrs={'class': 'b-content__bubble_text'})[0]
 
         try:
-            imbd_rating = common.parseDOM(response, 'span', attrs={'class': 'imdb'})[0]
+            imbd_rating = common.parseDOM(response.text, 'span', attrs={'class': 'imdb'})[0]
             rating = common.parseDOM(imbd_rating, 'b')[0]
-        except IndexError, e:
+        except IndexError as e:
             try:
-                imbd_rating = common.parseDOM(response, 'span', attrs={'class': 'kp'})[0]
+                imbd_rating = common.parseDOM(response.text, 'span', attrs={'class': 'kp'})[0]
                 rating = common.parseDOM(imbd_rating, 'b')[0]
-            except IndexError, e:
+            except IndexError as e:
                 rating = 0
+        return {'rating': rating, 'description': description}
 
-        return { 'rating' : rating, 'description' : description }
-
-
-    def get_video_link_from_iframe(self, url, mainurl):
-
-        playlist_domain = 'streamblast.cc'
-        playlist_domain2 = 's9.cdnapponline.com'
-
+    @staticmethod
+    def get_video_link_from_iframe(url):
+        log("*** get_video_link_from_iframe")
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
-#            "Referer": mainurl
+            "User-Agent": USER_AGENT,
             "Referer": "http://www.random.org"
         }
         request = urllib2.Request(url, "", headers)
@@ -397,10 +381,10 @@ class HdrezkaTV():
         playlisturl = data["m3u8"]
 
         headers = {
-            "Host": playlist_domain2,
+            "Host": PLAYLIST_DOMAIN,
             "Referer": url,
-            "Origin": "http://" + playlist_domain2,
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
+            "Origin": "http://" + PLAYLIST_DOMAIN,
+            "User-Agent": USER_AGENT,
             "X-Requested-With": "XMLHttpRequest"
         }
 
@@ -408,60 +392,22 @@ class HdrezkaTV():
         request.get_method = lambda: 'GET'
         response = urllib2.urlopen(request).read()
 
-        urls = re.compile("http:\/\/.*?\n").findall(response)
+        urls = re.compile(r"http:\/\/.*?\n").findall(response)
         manifest_links = {}
         for i, url in enumerate(urls):
             manifest_links[QUALITY_TYPES[i]] = url.replace("\n", "")
 
         return manifest_links, subtitles
 
-    def get_video_link(self, referer, post_id):
-        url = self.url + '/ajax/getvideo.php'
-
-        headers = {
-            "Accept" : "text/plain, */*; q=0.01",
-            "Content-Type" : "application/x-www-form-urlencoded; charset=UTF-8",
-            "Host" : self.domain,
-            "Referer" : referer,
-            "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:27.0) Gecko/20100101 Firefox/27.0",
-            "X-Requested-With" : "XMLHttpRequest"
-        }
-
-        data = urllib.urlencode({
-            "id" : post_id
-        })
-
-        request = urllib2.Request(url, data, headers)
-        response = urllib2.urlopen(request)
-
-        response = json.loads(response.read().encode("utf-8"))
-        links = json.loads(response['link'].encode("utf-8"))
-        return links['hls']
-
     def get_seaons_link(self, referer, video_id, season, episode):
-        url = self.url + '/engine/ajax/getvideo.php'
-
-        headers = {
-            "Accept" : "text/plain, */*; q=0.01",
-            "Content-Type" : "application/x-www-form-urlencoded; charset=UTF-8",
-            "Host" : self.domain,
-            "Referer" : referer,
-            "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:27.0) Gecko/20100101 Firefox/27.0",
-            "X-Requested-With" : "XMLHttpRequest"
-        }
-
-        data = urllib.urlencode({
+        log('*** get_seaons_link')
+        data = {
             'id': video_id,
-            'season':  season,
+            'season': season,
             'episode': episode
-        })
-
-        request = urllib2.Request(url, data, headers)
-        response = urllib2.urlopen(request)
-
-        response = json.loads(response.read().encode("utf-8"))
-        links = json.loads(response['link'].encode("utf-8"))
-        return links['hls']
+        }
+        response = self.get_response(self.url + '/engine/ajax/getvideo.php', data, referer=referer).json()
+        return response['link']['hls']
 
     def getUserInput(self):
         kbd = xbmc.Keyboard()
@@ -472,66 +418,53 @@ class HdrezkaTV():
 
         if kbd.isConfirmed():
             if self.addon.getSetting('translit') == 'true':
-                keyword = translit.rus(kbd.getText())
+                keyword = transliterate.rus(kbd.getText())
             else:
                 keyword = kbd.getText()
         return keyword
 
     def search(self, keyword, external):
-        print "*** Search"
-
-        keyword = keyword if (external != None) else self.getUserInput()
-        keyword = translit.rus(keyword) if (external == 'unified') else urllib.unquote_plus(keyword)
+        log("*** search")
+        keyword = keyword if (external is not None) else self.getUserInput()
+        keyword = transliterate.rus(keyword) if (external == 'unified') else urllib.unquote_plus(keyword)
         unified_search_results = []
 
         if keyword:
-            print keyword
-
-            headers = {
-                'Host': self.domain,
-                'Referer': self.url,
-                'Upgrade-Insecure-Requests': '1',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
-            }
-
-            values = {
+            data = {
                 "do": "search",
                 "subaction": "search",
                 "q": unicode(keyword)
             }
+            response = self.get_response(self.url, data)
 
-            form = urllib.urlencode(values)
-            encoded_kwargs = urllib.urlencode(values.items())
-            argStr = "/?%s" %(encoded_kwargs)
-            request = urllib2.Request(self.url + argStr, "", headers)
-            request.get_method = lambda: 'GET'
-            response = urllib2.urlopen(request).read()
-
-            content = common.parseDOM(response, "div", attrs={"class": "b-content__inline_items"})
+            content = common.parseDOM(response.text, "div", attrs={"class": "b-content__inline_items"})
             videos = common.parseDOM(content, "div", attrs={"class": "b-content__inline_item"})
 
             for i, videoitem in enumerate(videos):
                 link = common.parseDOM(videoitem, "a", ret='href')[0]
                 title = common.parseDOM(videoitem, "a")[1]
-                
+
                 image = common.parseDOM(videoitem, "img", ret='src')[0]
                 descriptiondiv = common.parseDOM(videoitem, "div", attrs={"class": "b-content__inline_item-link"})[0]
                 description = common.parseDOM(descriptiondiv, "div")[0]
 
-                if (external == 'unified'):
-                    print "Perform unified search and return results"
-                    unified_search_results.append({'title':  title, 'url': link, 'image': image, 'plugin': self.id})
+                if external == 'unified':
+                    log("Perform unified search and return results")
+                    unified_search_results.append({'title': title, 'url': link, 'image': image, 'plugin': self.id})
                 else:
                     uri = sys.argv[0] + '?mode=show&url=%s' % urllib.quote(link)
-                    item = xbmcgui.ListItem("%s [COLOR=55FFFFFF][%s][/COLOR]" % (title, description), iconImage=image, thumbnailImage=image)
+                    item = xbmcgui.ListItem(
+                        "%s [COLOR=55FFFFFF][%s][/COLOR]" % (title, description),
+                        iconImage=image,
+                        thumbnailImage=image
+                    )
                     item.setInfo(type='Video', infoLabels={'title': title})
                     if (self.quality != 'select') and (not ('/series/' in link)) and (not ('/show/' in link)):
                         item.setProperty('IsPlayable', 'true')
                         xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
                     else:
                         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-
-            if (external == 'unified'):
+            if external == 'unified':
                 UnifiedSearch().collect(unified_search_results)
             else:
                 xbmcplugin.setContent(self.handle, 'movies')
@@ -539,46 +472,53 @@ class HdrezkaTV():
         else:
             self.menu()
 
-    def play(self, url, subtitles = None):
-        item = xbmcgui.ListItem(path = url)
+    def play(self, url, subtitles=None):
+        log('*** play')
+        item = xbmcgui.ListItem(path=url)
         if subtitles:
             item.setSubtitles([subtitles])
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
     def play_episode(self, url, referer, post_id, season_id, episode_id, title, image):
-        print "***** play_season"
+        log("*** play_episode")
         try:
             url = self.get_seaons_link(referer, post_id, season_id, episode_id)
 
-            item = xbmcgui.ListItem(path = url)
+            item = xbmcgui.ListItem(path=url)
             xbmcplugin.setResolvedUrl(self.handle, True, item)
 
-        except:
-            print "GET LINK FROM IFRAME"
+        except Exception as ex:
             url_episode = url + "?nocontrols=1&season=%s&episode=%s" % (season_id, episode_id)
-            links, subtitles = self.get_video_link_from_iframe(url_episode, referer)
+            links, subtitles = self.get_video_link_from_iframe(url_episode)
             self.selectQuality(links, title, image, subtitles)
             xbmcplugin.setContent(self.handle, 'episodes')
             xbmcplugin.endOfDirectory(self.handle, True)
 
-
-    # XBMC helpers
     def showMessage(self, msg):
+        log(msg)
         xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("Info", msg, str(5 * 1000)))
 
     def showErrorMessage(self, msg):
-        print msg
+        log(msg)
         xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("ERROR", msg, str(10 * 1000)))
 
-    # Python helpers
-    def encode(self, string):
-        return string.decode('cp1251').encode('utf-8')
 
-    def convert(s):
-        try:
-            return s.group(0).encode('latin1').decode('utf8')
-        except:
-            return s.group(0)
+def color_rating(rating):
+    if not rating:
+        return ''
+    rating = float(rating)
+    if 0 <= rating < 5:
+        return '[COLOR=red][%s][/COLOR]' % rating
+    elif 5 <= rating < 7:
+        return '[COLOR=yellow][%s][/COLOR]' % rating
+    elif rating >= 7:
+        return '[COLOR=green][%s][/COLOR]' % rating
+
+
+def log(msg, level=xbmc.LOGNOTICE):
+    log_message = u'{0}: {1}'.format('hdrezka', msg)
+    xbmc.log(log_message.encode("utf-8"), level)
+
 
 plugin = HdrezkaTV()
 plugin.main()
