@@ -60,13 +60,23 @@ class HdrezkaTV:
         proxy_url = self.addon.getSetting('proxy_url')
         return {'http': proxy_protocol + '://' + proxy_url}
 
-    def get_response(self, url, data=None, referer='http://www.random.org'):
-        headers = {
-            "Host": self.domain,
-            "Referer": referer,
-            "User-Agent": USER_AGENT,
-        }
+    def get_response(self, url, data=None, headers=None, referer='http://www.random.org'):
+        if (not headers): 
+            headers = {
+                "Host": self.domain,
+                "Referer": referer,
+                "User-Agent": USER_AGENT,
+            }
         return requests.get(url, params=data, headers=headers, proxies=self.proxies)
+
+    def post_response(self, url, data=None, headers=None, referer='http://www.random.org'):
+        if (not headers): 
+            headers = {
+                "Host": self.domain,
+                "Referer": referer,
+                "User-Agent": USER_AGENT,
+            }
+        return requests.post(url, data=data, headers=headers, proxies=self.proxies)
 
     def main(self):
         params = common.getParameters(sys.argv[2])
@@ -234,7 +244,7 @@ class HdrezkaTV:
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
             quality_prev = quality
 
-    def selectTranslator(self, content, post_id):
+    def selectTranslator(self, content, post_id, url):
         iframe0 = common.parseDOM(content, 'iframe', ret='src')[0]
         try:
             playlist0 = common.parseDOM(content, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
@@ -259,8 +269,14 @@ class HdrezkaTV:
             "id": post_id,
             "translator_id": idt
         }
-
-        response = self.get_response(self.url + "/ajax/get_cdn_series/", data).json()
+        headers = {
+            "Host": self.domain,
+            "Origin": "http://" + self.domain,
+            "Referer": url,
+            "User-Agent": USER_AGENT,
+            "X-Requested-With": "XMLHttpRequest"
+        }
+        response = self.post_response(self.url + "/ajax/get_cdn_series/", data, headers).json()
 
         player = response["player"]
         seasons = response["seasons"]
@@ -279,6 +295,9 @@ class HdrezkaTV:
             return iframe0
         titles = common.parseDOM(div, 'li', ret="title")
         iframes = common.parseDOM(div, 'li', ret="data-cdn_url")
+        if not iframes:
+            return iframe0   
+ 
         if len(titles) > 1:
             dialog = xbmcgui.Dialog()
             index_ = dialog.select(self.language(1006), titles)
@@ -307,7 +326,7 @@ class HdrezkaTV:
         iframe = self.getIFrame(content)
         if playlist:
             if self.translator == "select":
-                iframe, playlist = self.selectTranslator(content, post_id)
+                iframe, playlist = self.selectTranslator(content, post_id, url)
             titles = common.parseDOM(playlist, "li")
             ids = common.parseDOM(playlist, "li", ret='data-id')
             seasons = common.parseDOM(playlist, "li", ret='data-season_id')
