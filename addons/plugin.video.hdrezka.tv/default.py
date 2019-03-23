@@ -61,7 +61,7 @@ class HdrezkaTV:
         return {'http': proxy_protocol + '://' + proxy_url}
 
     def get_response(self, url, data=None, headers=None, referer='http://www.random.org'):
-        if (not headers): 
+        if (not headers):
             headers = {
                 "Host": self.domain,
                 "Referer": referer,
@@ -70,7 +70,7 @@ class HdrezkaTV:
         return requests.get(url, params=data, headers=headers, proxies=self.proxies)
 
     def post_response(self, url, data=None, headers=None, referer='http://www.random.org'):
-        if (not headers): 
+        if (not headers):
             headers = {
                 "Host": self.domain,
                 "Referer": referer,
@@ -205,7 +205,8 @@ class HdrezkaTV:
                     'rating': info['rating']
                 }
             )
-            if (self.quality != 'select') and (not ('/series/' in url)) and (not ('/show/' in url)):
+            is_serial = common.parseDOM(div_covers[i], 'span', attrs={"class": "info"})
+            if (self.quality != 'select') and not is_serial:
                 item.setProperty('IsPlayable', 'true')
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
             else:
@@ -296,8 +297,8 @@ class HdrezkaTV:
         titles = common.parseDOM(div, 'li', ret="title")
         iframes = common.parseDOM(div, 'li', ret="data-cdn_url")
         if not iframes:
-            return iframe0   
- 
+            return iframe0
+
         if len(titles) > 1:
             dialog = xbmcgui.Dialog()
             index_ = dialog.select(self.language(1006), titles)
@@ -478,7 +479,9 @@ class HdrezkaTV:
                         thumbnailImage=image
                     )
                     item.setInfo(type='Video', infoLabels={'title': title})
-                    if (self.quality != 'select') and (not ('/series/' in link)) and (not ('/show/' in link)):
+                    is_serial = common.parseDOM(videoitem, 'span', attrs={"class": "info"})
+
+                    if (self.quality != 'select') and not is_serial:
                         item.setProperty('IsPlayable', 'true')
                         xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
                     else:
