@@ -34,13 +34,11 @@ _kp_id_ = ''
 def prepare_url(host, url):
     if not url:
         return ""
-    if host != "hdgo":
-        return url
-    response = tools.get_response(url, HEADERS2, {}, 'GET')
-    if response:
-        return common.parseDOM(response, "iframe", ret="src")[0]
-    else:
-        return url
+    #response = tools.get_response(url, HEADERS2, {}, 'GET')
+    #if response:
+    #    return common.parseDOM(response, "iframe", ret="src")[0]
+    #else:
+    return url
 
 def get_content():
     vh_title = "yohoho."
