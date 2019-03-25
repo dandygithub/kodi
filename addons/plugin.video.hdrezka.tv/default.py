@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# Writer (c) 2012-2017, MrStealth, dandy
-# Rev. 2.1.0
+# Writer (c) 2012-2019, MrStealth, dandy
+# Rev. 2.3.0
 
 import json
 import os
@@ -61,7 +61,7 @@ class HdrezkaTV:
         return {'http': proxy_protocol + '://' + proxy_url}
 
     def get_response(self, url, data=None, headers=None, referer='http://www.random.org'):
-        if (not headers):
+        if not headers:
             headers = {
                 "Host": self.domain,
                 "Referer": referer,
@@ -70,7 +70,7 @@ class HdrezkaTV:
         return requests.get(url, params=data, headers=headers, proxies=self.proxies)
 
     def post_response(self, url, data=None, headers=None, referer='http://www.random.org'):
-        if (not headers):
+        if not headers:
             headers = {
                 "Host": self.domain,
                 "Referer": referer,
@@ -109,6 +109,8 @@ class HdrezkaTV:
             self.sub_categories(url)
         if mode == 'search':
             self.search(params.get('keyword'), external)
+        if mode == 'collections':
+            self.collections(int(params.get('page', 1)))
         elif mode is None:
             self.menu()
 
@@ -135,6 +137,10 @@ class HdrezkaTV:
             uri = sys.argv[0] + '?mode=%s&url=%s' % ("sub_categories", link)
             item = xbmcgui.ListItem(title, thumbnailImage=self.icon)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        uri = sys.argv[0] + '?mode=%s&page=%d' % ("collections", 1)
+        item = xbmcgui.ListItem('Подборки', thumbnailImage=self.icon)
+        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
@@ -163,13 +169,37 @@ class HdrezkaTV:
         xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def index(self, url, page):
-        if page == 1:
-            page_url = url
-        else:
-            page_url = "%s/page/%s/" % (url, page)
+    def collections(self, page):
+        page_url = '/collections/'
+        if page != 1:
+            page_url = "/collections/page/%s/" % page
 
-        response = self.get_response(page_url)
+        response = self.get_response(self.url + page_url)
+        content = common.parseDOM(response.text, 'div', attrs={'class': 'b-content__collections_list clearfix'})
+        titles = common.parseDOM(content, "a", attrs={"class": "title"})
+        counts = common.parseDOM(content, 'div', attrs={"class": ".num"})
+        links = common.parseDOM(content, "div", attrs={"class": "b-content__collections_item"}, ret="data-url")
+        icons = common.parseDOM(content, "img", attrs={"class": "cover"}, ret="src")
+
+        for i, name in enumerate(titles):
+            link = self.url + links[i].replace(self.url, '')
+            uri = sys.argv[0] + '?mode=%s&url=%s' % ("index", link)
+            item = xbmcgui.ListItem('%s [COLOR=55FFFFFF](%s)[/COLOR]' % (name, counts[i]), thumbnailImage=icons[i])
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        if not len(titles) < 24:
+            uri = sys.argv[0] + '?mode=%s&page=%d' % ("collections", page + 1)
+            item = xbmcgui.ListItem(self.language(1004), iconImage=self.inext)
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        xbmcplugin.setContent(self.handle, 'files')
+        xbmcplugin.endOfDirectory(self.handle, True)
+
+    def index(self, url, page):
+        if page != 1:
+            url = "%s/page/%s/" % (url, page)
+
+        response = self.get_response(url)
         content = common.parseDOM(response.text, "div", attrs={"class": "b-content__inline_items"})
 
         items = common.parseDOM(content, "div", attrs={"class": "b-content__inline_item"})
@@ -182,17 +212,14 @@ class HdrezkaTV:
         div_covers = common.parseDOM(items, "div", attrs={"class": "b-content__inline_item-cover"})
 
         country_years = common.parseDOM(link_containers, "div")
-        items_count = 0
 
         for i, name in enumerate(titles):
-            items_count += 1
-
             info = self.get_item_description(post_ids[i])
             title = "%s %s [COLOR=55FFFFFF](%s)[/COLOR]" % (name, color_rating(info['rating']), country_years[i])
             image = common.parseDOM(div_covers[i], "img", ret='src')[0]
 
             uri = sys.argv[0] + '?mode=show&url=%s' % links[i]
-            year, country, genre = country_years[i].split(',')
+            year, country, genre = get_media_attributes(country_years[i])
             item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
             item.setInfo(
                 type='video',
@@ -212,8 +239,8 @@ class HdrezkaTV:
             else:
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        if not items_count < 16:
-            uri = sys.argv[0] + '?mode=%s&url=%s&page=%d' % ("index", url, int(page) + 1)
+        if not len(titles) < 16:
+            uri = sys.argv[0] + '?mode=%s&url=%s&page=%d' % ("index", url, page + 1)
             item = xbmcgui.ListItem(self.language(1004), iconImage=self.inext)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
@@ -523,6 +550,16 @@ class HdrezkaTV:
     def showErrorMessage(self, msg):
         log(msg)
         xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("ERROR", msg, str(10 * 1000)))
+
+
+def get_media_attributes(source):
+    items = source.split(',')
+    if len(items) == 3:
+        year, country, genre = items
+    else:
+        year, genre = items
+        country = 'Unknown'
+    return year, country, genre
 
 
 def color_rating(rating):
