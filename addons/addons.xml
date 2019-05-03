@@ -342,7 +342,7 @@
 	</extension>
 </addon>
 
-<addon id="script.dandy.strm.marker" name="STRM Marker" version="1.0.0" provider-name="dandy">
+<addon id="script.dandy.strm.marker" name="STRM Marker" version="1.0.1" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.simplejson" version="3.3.0"/>

@@ -34,7 +34,7 @@ def jsonrpc(method, params):
     request = REQUEST
     request['method'] = method
     request['params'] = params
-    xbmc.log("req=" + json.dumps(request))
+#    xbmc.log("req=" + json.dumps(request))
     response = xbmc.executeJSONRPC(json.dumps(request))
     j = json.loads(response)
     return j.get('result')
@@ -128,7 +128,7 @@ def mark_movies():
         result_string = "{0}: {1}".format("Mark results", modify)
         progress.update(100 * i / total, line2=movie.get("title"), line3=result_string)
 
-        time.sleep(0.1)
+#        time.sleep(0.1)
     progress.close()
 
 def get_tvshows():
@@ -151,7 +151,7 @@ def mark_tvshows():
         result_string = "{0}: {1}".format("Mark results", modify)
         progress.update(100 * i / total, line2=tvshow.get("title"), line3=result_string)
 
-        time.sleep(0.1)
+#        time.sleep(0.1)
     progress.close()
 
 def mark():
@@ -176,7 +176,7 @@ def clear_movies():
         result_string = "{0}: {1}".format("Clear results", modify)
         progress.update(100 * i / total, line2=movie.get("title"), line3=result_string)
 
-        time.sleep(0.1)
+#        time.sleep(0.1)
     progress.close()
 
 def clear_tvshows():
@@ -195,7 +195,7 @@ def clear_tvshows():
         result_string = "{0}: {1}".format("Clear results", modify)
         progress.update(100 * i / total, line2=tvshow.get("title"), line3=result_string)
 
-        time.sleep(0.1)
+#        time.sleep(0.1)
     progress.close()
 
 def clear():
