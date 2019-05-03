@@ -46,7 +46,7 @@ def get_media_title(kp_id, media_title):
         content = response["content"]
         try:
             div = common.parseDOM(content, "div", attrs={"id": "headerFilm"})[0]
-            media_title_ = strip_(encode_('utf-8', decode_('cp1251', common.parseDOM(div, "h1")[0])))
+            media_title_ = strip_(encode_('utf-8', common.parseDOM(div, "h1")[0]))
         except:
             pass
     return replace_(media_title_)

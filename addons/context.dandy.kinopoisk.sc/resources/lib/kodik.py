@@ -170,7 +170,7 @@ def get_playlist(url):
     }
 
     try: 
-        request = urllib2.Request(url.split("?")[0], "", headers)
+        request = urllib2.Request("http:" + url.split("?")[0], "", headers)
         request.get_method = lambda: 'GET'
         response = urllib2.urlopen(request).read()
     except:
@@ -187,7 +187,7 @@ def get_playlist(url):
     div = common.parseDOM(response, "div", attrs={"class": "get_code_main"})[0]
     if div:
         iframe = common.parseDOM(div,  "input", ret="value")[0]
-        iframe = iframe.split('<iframe src="')[-1].split('"')[0]    
+        iframe = "http:" + iframe.split('<iframe src="')[-1].split('"')[0]    
         request = urllib2.Request(iframe, "", headers)
         request.get_method = lambda: 'GET'
         response = urllib2.urlopen(request).read()
