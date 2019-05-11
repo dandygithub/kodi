@@ -46,8 +46,9 @@ class HdrezkaTV:
         self.language = self.addon.getLocalizedString
         self.inext = os.path.join(self.addon.getAddonInfo('path'), 'resources/icons/next.png')
         self.handle = int(sys.argv[1])
+        self.dom_protocol = self.addon.getSetting('dom_protocol')        
         self.domain = self.addon.getSetting('domain')
-        self.url = 'http://' + self.domain
+        self.url = self.dom_protocol + '://' + self.domain
         self.proxies = self._load_proxy_settings()
         self.quality = self.addon.getSetting('quality')
         self.translator = self.addon.getSetting('translator')

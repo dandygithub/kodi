@@ -202,7 +202,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="2.3.3" provider-name="MrStealth, dandy, DesSolo">
+<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="2.3.4" provider-name="MrStealth, dandy, DesSolo">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.xbmc.helpers" version="2.1.0"/>
