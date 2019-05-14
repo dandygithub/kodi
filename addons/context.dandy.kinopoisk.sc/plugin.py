@@ -18,6 +18,7 @@ import resources.lib.kodik as kodik
 import resources.lib.videoframe as videoframe
 import resources.lib.iframe as iframe
 import resources.lib.hdbaza as hdbaza
+import resources.lib.videocdn as videocdn
 
 socket.setdefaulttimeout(120)
 
@@ -145,6 +146,8 @@ def get_engine(data):
         return 'iframe'
     elif 'hdbaza' in data:
         return 'hdbaza'
+    elif 'videocdn' in data:
+        return 'videocdn'
     else:
         return 'none'
 
@@ -220,6 +223,9 @@ def show_iframe(url, title):
 def show_hdbaza(url, title):
     return hdbaza.get_playlist(url)
 
+def show_videocdn(url, title):
+    return videocdn.get_playlist(url)
+
 def show(url, title, media_title, image, engine):
     manifest_links = {} 
     subtitles = None
@@ -239,6 +245,8 @@ def show(url, title, media_title, image, engine):
         manifest_links, subtitles, season, episode = show_iframe(url, title)
     elif ('hdbaza' in engine):
         manifest_links, subtitles, season, episode = show_hdbaza(url, title)
+    elif ('videocdn' in engine):
+        manifest_links, subtitles, season, episode = show_videocdn(url, title)
 
     if manifest_links:
         list = sorted(manifest_links.iteritems(), key=itemgetter(0))

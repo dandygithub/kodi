@@ -23,11 +23,15 @@ HEADERS2 = {
 
 VALUES = {
     "kinopoisk": "{0}",
-    "player": "moonwalk,hdgo,iframe,hdbaza,kodik,trailer,torrent",
-    "button": "moonwalk: {Q} {T}, hdgo: {Q} {T}, hdbaza: {Q} {T}, kodik: {Q} {T}, iframe: {Q} {T}"
+    "tv": "1",
+    "player": "moonwalk,hdgo,kodik,iframe,videocdn,trailer,torrent",
+    "button": "moonwalk: {Q} {T}, hdgo: {Q} {T}, kodik: {Q} {T}, iframe: {Q} {T}, videocdn: {Q} {T}",
+    "button_limit": "8",
+    "button_size": "1",
+    "separator": ","
 }
 
-ENABLED_HOSTS = ("iframe", "kodik", "moonwalk", "hdgo", "hdbaza")
+ENABLED_HOSTS = ("iframe", "kodik", "moonwalk", "hdgo", "videocdn")
 
 _kp_id_ = ''
 
@@ -46,6 +50,15 @@ def get_content():
 
     VALUES["kinopoisk"] = _kp_id_
     response = tools.get_response(URL, HEADERS, VALUES, 'POST')
+
+#{"trailer":{"iframe":"https://trailerclub.me/video/d813512bacc126a4/iframe"},
+#  "torrent":{},
+#  "vodlocker":{},
+#  "iframe":{"iframe":"https://videoframe.at/movie/42da420pc8p/iframe","translate":"Полное дублирование","quality":"BD"},
+#  "moonwalk":{"iframe":"https://streamguard.cc/video/09e73f024975678b77004c843fa9cf47/iframe?show_translations=1","translate":"Многоголосый закадровый","quality":""},
+#  "kodik":{"iframe":"//kodik.info/video/32562/8e89db0bc47b2f47cf2600c629c4c731/720p","translate":"Дублированный","quality":"BDRip 720p"},
+#  "hdgo":{"iframe":"https://vio.to/video/oSlSCtQ0t8apv6vJGD1va2xbKTd9k8YC/5614/","translate":"Профессиональный многоголосый","quality":"хорошее HD"},
+#  "videocdn":{"iframe":"//4.videocdn.so/kLShoChnGWEE/movie/107","translate":"Профессиональный (многоголосый закадровый)","quality":"hddvd"}}            
     
     if response:
         jdata = json.loads(response)
@@ -55,16 +68,6 @@ def get_content():
                 iframe = host_data["iframe"]
                 translate = host_data["translate"]
                 quality = host_data["quality"]
-            
-#{"vodlocker":{},
-#  "hdgo":{"iframe":"https://hdgo.cx/video/oSlSCtQ0t8apv6vJGD1va2xbKTd9k8YC/17223/","translate":"Дублированный","quality":"плохое TS"},
-#  "iframe":{"iframe":"https://videoframe.at/movie/2eb6408pc8p/iframe","translate":"Полное дублирование","quality":"TS"},
-#  "torrent":{"iframe":"https://4h0y.yohoho.cc/?title=%D1%85%D0%B8%D1%89%D0%BD%D0%B8%D0%BA"},
-#  "hdbaza":{"iframe":"https://vidozzz.com/iframe?mh=bbd8ed61c2256ea4&uh=65bd8ef1126daa6f","translate":"Viruseproject","quality":""},
-#  "kodik":{"iframe":"https://kodik.cc/video/15298/6f7fcc06b4e7d51f4ff574af5a59115e/720p","translate":"Проф. Многоголосый","quality":"BDRip 720p"},
-#  "trailer":{"iframe":"https://hdgo.cx/video/trailer/oSlSCtQ0t8apv6vJGD1va2xbKTd9k8YC/17223/"},
-#  "moonwalk":{"iframe":"https://streamguard.cc/video/d9419273b3fea0ef15980f70e35cc078/iframe?show_translations=1","translate":"Дубляж","quality":""}}
-        
                 title_ = "*T*"
                 title = "[COLOR=orange][{0}][/COLOR] {1} ({2})".format(vh_title + host, tools.encode(title_), translate + "," + quality)
                 uri = sys.argv[0] + "?mode=show&url={0}".format(urllib.quote_plus(prepare_url(host, iframe)))
