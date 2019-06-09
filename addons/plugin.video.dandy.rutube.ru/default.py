@@ -15,6 +15,9 @@ import re
 from urllib2 import Request, build_opener, HTTPCookieProcessor, HTTPHandler
 import cookielib
 
+from StringIO import StringIO
+import gzip
+
 import xbmc
 import xbmcplugin
 import xbmcgui
@@ -36,8 +39,8 @@ import xml.etree.ElementTree
 socket.setdefaulttimeout(120)
 
 #const
-SELECTED_GROUPS = (0, 2)
-SELECTED_MAIN_TABS = (0, 1, 2, 3)
+SELECTED_GROUPS = (0, 1)
+SELECTED_MAIN_TABS = (0, 1)
 QUALITY_TYPES = (("lq", 0, 1000000), ("mq", 1000001, 1500000), ("hq", 1500001, 2000000), ("hd", 2000001, 99999999))
 
 #EXTM3U
@@ -113,7 +116,7 @@ class RuTube():
 
         params = common.getParameters(self.params)
         mode = params['mode'] if 'mode' in params else None
-        url = urllib.unquote_plus(params['url']) if 'url' in params else None
+        url = UQT(params['url'].replace('\"', '')) if 'url' in params else None
 
         keyword = params['keyword'] if 'keyword' in params else None
         external = 'unified' if 'unified' in params else None
@@ -132,13 +135,13 @@ class RuTube():
         if mode == 'search':
             self.search(keyword, external, page)
         elif mode == 'group':
-            self.getGroupItems(group)
+            self.getGroupItemsNew(group)
         elif mode == 'tabs':
             self.tabs(url)
         elif mode == 'subtabs':
-            self.subTabs(url)
+            self.subTabsNew(url)
         elif mode == 'list':
-            self.getList(url, tab)
+            self.getListNew(url, page)
         elif mode == 'show':
             self.show(url)
         elif mode == 'play':
@@ -151,9 +154,33 @@ class RuTube():
         item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getGroups()
+	self.items(self.url, True)
 
-        self.tabs(self.url, True) 
+    def items(self, url, main = False):
+        self.log("-items:")
+        ct_cat = []
+        
+        response = self.get_url(url)
+        jdata = re.compile("window.applicationState = {(.*?)};").findall(response)[0].replace("\\x3d", "=").replace("\\x26", "&").replace("\\x3e", ">").replace("\\x3c", "<")
+        js = json.loads('{'+jdata+'}')
+        
+        jspart = js["sideNavStore"]["links"]["profile_woodpecker"][0]
+        for i, item in enumerate(jspart["links"]):
+            if (not main) or (i in SELECTED_MAIN_TABS):
+                name = item["name"]
+                url = self.url + item["link"]
+                params = '?mode=list&url=' + QT(url)
+                ct_cat.append((params, self.getCategorieImage(url, item["icon"], self.getCategorie(url, self.categorie), False), True, {'title': name}))
+
+        jspart = js["sideNavStore"]["links"]["catalog_woodpecker"]
+        for i, item in enumerate(jspart):
+            if main and (i in SELECTED_GROUPS):
+                name = "[COLOR=orange]" + item["name"] + "[/COLOR]"
+                params = '?mode=group&group=' + str(i)
+                ct_cat.append((params, self.icon, True, {'title': name}))
+
+        self.listItems(ct_cat, True)
+
 
     def getUserInput(self):
         kbd = xbmc.Keyboard()
@@ -246,30 +273,51 @@ class RuTube():
                 item.setInfo(type='Video', infoLabels={'title': group})
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-    def getCategorieImage(self, url, categorie, load = True):
-        if (categorie in self.cat_images):
-            return self.cat_images[categorie]
+    def getCategorieImage(self, icon, url, categorie, load = True):
+        if icon:
+            return icon
         else:
-            if load == True:    
-                response = common.fetchPage({"link": url})
-                content = response["content"]
-                block = common.parseDOM(content, "script", attrs={"class": "initial-data"})[0]
-                image = '' 
-                if '\u0022picture\u0022: \u0022' in block:
-                    image = block.split('\u0022picture\u0022: \u0022')[1].split('\u0022')[0]
-                if not ("https://" in image):
-                    image = self.icon
-                else:
-                    self.cat_images[categorie] = image
+            if (categorie in self.cat_images):
+                return self.cat_images[categorie]
             else:
-                image = self.icon      
-            return image 
+                if load == True:    
+                    response = common.fetchPage({"link": url})
+                    content = response["content"]
+                    block = common.parseDOM(content, "script", attrs={"class": "initial-data"})[0]
+                    image = '' 
+                    if "picture:" in block:
+                        image = block.split("picture:")[1].split(";")[0]
+                    if not ("https://" in image):
+                        image = self.icon
+                    else:
+                        self.cat_images[categorie] = image
+                else:
+                    image = self.icon      
+                return image 
 
     def getCategorie(self, data, categorie):
         if '/feeds/' in data:
             return data.split('/feeds/')[-1].split('/')[0]
         else:
             return categorie
+
+    def getGroupItemsNew(self, group):
+        self.log("-groupItems:")
+        ct_cat = []
+        response = self.get_url(self.url)
+        jdata = re.compile("window.applicationState = {(.*?)};").findall(response)[0].replace("\\x3d", "=").replace("\\x26", "&").replace("\\x3e", ">").replace("\\x3c", "<")
+
+        js = json.loads('{'+jdata+'}')
+        jspart = js["sideNavStore"]["links"]["catalog_woodpecker"]
+        for i, item_group in enumerate(jspart):
+       	    if (i == group):
+                for j, item in enumerate(item_group["links"]):
+                    name = item["name"]
+                    url = self.url + item["link"]
+                    params = '?mode=subtabs&url="' + QT(url) + '"'
+                    ct_cat.append((params, self.getCategorieImage(url, item["icon"], self.getCategorie(url, self.categorie), False), True, {'title': name}))
+                break
+        self.listItems(ct_cat, True)
 
     def getGroupItems(self, group):
         response = common.fetchPage({"link": self.url})
@@ -296,8 +344,7 @@ class RuTube():
         for ctUrl, ctIcon, ctFolder, ctLabels in ictlg:
             ctTitle = ctLabels['title']
             item = xbmcgui.ListItem(ctTitle, iconImage=ctIcon, thumbnailImage=ctIcon)
-
-            item.setInfo( type='Video', infoLabels=ctLabels)
+            item.setInfo(type='Video', infoLabels=ctLabels)
             if ctFolder == False: item.setProperty('IsPlayable', 'true')
             item.setProperty('fanart_image', self.fanart)
             xbmcplugin.addDirectoryItem(self.handle, sys.argv[0] + ctUrl, item, ctFolder)
@@ -331,14 +378,34 @@ class RuTube():
         response = common.fetchPage({"link": url})
         content = response["content"]
         subtabs = common.parseDOM(content, "span", attrs={"class": "showcase-widget-name-text"})
+        titles = common.parseDOM(container, "a")
+        urls = common.parseDOM(container, "a", ret="href")
 
         if (len(subtabs) == 0):
-            self.getList(url) 
+            self.getListNew(url) 
         else:        
-            for i, subtab in enumerate(subtabs):
-                name = subtab
-                params = '?mode=list&url=%s&tab=%s'%(QT(url), str(i))
+            for i, subtab in enumerate(titles):
+                params = '?mode=list&url=%s&tab=%s'%(QT(self.url + urls[i]), str(i))
                 ct_list.append((params, self.getCategorieImage(url, self.getCategorie(url, self.categorie), False), True, {'title': name}))
+
+            self.listItems(ct_list, True)
+
+    def subTabsNew(self, url):
+        self.log("-subTabs:")
+        self.log("--url: %s"%url)
+        ct_list = []
+
+        response = self.get_url(url.replace('\"', ''))
+        container = common.parseDOM(response, "nav", attrs={"class": "showcase-tabs"})
+        titles = common.parseDOM(container, "a")
+        urls = common.parseDOM(container, "a", ret="href")
+
+        if (len(titles) == 0):
+            self.getListNew(url) 
+        else:        
+            for i, title in enumerate(titles):
+                params = '?mode=list&url=%s&tab=%s'%(QT(self.url + urls[i]), str(i))
+                ct_list.append((params, self.getCategorieImage(url, self.getCategorie(url, self.categorie), False), True, {'title': title}))
 
             self.listItems(ct_list, True)
 
@@ -417,6 +484,41 @@ class RuTube():
             ct_list.append((params, self.inext, True, {'title': '[COLOR=FFFFD700]' + self.language(2001) + '[/COLOR]'}))
         
         self.listItems(ct_list, True)
+
+    def getListNew(self, url, page = 1):
+        self.log("-getList:")
+        self.log("--url: %s"%url)
+        ct_list = []
+        
+        response = self.get_url(url + "?page=" + str(page))
+
+        container = common.parseDOM(response, "div", attrs={"class": "layout-container"})
+        titles = common.parseDOM(container, "a", attrs={"class": "element-cover__link"}, ret="title")
+        urls = common.parseDOM(container, "a", attrs={"class": "element-cover__link"}, ret="href")
+        icons = common.parseDOM(container, "img", ret="src")
+        plots = common.parseDOM(container, "a", attrs={"class": "video-card__author"})        
+
+	if (len(titles) == 0):
+            articles = common.parseDOM(container, "article")
+            titles = common.parseDOM(articles, "a", ret="title")
+            urls = common.parseDOM(articles, "a", ret="href")
+            icons = common.parseDOM(articles, "img", ret="src")
+            for i, item in enumerate(titles):
+                params = "?mode=subtabs&url=%s"%(QT(self.url + urls[i]))
+                ct_list.append((params, icons[i], True, {"title": html_unescape(item)}))
+            self.listItems(ct_list, True)
+            return
+	
+        for i, item in enumerate(titles):
+            params = "?mode=play&url=%s"%(QT(self.url + urls[i]))
+            ct_list.append((params, icons[i], False, {"title": html_unescape(item), "plot": html_unescape(plots[i])}))
+        
+        if (len(ct_list) > 0):
+            params = "?mode=list&url=%s&page=%s"%(QT(url), str(page+1))
+            ct_list.append((params, self.icon, True, {"title": "[COLOR=lightgreen]" + self.language(2000) % (str(page+1)) + "[/COLOR]"}))
+        
+        self.listItems(ct_list, True)
+
         
     def show(self, url):
         self.log("-show:")
@@ -603,16 +705,23 @@ class RuTube():
         self.dbg_log('-get_url:' + '\n')
         self.dbg_log('- url:'+  url + '\n')
         req = urllib2.Request(url)
-        req.add_header('User-Agent', 'Opera/9.80 (X11; Linux i686; U; ru) Presto/2.7.62 Version/11.00')
-        req.add_header('Accept', 'text/html, application/xml, application/xhtml+xml, */*')
-        req.add_header('Accept-Language', 'ru,en;q=0.9')
+        req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36')
+        req.add_header('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3')
+        req.add_header('Accept-Language', 'ru-BY,ru-RU;q=0.9,ru;q=0.8,en-US;q=0.7,en;q=0.6')
+        req.add_header('Accept-Encoding', 'gzip, deflate, br')
+        req.add_header('Host', 'rutube.ru')        
         if cookie: req.add_header('Cookie', cookie)
         if referrer: req.add_header('Referer', referrer)
         if data: 
             response = urllib2.urlopen(req, data,timeout=30)
         else:
             response = urllib2.urlopen(req,timeout=30)
-        link=response.read()
+        if response.info().get('Content-Encoding') == 'gzip':
+            buf = StringIO(response.read())
+            f = gzip.GzipFile(fileobj=buf)
+            link = f.read()
+        else:    
+            link=response.read()
         if save_cookie:
             setcookie = response.info().get('Set-Cookie', None)
             if setcookie:
