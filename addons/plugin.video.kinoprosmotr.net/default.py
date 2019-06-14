@@ -9,6 +9,7 @@ import urllib2
 import sys
 import json
 import re
+from operator import itemgetter
 import xbmc
 import xbmcplugin
 import xbmcgui
@@ -16,9 +17,10 @@ import xbmcaddon
 import XbmcHelpers
 common = XbmcHelpers
 
-
 import Translit as translit
 translit = translit.Translit()
+
+from videohosts import kodik
 
 # UnifiedSearch module
 try:
@@ -267,45 +269,52 @@ class Kinoprosmotr():
                     except: 
                         pass
                 if iframe:
-                    link=iframe
-                    #import urlparse
-                    #linkparse = urlparse.urlsplit(iframe)
-                    host = "km396z9t3.xyz"
-                    #iframe = urlparse.urlunsplit((linkparse.scheme, host, linkparse.path, '', ''))
-                    #link = iframe + '?ref=' + self.domain
-                    url2 = urllib.quote_plus(link)
-                    headers = {
-                       'Host': host,
-                       'Referer': iframe,
-                       'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
-                    }
-                    #try:  
-                    request = urllib2.Request(link, "", headers)
-                    request.get_method = lambda: 'GET'
-                    response = urllib2.urlopen(request)
-                    data = response.read()
-
-                    #iframe = common.parseDOM(data, "iframe", ret="src")[0]
-                    #request = urllib2.Request(iframe, "", headers)
-                    #request.get_method = lambda: 'GET'
-                    #data = urllib2.urlopen(request).read()
-
-                    #tvshow
-                    tvshow = common.parseDOM(data, "select", attrs={"name": "season"})
-                    
-                    if tvshow:
-                        data = self.select_episode(data, iframe, headers)
-                        if (data == ""):
-                           return False
-
-                    data = data.split('media: [')[-1].split('],')[0]
-                    data = data.split('},{')
-                    for item in data:
-                        url_ = "http:" + item.split("url: '")[-1].split("'")[0]
-                        links.append(url_)
-                    #except:
-                    #    self.showErrorMessage('No media source (YouTube, ...)')
-                    #    return False
+                    if "kodik" in iframe:
+                        manifest_links, subtitles, season, episode, direct = kodik.get_playlist(iframe)
+                        if manifest_links:
+                            list = sorted(manifest_links.iteritems(), key=itemgetter(0))
+                            for quality, link in list:
+                                links.append("http:" + link)
+                    else:
+	                    link=iframe
+	                    #import urlparse
+	                    #linkparse = urlparse.urlsplit(iframe)
+	                    host = "km396z9t3.xyz"
+	                    #iframe = urlparse.urlunsplit((linkparse.scheme, host, linkparse.path, '', ''))
+	                    #link = iframe + '?ref=' + self.domain
+	                    url2 = urllib.quote_plus(link)
+	                    headers = {
+	                       'Host': host,
+	                       'Referer': iframe,
+	                       'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+	                    }
+	                    #try:  
+	                    request = urllib2.Request(link, "", headers)
+	                    request.get_method = lambda: 'GET'
+	                    response = urllib2.urlopen(request)
+	                    data = response.read()
+	
+	                    #iframe = common.parseDOM(data, "iframe", ret="src")[0]
+	                    #request = urllib2.Request(iframe, "", headers)
+	                    #request.get_method = lambda: 'GET'
+	                    #data = urllib2.urlopen(request).read()
+	
+	                    #tvshow
+	                    tvshow = common.parseDOM(data, "select", attrs={"name": "season"})
+	                    
+	                    if tvshow:
+	                        data = self.select_episode(data, iframe, headers)
+	                        if (data == ""):
+	                           return False
+	
+	                    data = data.split('media: [')[-1].split('],')[0]
+	                    data = data.split('},{')
+	                    for item in data:
+	                        url_ = "http:" + item.split("url: '")[-1].split("'")[0]
+	                        links.append(url_)
+	                    #except:
+	                    #    self.showErrorMessage('No media source (YouTube, ...)')
+	                    #    return False
 
             poster = common.parseDOM(movie, "div", attrs={"class": "full_movie_poster"})
             description = common.parseDOM(movie, "div", attrs={"class": "full_movie_desc"})
