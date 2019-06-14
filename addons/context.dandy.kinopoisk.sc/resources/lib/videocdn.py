@@ -107,7 +107,7 @@ def get_playlist(url):
 
     links_ = replace_(common.parseDOM(response, "input", attrs={"id": "files"}, ret="value")[0])
     links = json.loads(links_)
-    
+  
     #tvshow
     videoType = common.parseDOM(response, "input", attrs={"id": "videoType"}, ret="value")[0]
     if (videoType == "tv_series"):
@@ -116,7 +116,8 @@ def get_playlist(url):
        links_tr = links[tr_value].split(',')[-1].split(" or ")
 
     for link in links_tr:
-        manifest_links[link.split("[")[1].split("p]")[0]] = link.split("p]")[1]
+        if (not ("p]" in link)):
+            manifest_links[link.split("/")[-1].split(".")[0]] = link
 
     return manifest_links, subtitles, season, episode 
 
