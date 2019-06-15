@@ -159,10 +159,11 @@ class Videokvadrat():
     def show__(self, content, i):
         #title_main = common.parseDOM(content, "title")[0]
         title = "Video #" + str(i)
-    
-        xbmc.log("content=" + repr(content))
+        link = None
 
-	if 'youtube.com/embed' in content:
+        if ".htm" in content:
+                link = "none"
+	elif 'youtube.com/embed' in content:
                 title = title + " (youtube)"
 		videoId = re.findall('youtube.com/embed/(.*?)[\"\']', content)[0].split('?')[0]
 		link = urllib.quote_plus('plugin://plugin.video.youtube/play/?video_id=' + videoId)
@@ -307,16 +308,18 @@ class Videokvadrat():
         if len(videos) == 0:
             videos.append(content)
 
-        description = self.strip(common.parseDOM(content,  "div", attrs={"class": "alltext"}) [0].replace("<br>", " ").replace('"', ''))
+        description = common.parseDOM(content,  "div", attrs={"class": "alltext"}) [0]
+        description = description.split("</script>")[-1].replace("<br>", " ").replace('"', '').split("<br />")[0]
 
         for i, video in enumerate(videos):
             title, link = self.show__(video + '"', i+1)
 	
-            uri = sys.argv[0] + '?mode=play&url=%s' % link
-	    item = xbmcgui.ListItem(title, thumbnailImage=self.icon, iconImage=self.icon)
-	    item.setInfo(type='Video', infoLabels={'title': title_main + " [" + title + "]", 'label': title_main + " [" + title + "]", 'plot': description, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
-	    item.setProperty('IsPlayable', 'true')
-	    xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
+	    if link != "none":
+                uri = sys.argv[0] + '?mode=play&url=%s' % link
+	        item = xbmcgui.ListItem(title, thumbnailImage=self.icon, iconImage=self.icon)
+                item.setInfo(type='Video', infoLabels={'title': title_main + " [" + title + "]", 'label': title_main + " [" + title + "]", 'plot': description, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
+	        item.setProperty('IsPlayable', 'true')
+	        xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 	
 	xbmcplugin.endOfDirectory(self.handle, True)
 
