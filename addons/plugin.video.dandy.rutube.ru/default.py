@@ -170,7 +170,7 @@ class RuTube():
                 name = item["name"]
                 url = self.url + item["link"]
                 params = '?mode=list&url=' + QT(url)
-                ct_cat.append((params, self.getCategorieImage(url, item["icon"], self.getCategorie(url, self.categorie), False), True, {'title': name}))
+                ct_cat.append((params, self.icon, True, {'title': name}))
 
         jspart = js["sideNavStore"]["links"]["catalog_woodpecker"]
         for i, item in enumerate(jspart):
@@ -199,7 +199,8 @@ class RuTube():
     def search(self, keyword, external, page = 1):
         if page == 1:
             keyword = keyword if (external != None) or keyword else self.getUserInput()
-            keyword = translit.rus(keyword) if (external == 'unified') else urllib.unquote_plus(keyword)
+            if keyword:
+                keyword = translit.rus(keyword) if (external == 'unified') else urllib.unquote_plus(keyword)
         else:
             keyword = urllib.unquote_plus(keyword)
 
@@ -347,7 +348,7 @@ class RuTube():
             item.setInfo(type='Video', infoLabels=ctLabels)
             if ctFolder == False: item.setProperty('IsPlayable', 'true')
             item.setProperty('fanart_image', self.fanart)
-            xbmcplugin.addDirectoryItem(self.handle, sys.argv[0] + ctUrl, item, ctFolder)
+            xbmcplugin.addDirectoryItem(self.handle, ("" if ctUrl == "*" else sys.argv[0] + ctUrl), item, ctFolder)
             self.log("ctTitle: %s"  % ctTitle) 
             self.log("ctIcon: %s"  % ctIcon) 
 
@@ -485,20 +486,23 @@ class RuTube():
         
         self.listItems(ct_list, True)
 
-    def getListNew(self, url, page = 1):
-        self.log("-getList:")
-        self.log("--url: %s"%url)
-        ct_list = []
-        
-        response = self.get_url(url + "?page=" + str(page))
+    def getListNew_(self, container, ct_list):
+        name = common.parseDOM(container, "h3", attrs={"class": "widget-header__name"})
+        if name:
+            name = common.stripTags(name[0])
+            params = "*"
+            ct_list.append((params, self.icon, False, {"title": "[COLOR=orange]" + html_unescape(name) + "[/COLOR]"}))
 
-        container = common.parseDOM(response, "div", attrs={"class": "layout-container"})
         titles = common.parseDOM(container, "a", attrs={"class": "element-cover__link"}, ret="title")
         urls = common.parseDOM(container, "a", attrs={"class": "element-cover__link"}, ret="href")
         icons = common.parseDOM(container, "img", ret="src")
         plots = common.parseDOM(container, "a", attrs={"class": "video-card__author"})        
 
-	if (len(titles) == 0):
+        if (len(titles) > 0):
+            for i, item in enumerate(titles):
+                params = "?mode=play&url=%s"%(QT(self.url + urls[i]))
+                ct_list.append((params, icons[i], False, {"title": html_unescape(item), "plot": html_unescape(plots[i])}))
+        else:
             articles = common.parseDOM(container, "article")
             titles = common.parseDOM(articles, "a", ret="title")
             urls = common.parseDOM(articles, "a", ret="href")
@@ -506,16 +510,32 @@ class RuTube():
             for i, item in enumerate(titles):
                 params = "?mode=subtabs&url=%s"%(QT(self.url + urls[i]))
                 ct_list.append((params, icons[i], True, {"title": html_unescape(item)}))
-            self.listItems(ct_list, True)
-            return
-	
-        for i, item in enumerate(titles):
-            params = "?mode=play&url=%s"%(QT(self.url + urls[i]))
-            ct_list.append((params, icons[i], False, {"title": html_unescape(item), "plot": html_unescape(plots[i])}))
+
+    def getListNew(self, url, page = 1):
+        self.log("-getList:")
+        self.log("--url: %s"%url)
+        ct_list = []
         
-        if (len(ct_list) > 0):
+        response = self.get_url(url.replace('\"', '') +  ("" if (page == 1) else (("&" if  ("?" in url) else "?") + "page=" + str(page))))
+
+        main = common.parseDOM(response, "main", attrs={"class": "showcase"})
+        if (not main):
+            main = response
+        else:    
+            main = main[0]    
+        containers = common.parseDOM(main, "div", attrs={"class": "layout-container"})
+        if containers:
+            for container in containers:
+                self.getListNew_(container, ct_list)
+        if (len(ct_list) == 0):
+            container = common.parseDOM(main, "div", attrs={"class": "grid-widget"})
+            if container:
+                self.getListNew_(container[0], ct_list)
+
+        next = common.parseDOM(response, "link", attrs={"rel": "next"})
+        if next:
             params = "?mode=list&url=%s&page=%s"%(QT(url), str(page+1))
-            ct_list.append((params, self.icon, True, {"title": "[COLOR=lightgreen]" + self.language(2000) % (str(page+1)) + "[/COLOR]"}))
+            ct_list.append((params, self.inext, True, {"title": "[COLOR=lightgreen]" + self.language(2000) % (str(page+1)) + "[/COLOR]"}))
         
         self.listItems(ct_list, True)
 
