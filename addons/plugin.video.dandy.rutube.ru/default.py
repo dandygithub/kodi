@@ -316,7 +316,7 @@ class RuTube():
                     name = item["name"]
                     url = self.url + item["link"]
                     params = '?mode=subtabs&url="' + QT(url) + '"'
-                    ct_cat.append((params, self.getCategorieImage(url, item["icon"], self.getCategorie(url, self.categorie), False), True, {'title': name}))
+                    ct_cat.append((params, self.icon, True, {'title': html_unescape(name)}))
                 break
         self.listItems(ct_cat, True)
 
@@ -406,7 +406,7 @@ class RuTube():
         else:        
             for i, title in enumerate(titles):
                 params = '?mode=list&url=%s&tab=%s'%(QT(self.url + urls[i]), str(i))
-                ct_list.append((params, self.getCategorieImage(url, self.getCategorie(url, self.categorie), False), True, {'title': title}))
+                ct_list.append((params, self.icon, True, {'title': html_unescape(title)}))
 
             self.listItems(ct_list, True)
 
