@@ -18,7 +18,14 @@ HEADERS = {
 }
 
 def select_translator(data):
-    div = common.parseDOM(data, "div", attrs={"class": "translations"})[0]
+    try:
+        div = common.parseDOM(data, "div", attrs={"class": "translations"})[0]
+    except:
+        try:
+            val = common.parseDOM(data, "input", attrs={"id": "translation_id"}, ret="value")[0]
+            return val 
+        except:
+            return "-1"
     translators = common.parseDOM(div, "option")
     tr_values = common.parseDOM(div, "option", ret="value")
 

@@ -7,7 +7,7 @@ import XbmcHelpers
 common = XbmcHelpers
 import tools
 
-URL = "https://4h0y.yohoho.cc/"
+URL = "https://ahoy.yohoho.cc/"
 
 HEADERS = {
     "Content-Type": "application/x-www-form-urlencoded",
