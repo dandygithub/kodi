@@ -139,7 +139,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.dandy.rutube.ru" name="RuTube.ru" version="2.0.2" provider-name="dandy">
+<addon id="plugin.video.dandy.rutube.ru" name="RuTube.ru" version="2.0.3" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.1.0"/>

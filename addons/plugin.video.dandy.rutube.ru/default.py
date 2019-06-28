@@ -496,12 +496,17 @@ class RuTube():
         titles = common.parseDOM(container, "a", attrs={"class": "element-cover__link"}, ret="title")
         urls = common.parseDOM(container, "a", attrs={"class": "element-cover__link"}, ret="href")
         icons = common.parseDOM(container, "img", ret="src")
+        if (len(icons) == 0):
+            icons = common.parseDOM(container, "div", attrs={"class": "element-cover__img"}, ret="style")
         plots = common.parseDOM(container, "a", attrs={"class": "video-card__author"})        
 
         if (len(titles) > 0):
             for i, item in enumerate(titles):
                 params = "?mode=play&url=%s"%(QT(self.url + urls[i]))
-                ct_list.append((params, icons[i], False, {"title": html_unescape(item), "plot": html_unescape(plots[i])}))
+                image = icons[i]
+                if ("background-image:" in image):
+                    image = image.split('background-image:url(')[-1].split(')')[0]
+                ct_list.append((params, image, False, {"title": html_unescape(item), "plot": html_unescape(plots[i])}))
         else:
             articles = common.parseDOM(container, "article")
             titles = common.parseDOM(articles, "a", ret="title")
@@ -515,7 +520,7 @@ class RuTube():
         self.log("-getList:")
         self.log("--url: %s"%url)
         ct_list = []
-        
+
         response = self.get_url(url.replace('\"', '') +  ("" if (page == 1) else (("&" if  ("?" in url) else "?") + "page=" + str(page))))
 
         main = common.parseDOM(response, "main", attrs={"class": "showcase"})
