@@ -493,22 +493,23 @@ class RuTube():
             params = "*"
             ct_list.append((params, self.icon, False, {"title": "[COLOR=orange]" + html_unescape(name) + "[/COLOR]"}))
 
-        titles = common.parseDOM(container, "a", attrs={"class": "element-cover__link"}, ret="title")
-        urls = common.parseDOM(container, "a", attrs={"class": "element-cover__link"}, ret="href")
-        icons = common.parseDOM(container, "img", ret="src")
-        if (len(icons) == 0):
-            icons = common.parseDOM(container, "div", attrs={"class": "element-cover__img"}, ret="style")
-        plots = common.parseDOM(container, "a", attrs={"class": "video-card__author"})        
+        articles = common.parseDOM(container, "article")
+        titles = common.parseDOM(articles, "a", attrs={"class": "element-cover__link"}, ret="title")
+        urls = common.parseDOM(articles, "a", attrs={"class": "element-cover__link"}, ret="href")
 
         if (len(titles) > 0):
             for i, item in enumerate(titles):
                 params = "?mode=play&url=%s"%(QT(self.url + urls[i]))
-                image = icons[i]
+                imagel = common.parseDOM(articles[i], "img", ret="src")
+                if (not imagel):
+	                imagel = common.parseDOM(articles[i], "div", attrs={"class": "element-cover__img"}, ret="style")
+                if (not imagel):
+	                imagel = common.parseDOM(articles[i], "div", attrs={"class": "element-cover__img element-cover__img_is-adult element-cover__img_covered"}, ret="style")
+                image = (imagel[0] if (imagel) else self.icon)
                 if ("background-image:" in image):
                     image = image.split('background-image:url(')[-1].split(')')[0]
-                ct_list.append((params, image, False, {"title": html_unescape(item), "plot": html_unescape(plots[i])}))
+                ct_list.append((params, image, False, {"title": html_unescape(item)}))
         else:
-            articles = common.parseDOM(container, "article")
             titles = common.parseDOM(articles, "a", ret="title")
             urls = common.parseDOM(articles, "a", ret="href")
             icons = common.parseDOM(articles, "img", ret="src")
