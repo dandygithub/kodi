@@ -411,6 +411,12 @@ class HdrezkaTV:
         request.get_method = lambda: 'GET'
         response = urllib2.urlopen(request).read()
 
+	if "var embed_player =" in response:
+	    url = response.split("var embed_player = '<iframe src=\"")[-1].split('"')[0]
+            request = urllib2.Request(url, "", headers)
+            request.get_method = lambda: 'GET'
+            response = urllib2.urlopen(request).read()
+
         subtitles = None
         if 'subtitles: {"master_vtt":"' in response:
             subtitles = response.split('subtitles: {"master_vtt":"')[-1].split('"')[0]
