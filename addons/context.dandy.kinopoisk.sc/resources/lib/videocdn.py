@@ -18,7 +18,14 @@ HEADERS = {
 }
 
 def select_translator(data):
-    div = common.parseDOM(data, "div", attrs={"class": "translations"})[0]
+    try:
+        div = common.parseDOM(data, "div", attrs={"class": "translations"})[0]
+    except:
+        try:
+            val = common.parseDOM(data, "input", attrs={"id": "translation_id"}, ret="value")[0]
+            return val 
+        except:
+            return "-1"
     translators = common.parseDOM(div, "option")
     tr_values = common.parseDOM(div, "option", ret="value")
 
@@ -107,7 +114,7 @@ def get_playlist(url):
 
     links_ = replace_(common.parseDOM(response, "input", attrs={"id": "files"}, ret="value")[0])
     links = json.loads(links_)
-    
+  
     #tvshow
     videoType = common.parseDOM(response, "input", attrs={"id": "videoType"}, ret="value")[0]
     if (videoType == "tv_series"):
@@ -116,7 +123,8 @@ def get_playlist(url):
        links_tr = links[tr_value].split(',')[-1].split(" or ")
 
     for link in links_tr:
-        manifest_links[link.split("[")[1].split("p]")[0]] = link.split("p]")[1]
+        if (not ("p]" in link)):
+            manifest_links[link.split("/")[-1].split(".")[0]] = link
 
     return manifest_links, subtitles, season, episode 
 

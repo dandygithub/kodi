@@ -21,7 +21,7 @@
   </extension>
 </addon>
 
-<addon id="context.dandy.kinopoisk.sc" name="Kinopoisk Search Content" version="1.9.0" provider-name="dandy">
+<addon id="context.dandy.kinopoisk.sc" name="Kinopoisk Search Content" version="1.9.2" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.1.0"/>
@@ -139,7 +139,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.dandy.rutube.ru" name="RuTube.ru" version="1.1.6" provider-name="dandy">
+<addon id="plugin.video.dandy.rutube.ru" name="RuTube.ru" version="2.0.4" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.1.0"/>
@@ -169,7 +169,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.dandy.videokvadrat.com" name="videokvadrat.com" version="1.1.4" provider-name="dandy">
+<addon id="plugin.video.dandy.videokvadrat.com" name="videokvadrat.com" version="1.1.5" provider-name="dandy">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.xbmc.helpers" version="2.1.0"/>
@@ -202,7 +202,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="2.3.4" provider-name="MrStealth, dandy, DesSolo">
+<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="2.3.5" provider-name="MrStealth, dandy, DesSolo">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.xbmc.helpers" version="2.1.0"/>
@@ -236,11 +236,12 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.kinoprosmotr.net" name="Kinoprosmotr.net" version="2.3.9" provider-name="MrStealth, dandy">
+<addon id="plugin.video.kinoprosmotr.net" name="Kinoprosmotr.net" version="2.4.0" provider-name="MrStealth, dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.1.0"/>
     <import addon="script.module.translit" version="2.1.0"/>
+    <import addon="script.module.videohosts" version="1.0.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
     <provides>video</provides>
@@ -384,7 +385,7 @@
   <extension point='xbmc.python.module' library='lib' />
 </addon>
 
-<addon id="script.module.videohosts" name="VideoHosts" version="1.3.0" provider-name="dandy">
+<addon id="script.module.videohosts" name="VideoHosts" version="1.4.1" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.1.0"/>

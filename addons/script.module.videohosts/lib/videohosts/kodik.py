@@ -98,7 +98,18 @@ def get_attrs(content):
     values = {}
     attrs = {}
 
-    values['domain'] = "kodik.biz"
+#d: yohoho.cc
+#d_sign: 8fa9744e622f943902c701f0f6fbb73ccc6f022044b12f8bfbe639b5e8c4bdf2
+#pd: kodik.info
+#pd_sign: 09ffe86e9e452eec302620225d9848eb722efd800e15bf707195241d9b7e4b2b
+#ref: https://yohoho.cc/
+#ref_sign: 8800b51e2fcebfc2225768663bdabe314636d118c709111d2f48c5476e5aa7ff
+#bad_user: true
+#type: video
+#hash: 8e89db0bc47b2f47cf2600c629c4c731
+#id: 32562
+
+    values['pd'] = "kodik.info"
     values['type'] = content.split("type: '")[-1].split("',")[0] 
     values['hash'] = content.split("hash: '")[-1].split("',")[0] 
     values['id'] = content.split("id: '")[-1].split("',")[0] 
@@ -164,13 +175,13 @@ def get_playlist(url):
     episode = None
 
     headers = {
-        "Host": "kodik.cc",
+        "Host": "kodik.info",
         "Referer": url,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
     }
 
     try: 
-        request = urllib2.Request("http:" + url.split("?")[0], "", headers)
+        request = urllib2.Request(("" if ("http" in url) else "http:") + url.split("?")[0], "", headers)
         request.get_method = lambda: 'GET'
         response = urllib2.urlopen(request).read()
     except:

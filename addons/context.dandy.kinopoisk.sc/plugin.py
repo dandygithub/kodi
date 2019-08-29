@@ -14,7 +14,8 @@ import resources.lib.search as search
 
 import resources.lib.moonwalk as moonwalk
 import resources.lib.hdgo as hdgo
-import resources.lib.kodik as kodik
+#import resources.lib.kodik as kodik
+from videohosts import kodik
 import resources.lib.videoframe as videoframe
 import resources.lib.iframe as iframe
 import resources.lib.hdbaza as hdbaza
