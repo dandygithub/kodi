@@ -28,6 +28,8 @@ common = XbmcHelpers
 import Translit as translit
 translit = translit.Translit()
 
+#import SearchHistory
+
 try:
     sys.path.append(os.path.dirname(__file__)+ '/../plugin.video.unified.search')
     from unified_search import UnifiedSearch
@@ -117,6 +119,7 @@ class RuTube():
         params = common.getParameters(self.params)
         mode = params['mode'] if 'mode' in params else None
         url = UQT(params['url'].replace('\"', '')) if 'url' in params else None
+        image = UQT(params['image'].replace('\"', '')) if 'image' in params else None        
 
         keyword = params['keyword'] if 'keyword' in params else None
         external = 'unified' if 'unified' in params else None
@@ -139,7 +142,7 @@ class RuTube():
         elif mode == 'tabs':
             self.tabs(url)
         elif mode == 'subtabs':
-            self.subTabsNew(url)
+            self.subTabsNew(url, image)
         elif mode == 'list':
             self.getListNew(url, page)
         elif mode == 'show':
@@ -391,7 +394,7 @@ class RuTube():
 
             self.listItems(ct_list, True)
 
-    def subTabsNew(self, url):
+    def subTabsNew(self, url, image=None):
         self.log("-subTabs:")
         self.log("--url: %s"%url)
         ct_list = []
@@ -406,7 +409,7 @@ class RuTube():
         else:        
             for i, title in enumerate(titles):
                 params = '?mode=list&url=%s&tab=%s'%(QT(self.url + urls[i]), str(i))
-                ct_list.append((params, self.icon, True, {'title': html_unescape(title)}))
+                ct_list.append((params, image if image else self.icon, True, {'title': html_unescape(title)}))
 
             self.listItems(ct_list, True)
 
@@ -512,10 +515,14 @@ class RuTube():
         else:
             titles = common.parseDOM(articles, "a", ret="title")
             urls = common.parseDOM(articles, "a", ret="href")
-            icons = common.parseDOM(articles, "img", ret="src")
+
             for i, item in enumerate(titles):
-                params = "?mode=subtabs&url=%s"%(QT(self.url + urls[i]))
-                ct_list.append((params, icons[i], True, {"title": html_unescape(item)}))
+                image = common.parseDOM(articles[i], "div", attrs={"class": "cardgroup-card__picture"}, ret="style")[0]
+                image = (image if (image) else self.icon)
+                if ("background-image:" in image):
+                    image = image.split('background-image:url(')[-1].split('?')[0]
+                params = "?mode=subtabs&url=%s&image=%s"%(QT(self.url + urls[i]), QT(image))
+                ct_list.append((params, image, True, {"title": html_unescape(item)}))
 
     def getListNew(self, url, page = 1):
         self.log("-getList:")
