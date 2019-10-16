@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="Default">
+        <setting id="login" type="text" label="Login" default="" />
+        <setting id="password" type="text" label="Password" option="hidden" default="" />
+    </category>
+</settings>
