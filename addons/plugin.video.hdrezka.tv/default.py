@@ -46,7 +46,7 @@ class HdrezkaTV:
         self.language = self.addon.getLocalizedString
         self.inext = os.path.join(self.addon.getAddonInfo('path'), 'resources/icons/next.png')
         self.handle = int(sys.argv[1])
-        self.dom_protocol = self.addon.getSetting('dom_protocol')        
+        self.dom_protocol = self.addon.getSetting('dom_protocol')
         self.domain = self.addon.getSetting('domain')
         self.url = self.dom_protocol + '://' + self.domain
         self.proxies = self._load_proxy_settings()
@@ -188,7 +188,7 @@ class HdrezkaTV:
             item = xbmcgui.ListItem('%s [COLOR=55FFFFFF](%s)[/COLOR]' % (name, counts[i]), thumbnailImage=icons[i])
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        if not len(titles) < 24:
+        if not len(titles) < 32:
             uri = sys.argv[0] + '?mode=%s&page=%d' % ("collections", page + 1)
             item = xbmcgui.ListItem(self.language(1004), iconImage=self.inext)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
@@ -197,10 +197,7 @@ class HdrezkaTV:
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def index(self, url, page):
-        if page != 1:
-            url = "%s/page/%s/" % (url, page)
-
-        response = self.get_response(url)
+        response = self.get_response("%s/page/%s/" % (url, page))
         content = common.parseDOM(response.text, "div", attrs={"class": "b-content__inline_items"})
 
         items = common.parseDOM(content, "div", attrs={"class": "b-content__inline_item"})
@@ -217,9 +214,7 @@ class HdrezkaTV:
         for i, name in enumerate(titles):
             info = self.get_item_description(post_ids[i])
             title = "%s %s [COLOR=55FFFFFF](%s)[/COLOR]" % (name, color_rating(info['rating']), country_years[i])
-            image = common.parseDOM(div_covers[i], "img", ret='src')[0]
-	    if "://" not in image: image = self.url + image
-
+            image = self._normalize_url(common.parseDOM(div_covers[i], "img", ret='src')[0])
             uri = sys.argv[0] + '?mode=show&url=%s' % links[i]
             year, country, genre = get_media_attributes(country_years[i])
             item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
@@ -412,8 +407,8 @@ class HdrezkaTV:
         request.get_method = lambda: 'GET'
         response = urllib2.urlopen(request).read()
 
-	if "var embed_player =" in response:
-	    url = response.split("var embed_player = '<iframe src=\"")[-1].split('"')[0]
+        if "var embed_player =" in response:
+            url = response.split("var embed_player = '<iframe src=\"")[-1].split('"')[0]
             request = urllib2.Request(url, "", headers)
             request.get_method = lambda: 'GET'
             response = urllib2.urlopen(request).read()
@@ -454,8 +449,8 @@ class HdrezkaTV:
 
         return manifest_links, subtitles
 
-    def get_seaons_link(self, referer, video_id, season, episode):
-        log('*** get_seaons_link')
+    def get_seasons_link(self, referer, video_id, season, episode):
+        log('*** get_seasons_link')
         data = {
             'id': video_id,
             'season': season,
@@ -499,7 +494,7 @@ class HdrezkaTV:
                 link = common.parseDOM(videoitem, "a", ret='href')[0]
                 title = common.parseDOM(videoitem, "a")[1]
 
-                image = common.parseDOM(videoitem, "img", ret='src')[0]
+                image = self._normalize_url(common.parseDOM(videoitem, "img", ret='src')[0])
                 descriptiondiv = common.parseDOM(videoitem, "div", attrs={"class": "b-content__inline_item-link"})[0]
                 description = common.parseDOM(descriptiondiv, "div")[0]
 
@@ -539,7 +534,7 @@ class HdrezkaTV:
     def play_episode(self, url, referer, post_id, season_id, episode_id, title, image):
         log("*** play_episode")
         try:
-            url = self.get_seaons_link(referer, post_id, season_id, episode_id)
+            url = self.get_seasons_link(referer, post_id, season_id, episode_id)
 
             item = xbmcgui.ListItem(path=url)
             xbmcplugin.setResolvedUrl(self.handle, True, item)
@@ -550,6 +545,11 @@ class HdrezkaTV:
             self.selectQuality(links, title, image, subtitles)
             xbmcplugin.setContent(self.handle, 'episodes')
             xbmcplugin.endOfDirectory(self.handle, True)
+
+    def _normalize_url(self, item):
+        if not item.startswith(self.url):
+            item = self.url + item
+        return item
 
     def showMessage(self, msg):
         log(msg)
