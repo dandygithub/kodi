@@ -106,7 +106,7 @@ def get_playlist(url):
     episode = None
 
     try: 
-        response = tools.get_response("https:" + url, HEADERS, {}, "GET")
+        response = tools.get_response(url if "http" in url else "https:" + url, HEADERS, {}, "GET")
     except:
         return manifest_links, subtitles, season, episode 
 

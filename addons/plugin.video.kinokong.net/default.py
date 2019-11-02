@@ -16,9 +16,11 @@ import xbmcaddon
 import XbmcHelpers
 common = XbmcHelpers
 
-
 import Translit as translit
 translit = translit.Translit()
+
+from operator import itemgetter
+from videohosts import videocdn
 
 socket.setdefaulttimeout(120)
 
@@ -44,7 +46,7 @@ class Kinokong():
         self.params = sys.argv[2]
 
         self.domain = self.addon.getSetting('domain')
-        self.url = 'http://'  + self.domain
+        self.url = 'https://'  + self.domain
 
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.debug = False
@@ -87,7 +89,7 @@ class Kinokong():
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getCategoryItems(self.url + '/film/2019', 1)
+        self.getCategoryItems(self.url + '/film/2019-1', 1)
 
     def getCategoryItems(self, url, page):
         #print "*** Get category items %s" % url
@@ -136,6 +138,42 @@ class Kinokong():
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def getFilmInfo(self, url):
+        print "*** getFilmInfo for url %s " % url
+        response = common.fetchPage({"link": url})
+
+        container = common.parseDOM(response["content"], "div", attrs={"id": "container"})
+        source = common.parseDOM(response["content"], "div", attrs={"id": "players"})[0]
+        title = self.encode(common.parseDOM(container, "h1")[0])
+        image = common.parseDOM(container, "img", attrs={"id": "imgbigp"}, ret="src")[0]
+        quality = common.parseDOM(container, "div", attrs={"class": "full-quality"})
+        iframes = common.parseDOM(response["content"], "iframe", ret="src")
+        iframe = None
+        for  item in iframes:
+          if "videocdn" in item:
+              iframe = item
+              break
+        
+        manifest_links = {} 
+        subtitles = None
+        manifest_links, subtitles, season, episode = videocdn.get_playlist(iframe)
+
+        if manifest_links:
+             list = sorted(manifest_links.iteritems(), key=itemgetter(0))
+             if season:
+                title += " - s%se%s" % (season.zfill(2), episode.zfill(2)) 
+             for quality, link in list:
+                film_title = "[COLOR=lightgreen][%s][/COLOR] %s" % (str(quality), title)
+                uri = sys.argv[0] + '?mode=play&url=%s&title=%s' % (urllib.quote_plus(link), urllib.quote_plus(title))
+                item = xbmcgui.ListItem(film_title, iconImage=image, thumbnailImage=image)
+                item.setInfo(type='Video', infoLabels={'title': film_title, 'label': film_title, 'plot': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
+                item.setProperty('IsPlayable', 'true')
+                if subtitles: 
+                    item.setSubtitles([subtitles])
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
+        xbmcplugin.setContent(self.handle, 'movies')
+        xbmcplugin.endOfDirectory(self.handle, True)
+
+    def getFilmInfo_(self, url):
         print "*** getFilmInfo for url %s " % url
         response = common.fetchPage({"link": url})
 
@@ -248,7 +286,7 @@ class Kinokong():
 
         links = [
           self.url + '/film/',
-          self.url + '/film/2019/',
+          self.url + '/film/2019-1/',
           self.url + '/series/',
           self.url + '/cartoons/',
           self.url + '/animes/',
