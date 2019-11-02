@@ -98,7 +98,8 @@ class HdrezkaTV:
                 params.get('season_id'),
                 params.get('episode_id'),
                 urllib.unquote_plus(params['title']),
-                params.get('image')
+                params.get('image'),
+                urllib.unquote_plus(params['data'])
             )
         if mode == 'show':
             self.show(url)
@@ -337,7 +338,48 @@ class HdrezkaTV:
     def getIFrame(self, content):
         return self.selectTranslator2(content)
 
+    @staticmethod
+    def get_links(data):
+        log("*** get_links")
+        links = data.replace("\/", "/").split(",")
+        manifest_links = {}
+        for link in links:
+            manifest_links[link.split("]")[0].replace("[", "").replace("p", "")] = link.split("]")[1]
+        return manifest_links
+
     def show(self, url):
+        log("*** Show video %s" % url)
+        response = self.get_response(url)
+
+        content = common.parseDOM(response.text, "div", attrs={"class": "b-content__main"})[0]
+        image = self.url + common.parseDOM(content, "img", attrs={"itemprop": "image"}, ret="src")[0]
+        title = common.parseDOM(content, "h1")[0]
+
+        tvshow = common.parseDOM(response.text, "div", attrs={"id": "simple-episodes-tabs"})
+        if tvshow:
+            titles = common.parseDOM(tvshow, "li")
+            ids = common.parseDOM(tvshow, "li", ret='data-id')
+            seasons = common.parseDOM(tvshow, "li", ret='data-season_id')
+            episodes = common.parseDOM(tvshow, "li", ret='data-episode_id')
+            data = common.parseDOM(tvshow, "li", ret='data-cdn_url')
+            for i, title_ in enumerate(titles):
+                title_ = "%s (%s %s)" % (title_, self.language(1005), seasons[i])
+                url_episode = url
+                uri = sys.argv[0] + '?mode=play_episode&url=%s&urlm=%s&post_id=%s&season_id=%s&episode_id=%s&title=%s' \
+                                    '&image=%s&data=%s' % (
+                          url_episode, url, ids[i], seasons[i], episodes[i], title_, image, data[i])
+                item = xbmcgui.ListItem(title_, iconImage=image, thumbnailImage=image)
+                item.setInfo(type='Video', infoLabels={'title': title_})
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+        else:
+            data = response.text.split('"streams":"')[-1].split('",')[0]
+            links = self.get_links(data)
+            self.selectQuality(links, title, image, None)
+            
+        xbmcplugin.setContent(self.handle, 'episodes')
+        xbmcplugin.endOfDirectory(self.handle, True)
+
+    def show_(self, url):
         log("*** Show video %s" % url)
         response = self.get_response(url)
 
@@ -531,7 +573,15 @@ class HdrezkaTV:
             item.setSubtitles([subtitles])
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
-    def play_episode(self, url, referer, post_id, season_id, episode_id, title, image):
+    def play_episode(self, url, referer, post_id, season_id, episode_id, title, image, data):
+        log("*** play_episode")
+        url_episode = url + "?nocontrols=1&season=%s&episode=%s" % (season_id, episode_id)
+        links = self.get_links(data)
+        self.selectQuality(links, title, image, None)
+        xbmcplugin.setContent(self.handle, 'episodes')
+        xbmcplugin.endOfDirectory(self.handle, True)
+
+    def play_episode_(self, url, referer, post_id, season_id, episode_id, title, image):
         log("*** play_episode")
         try:
             url = self.get_seasons_link(referer, post_id, season_id, episode_id)
