@@ -22,12 +22,6 @@ import xbmcgui
 import xbmcplugin
 from videohosts import moonwalk
 
-try:
-    sys.path.append(os.path.dirname(__file__) + '/../plugin.video.unified.search')
-    from unified_search import UnifiedSearch
-except ImportError:
-    pass
-
 common = XbmcHelpers
 transliterate = Translit()
 socket.setdefaulttimeout(120)
@@ -83,10 +77,7 @@ class HdrezkaTV:
         params = common.getParameters(sys.argv[2])
         mode = params.get('mode')
         url = urllib.unquote_plus(params['url']) if 'url' in params else None
-
-        external = 'unified' if 'unified' in params else None
-        if external is None:
-            external = 'usearch' if 'usearch' in params else None
+        external = 'usearch' if 'usearch' in params else None
 
         if mode == 'play':
             self.play(url)
@@ -248,6 +239,7 @@ class HdrezkaTV:
     def selectQuality(self, links, title, image, subtitles=None):
         lst = sorted(links.iteritems(), key=itemgetter(0))
         i = 0
+        quality_prev = 360
         for quality, link in lst:
             i += 1
             if self.quality != 'select':
@@ -344,7 +336,8 @@ class HdrezkaTV:
         links = data.replace("\/", "/").split(",")
         manifest_links = {}
         for link in links:
-            manifest_links[link.split("]")[0].replace("[", "").replace("p", "")] = link.split("]")[1]
+            if not ("Ultra" in link):
+                manifest_links[int(link.split("]")[0].replace("[", "").replace("p", ""))] = link.split("]")[1]
         return manifest_links
 
     def show(self, url):
@@ -370,7 +363,9 @@ class HdrezkaTV:
                           url_episode, url, ids[i], seasons[i], episodes[i], title_, image, data[i])
                 item = xbmcgui.ListItem(title_, iconImage=image, thumbnailImage=image)
                 item.setInfo(type='Video', infoLabels={'title': title_})
-                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+                if self.quality != 'select':
+                    item.setProperty('IsPlayable', 'true')
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, True if self.quality == 'select' else False)
         else:
             data = response.text.split('"streams":"')[-1].split('",')[0]
             links = self.get_links(data)
@@ -517,9 +512,7 @@ class HdrezkaTV:
 
     def search(self, keyword, external):
         log("*** search")
-        keyword = keyword if (external is not None) else self.getUserInput()
-        keyword = transliterate.rus(keyword) if (external == 'unified') else urllib.unquote_plus(keyword)
-        unified_search_results = []
+        keyword = urllib.unquote_plus(keyword) if (external is not None) else self.getUserInput()
 
         if keyword:
             data = {
@@ -540,29 +533,23 @@ class HdrezkaTV:
                 descriptiondiv = common.parseDOM(videoitem, "div", attrs={"class": "b-content__inline_item-link"})[0]
                 description = common.parseDOM(descriptiondiv, "div")[0]
 
-                if external == 'unified':
-                    log("Perform unified search and return results")
-                    unified_search_results.append({'title': title, 'url': link, 'image': image, 'plugin': self.id})
-                else:
-                    uri = sys.argv[0] + '?mode=show&url=%s' % urllib.quote(link)
-                    item = xbmcgui.ListItem(
-                        "%s [COLOR=55FFFFFF][%s][/COLOR]" % (title, description),
-                        iconImage=image,
-                        thumbnailImage=image
-                    )
-                    item.setInfo(type='Video', infoLabels={'title': title})
-                    is_serial = common.parseDOM(videoitem, 'span', attrs={"class": "info"})
+                uri = sys.argv[0] + '?mode=show&url=%s' % urllib.quote(link)
+                item = xbmcgui.ListItem(
+                    "%s [COLOR=55FFFFFF][%s][/COLOR]" % (title, description),
+                    iconImage=image,
+                    thumbnailImage=image
+                )
+                item.setInfo(type='Video', infoLabels={'title': title})
+                is_serial = common.parseDOM(videoitem, 'span', attrs={"class": "info"})
 
-                    if (self.quality != 'select') and not is_serial:
-                        item.setProperty('IsPlayable', 'true')
-                        xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
-                    else:
-                        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-            if external == 'unified':
-                UnifiedSearch().collect(unified_search_results)
-            else:
-                xbmcplugin.setContent(self.handle, 'movies')
-                xbmcplugin.endOfDirectory(self.handle, True)
+                if (self.quality != 'select') and not is_serial:
+                    item.setProperty('IsPlayable', 'true')
+                    xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
+                else:
+                    xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+            xbmcplugin.setContent(self.handle, 'movies')
+            xbmcplugin.endOfDirectory(self.handle, True)
         else:
             self.menu()
 
