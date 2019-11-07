@@ -21,13 +21,7 @@ import Translit as translit
 translit = translit.Translit()
 
 from videohosts import kodik
-
-# UnifiedSearch module
-try:
-    sys.path.append(os.path.dirname(__file__)+ '/../plugin.video.unified.search')
-    from unified_search import UnifiedSearch
-except:
-    pass
+from videohosts import hdvb
 
 class Kinoprosmotr():
     def __init__(self):
@@ -43,7 +37,7 @@ class Kinoprosmotr():
         self.params = sys.argv[2]
 
         self.domain = self.addon.getSetting('domain')
-        self.url = 'http://' + self.addon.getSetting('domain')
+        self.url = 'https://' + self.addon.getSetting('domain')
 
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.debug = False
@@ -61,9 +55,7 @@ class Kinoprosmotr():
         page = params['page'] if 'page' in params else 1
 
         keyword = params['keyword'] if 'keyword' in params else None
-        external = 'unified' if 'unified' in params else None
-        if external == None:
-            external = 'usearch' if 'usearch' in params else None    
+        external = 'usearch' if 'usearch' in params else None    
 
         if mode == 'play':
             self.playItem(url, url2)
@@ -153,7 +145,7 @@ class Kinoprosmotr():
 
         if pagenav and not items < 10:
             uri = sys.argv[0] + '?mode=%s&url=%s&page=%s' % ("category", url, str(int(page) + 1))
-            item = xbmcgui.ListItem("Next page >>", thumbnailImage=self.inext)
+            item = xbmcgui.ListItem("[COLOR=orange]Next page >>[/COLOR]", thumbnailImage=self.inext)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'movies')
@@ -269,12 +261,12 @@ class Kinoprosmotr():
                     except: 
                         pass
                 if iframe:
-                    if "kodik" in iframe:
-                        manifest_links, subtitles, season, episode, direct = kodik.get_playlist(iframe)
+                    if "tehranvd" in iframe:
+                        manifest_links, subtitles, season, episode = hdvb.get_playlist(iframe)
                         if manifest_links:
                             list = sorted(manifest_links.iteritems(), key=itemgetter(0))
                             for quality, link in list:
-                                links.append("http:" + link)
+                                links.append(link)
                     else:
 	                    link=iframe
 	                    #import urlparse
@@ -443,13 +435,11 @@ class Kinoprosmotr():
         return keyword
 
     def search(self, keyword, external):
-        keyword = keyword if (external != None) else self.getUserInput()
-        keyword = translit.rus(keyword) if (external == 'unified') else urllib.unquote_plus(keyword)
-
-        unified_search_results = []
+        keyword = urllib.unquote_plus(keyword) if (external != None) else self.getUserInput()
 
         if keyword:
-            url =  self.url + '/index.php?do=search'
+            #url =  self.url + '/index.php?do=search'
+            url =  self.url
 
             # Advanced search: titles only
             values = {
@@ -473,7 +463,7 @@ class Kinoprosmotr():
             }
 
             headers = {
-                "Referer" : self.url + '/index.php?do=search',
+                "Referer" : self.url,
                 "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64; rv:25.0) Gecko/20100101 Firefox/25.0"
             }
 
@@ -494,32 +484,20 @@ class Kinoprosmotr():
             links = common.parseDOM(header, "a", ret="href")
             images = common.parseDOM(search_item_prev, "img", ret="src")
 
-            if (external == 'unified'):
-                self.log("Perform unified search and return results")
-                for i, title in enumerate(titles):
-                    image = self.url + images[i]
-                    unified_search_results.append({'title': self.encode(title), 'url': links[i], 'image': image, 'plugin': self.id})
+            for i, title in enumerate(titles):
+                image = self.url + images[i]
+                genres = self.encode(', '.join(common.parseDOM(gcont[i], "a")))
+                desc = self.encode(common.stripTags(descriptions[i]))
+                uri = sys.argv[0] + '?mode=show&url=%s' % links[i]
+                item = xbmcgui.ListItem(self.encode(title), iconImage=self.icon, thumbnailImage=image)
+                item.setInfo(type='Video', infoLabels={'title': self.encode(title), 'genre': genres, 'plot': desc})
 
-                UnifiedSearch().collect(unified_search_results)
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-            else:
-                for i, title in enumerate(titles):
-                    image = self.url + images[i]
-                    print image
-                    genres = self.encode(', '.join(common.parseDOM(gcont[i], "a")))
-                    desc = self.encode(common.stripTags(descriptions[i]))
-                    uri = sys.argv[0] + '?mode=show&url=%s' % links[i]
-                    item = xbmcgui.ListItem(self.encode(title), iconImage=self.icon, thumbnailImage=image)
-                    item.setInfo(type='Video', infoLabels={'title': self.encode(title), 'genre': genres, 'plot': desc})
-
-                    xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-
-                xbmcplugin.setContent(self.handle, 'movies')
-                xbmcplugin.endOfDirectory(self.handle, True)
-
+            xbmcplugin.setContent(self.handle, 'movies')
+            xbmcplugin.endOfDirectory(self.handle, True)
         else:
             self.menu()
-
 
     # *** Add-on helpers
     def log(self, message):
