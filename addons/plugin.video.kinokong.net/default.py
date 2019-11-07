@@ -21,16 +21,9 @@ translit = translit.Translit()
 
 from operator import itemgetter
 from videohosts import videocdn
+from videohosts import hdvb
 
 socket.setdefaulttimeout(120)
-
-
-# UnifiedSearch module
-try:
-    sys.path.append(os.path.dirname(__file__)+ '/../plugin.video.unified.search')
-    from unified_search import UnifiedSearch
-except:
-    pass
 
 class Kinokong():
     def __init__(self):
@@ -63,9 +56,7 @@ class Kinokong():
         page = params['page'] if 'page' in params else 1
 
         keyword = params['keyword'] if 'keyword' in params else None
-        external = 'unified' if 'unified' in params else None
-        if external == None:
-            external = 'usearch' if 'usearch' in params else None    
+        external = 'usearch' if 'usearch' in params else None    
 
         if mode == 'play':
             self.playItem(url)
@@ -131,7 +122,7 @@ class Kinokong():
 
         if pagenav and not per_page < 15:
             uri = sys.argv[0] + '?mode=%s&url=%s&page=%s' % ("category", url, str(int(page) + 1))
-            item = xbmcgui.ListItem(self.language(9000), thumbnailImage=self.inext, iconImage=self.inext)
+            item = xbmcgui.ListItem("[COLOR=orange]" + self.language(9000) + "[/COLOR]", thumbnailImage=self.inext, iconImage=self.inext)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'movies')
@@ -149,13 +140,20 @@ class Kinokong():
         iframes = common.parseDOM(response["content"], "iframe", ret="src")
         iframe = None
         for  item in iframes:
-          if "videocdn" in item:
+          if "tehranvd" in item:
               iframe = item
               break
-        
+          elif "videocdn" in item:
+              iframe = item
+              break
+
         manifest_links = {} 
         subtitles = None
-        manifest_links, subtitles, season, episode = videocdn.get_playlist(iframe)
+        if iframe:
+            if "videocdn" in item:
+                manifest_links, subtitles, season, episode = videocdn.get_playlist(iframe)
+            if "tehranvd" in item:
+                manifest_links, subtitles, season, episode = hdvb.get_playlist(iframe)
 
         if manifest_links:
              list = sorted(manifest_links.iteritems(), key=itemgetter(0))
@@ -331,9 +329,7 @@ class Kinokong():
         return keyword
 
     def search(self, keyword, external):
-        keyword = keyword if (external != None) else self.getUserInput()
-        keyword = translit.rus(keyword) if (external == 'unified') else urllib.unquote_plus(keyword)
-        unified_search_results = []
+        keyword = urllib.unquote_plus(keyword) if (external != None) else self.getUserInput()
 
         if keyword:
             # Advanced search: titles only
@@ -378,24 +374,14 @@ class Kinokong():
 
             descs = common.parseDOM(items, "i")
 
-            if (external == 'unified'):
-                self.log("Perform unified search and return results")
+            for i, title in enumerate(titles):
+                uri = sys.argv[0] + '?mode=show&url=%s' % links[i]
+                image = images[i] if 'http' in images[i] else self.url+images[i]
+                item = xbmcgui.ListItem(self.encode(self.strip(title)), thumbnailImage=image)
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-                for i, title in enumerate(titles):
-                    image = images[i] if 'http' in images[i] else self.url+images[i]
-                    unified_search_results.append({'title':  self.encode(self.strip(title)), 'url': links[i], 'image': image, 'plugin': self.id})
-
-                UnifiedSearch().collect(unified_search_results)
-
-            else:
-                for i, title in enumerate(titles):
-                    uri = sys.argv[0] + '?mode=show&url=%s' % links[i]
-                    image = images[i] if 'http' in images[i] else self.url+images[i]
-                    item = xbmcgui.ListItem(self.encode(self.strip(title)), thumbnailImage=image)
-                    xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-
-                xbmcplugin.setContent(self.handle, 'movies')
-                xbmcplugin.endOfDirectory(self.handle, True)
+            xbmcplugin.setContent(self.handle, 'movies')
+            xbmcplugin.endOfDirectory(self.handle, True)
         else:
             self.menu()
 

@@ -235,7 +235,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.kinokong.net" name="Kinokong.net" version="1.4.0" provider-name="MrStealth, dandy">
+<addon id="plugin.video.kinokong.net" name="Kinokong.net" version="1.4.1" provider-name="MrStealth, dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.1.0"/>
@@ -401,7 +401,7 @@
   <extension point='xbmc.python.module' library='lib' />
 </addon>
 
-<addon id="script.module.videohosts" name="VideoHosts" version="1.5.1" provider-name="dandy">
+<addon id="script.module.videohosts" name="VideoHosts" version="1.5.2" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.1.0"/>
