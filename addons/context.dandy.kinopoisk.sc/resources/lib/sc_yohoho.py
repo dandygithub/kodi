@@ -7,12 +7,12 @@ import XbmcHelpers
 common = XbmcHelpers
 import tools
 
-URL = "https://ahoy.yohoho.cc/"
+URL = "https://ahoy.yohoho.online/"
 
 HEADERS = {
     "Content-Type": "application/x-www-form-urlencoded",
-    "Origin": "http://yohoho.cc",
-    "Referer": "http://yohoho.cc/",
+    "Origin": "https://yohoho.cc",
+    "Referer": "https://yohoho.cc/",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"
 }
 
@@ -24,14 +24,15 @@ HEADERS2 = {
 VALUES = {
     "kinopoisk": "{0}",
     "tv": "1",
-    "player": "moonwalk,hdgo,kodik,iframe,videocdn,trailer,torrent",
-    "button": "moonwalk: {Q} {T}, hdgo: {Q} {T}, kodik: {Q} {T}, iframe: {Q} {T}, videocdn: {Q} {T}",
+    "resize": "1",
+    "player": "videocdn,collaps,iframe,hdvb,kodik",
+    "button": "videocdn: {Q} {T}, hdvb: {Q} {T}, kodik: {Q} {T}, iframe: {Q} {T}",
     "button_limit": "8",
     "button_size": "1",
     "separator": ","
 }
 
-ENABLED_HOSTS = ("iframe", "kodik", "moonwalk", "hdgo", "videocdn")
+ENABLED_HOSTS = ("iframe", "kodik", "videocdn", "hdvb")
 
 _kp_id_ = ''
 
@@ -51,14 +52,16 @@ def get_content():
     VALUES["kinopoisk"] = _kp_id_
     response = tools.get_response(URL, HEADERS, VALUES, 'POST')
 
-#{"trailer":{"iframe":"https://trailerclub.me/video/d813512bacc126a4/iframe"},
-#  "torrent":{},
-#  "vodlocker":{},
-#  "iframe":{"iframe":"https://videoframe.at/movie/42da420pc8p/iframe","translate":"Полное дублирование","quality":"BD"},
-#  "moonwalk":{"iframe":"https://streamguard.cc/video/09e73f024975678b77004c843fa9cf47/iframe?show_translations=1","translate":"Многоголосый закадровый","quality":""},
-#  "kodik":{"iframe":"//kodik.info/video/32562/8e89db0bc47b2f47cf2600c629c4c731/720p","translate":"Дублированный","quality":"BDRip 720p"},
-#  "hdgo":{"iframe":"https://vio.to/video/oSlSCtQ0t8apv6vJGD1va2xbKTd9k8YC/5614/","translate":"Профессиональный многоголосый","quality":"хорошее HD"},
-#  "videocdn":{"iframe":"//4.videocdn.so/kLShoChnGWEE/movie/107","translate":"Профессиональный (многоголосый закадровый)","quality":"hddvd"}}            
+#{"moonwalk":{},
+#"hdgo":{},
+#"trailer":{},
+#"torrent":{},
+#"videospider":{},
+#"kodik":{},
+#"videocdn":{"iframe":"//90.tvmovies.in/kLShoChnGWEE/movie/107","translate":"Полное дублирование","quality":"hddvd"},
+#"hdvb":{"iframe":"https://vid1572801764.farsihd.pw/movie/db8f575a1374728dda63eb6244be9bca/iframe","translate":"многоголосый закадровый","quality":"HDRip"},
+#"iframe":{"iframe":"https://videoframe.at/movie/42da420pb7p/iframe","translate":"","quality":""},
+#"collaps":{"iframe":"https://api1572798262.buildplayer.com/embed/movie/334","translate":"","quality":""}}
     
     if response:
         jdata = json.loads(response)
@@ -72,7 +75,7 @@ def get_content():
                 title = "[COLOR=orange][{0}][/COLOR] {1} ({2})".format(vh_title + host, tools.encode(title_), translate + "," + quality)
                 uri = sys.argv[0] + "?mode=show&url={0}".format(urllib.quote_plus(prepare_url(host, iframe)))
                 item = xbmcgui.ListItem(title)
-                list_li.append([uri, item, True]) 
+                list_li.append([uri, item, True])
     return list_li
 
 

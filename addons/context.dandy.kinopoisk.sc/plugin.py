@@ -22,6 +22,8 @@ import resources.lib.iframe as iframe
 import resources.lib.hdbaza as hdbaza
 #import resources.lib.videocdn as videocdn
 from videohosts import videocdn
+from videohosts import hdvb
+import resources.lib.collaps as collaps
 
 socket.setdefaulttimeout(120)
 
@@ -151,6 +153,10 @@ def get_engine(data):
         return 'hdbaza'
     elif 'videocdn' in data:
         return 'videocdn'
+    elif 'hdvb' in data:
+        return 'hdvb'
+    elif 'collaps' in data:
+        return 'collaps'
     else:
         return 'none'
 
@@ -229,6 +235,12 @@ def show_hdbaza(url, title):
 def show_videocdn(url, title):
     return videocdn.get_playlist(url)
 
+def show_hdvb(url, title):
+    return hdvb.get_playlist(url)
+
+def show_collaps(url, title):
+    return collaps.get_playlist(url)
+
 def show(url, title, media_title, image, engine):
     manifest_links = {} 
     subtitles = None
@@ -250,14 +262,21 @@ def show(url, title, media_title, image, engine):
         manifest_links, subtitles, season, episode = show_hdbaza(url, title)
     elif ('videocdn' in engine):
         manifest_links, subtitles, season, episode = show_videocdn(url, title)
+    elif ('hdvb' in engine):
+        manifest_links, subtitles, season, episode = show_hdvb(url, title)
+    elif ('collaps' in engine):
+        manifest_links, subtitles, season, episode = show_collaps(url, title)
 
     if manifest_links:
         list = sorted(manifest_links.iteritems(), key=itemgetter(0))
         if season:
-            title += " - s%se%s" % (season.zfill(2), episode.zfill(2)) 
+            title += " - s%se%s" % (season.zfill(2), episode.zfill(2))
         for quality, link in list:
             film_title = "[COLOR=lightgreen][%s][/COLOR] %s" % (str(quality), title)
-            uri = sys.argv[0] + '?mode=play&url=%s&title=%s&media_title=%s&direct=%d' % (urllib.quote_plus(link), urllib.quote_plus(title), urllib.quote_plus(media_title), direct)
+            try:
+                uri = sys.argv[0] + '?mode=play&url=%s&title=%s&media_title=%s&direct=%d' % (urllib.quote_plus(link), urllib.quote_plus(title), urllib.quote_plus(media_title), direct)
+            except:    
+                uri = sys.argv[0] + '?mode=play&url=%s&title=%s&media_title=%s&direct=%d' % (link, title, media_title, direct)            
             item = xbmcgui.ListItem(film_title, iconImage=image, thumbnailImage=image)
             item.setInfo(type='Video', infoLabels={'title': film_title, 'label': film_title, 'plot': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
             item.setProperty('IsPlayable', 'true')
