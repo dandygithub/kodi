@@ -88,7 +88,7 @@ def select_episode(data, tr_value):
         return [], sindex, eindex
     episode = series[index_]
     #eindex = series[index_].split(" ")[0]
-    eindex = str(index_)
+    eindex = str(index_+1)
     links_tr = series_full[index_]["file"].split(',')[-1].split(" or ")
 
     return links_tr, sindex, eindex

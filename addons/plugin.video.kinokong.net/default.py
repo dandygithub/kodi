@@ -151,7 +151,7 @@ class Kinokong():
         if iframe:
             manifest_links, subtitles, season, episode = hdvb.get_playlist(iframe)
         elif iframe_alt:
-            manifest_links, subtitles, season, episode = videocdn.get_playlist(iframe)
+            manifest_links, subtitles, season, episode = videocdn.get_playlist(iframe_alt)
         else:
             self.showErrorMessage("Unknown host")
             return
@@ -310,7 +310,7 @@ class Kinokong():
         print "getPlaylist"
 
     def playItem(self, url):
-        print "*** play url %s" % url
+        #print "*** play url %s" % url
         if ' or ' in url:
             link = url.split(' or ')[-1]
         else:
