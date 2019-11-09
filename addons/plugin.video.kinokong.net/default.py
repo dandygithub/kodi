@@ -139,21 +139,22 @@ class Kinokong():
         quality = common.parseDOM(container, "div", attrs={"class": "full-quality"})
         iframes = common.parseDOM(response["content"], "iframe", ret="src")
         iframe = None
+        iframe_alt = None
         for  item in iframes:
-          if "tehranvd" in item:
+          if  re.search("vid\d+", item):
               iframe = item
-              break
-          elif "videocdn" in item:
-              iframe = item
-              break
+          if "videocdn" in item:
+              iframe_alt = item
 
         manifest_links = {} 
         subtitles = None
         if iframe:
-            if "videocdn" in item:
-                manifest_links, subtitles, season, episode = videocdn.get_playlist(iframe)
-            if "tehranvd" in item:
-                manifest_links, subtitles, season, episode = hdvb.get_playlist(iframe)
+            manifest_links, subtitles, season, episode = hdvb.get_playlist(iframe)
+        elif iframe_alt:
+            manifest_links, subtitles, season, episode = videocdn.get_playlist(iframe)
+        else:
+            self.showErrorMessage("Unknown host")
+            return
 
         if manifest_links:
              list = sorted(manifest_links.iteritems(), key=itemgetter(0))
@@ -168,6 +169,9 @@ class Kinokong():
                 if subtitles: 
                     item.setSubtitles([subtitles])
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
+        else:
+            self.showErrorMessage("Unknown host")
+            return
         xbmcplugin.setContent(self.handle, 'movies')
         xbmcplugin.endOfDirectory(self.handle, True)
 
