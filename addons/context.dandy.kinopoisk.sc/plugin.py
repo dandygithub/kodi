@@ -12,18 +12,16 @@ common = XbmcHelpers
 
 import resources.lib.search as search
 
-#import resources.lib.moonwalk as moonwalk
-from videohosts import moonwalk
 import resources.lib.hdgo as hdgo
-#import resources.lib.kodik as kodik
-from videohosts import kodik
 import resources.lib.videoframe as videoframe
-import resources.lib.iframe as iframe
 import resources.lib.hdbaza as hdbaza
-#import resources.lib.videocdn as videocdn
+
+from videohosts import moonwalk
+from videohosts import kodik
+from videohosts import iframe
 from videohosts import videocdn
 from videohosts import hdvb
-import resources.lib.collaps as collaps
+from videohosts import collaps
 
 socket.setdefaulttimeout(120)
 
@@ -266,6 +264,7 @@ def show(url, title, media_title, image, engine):
         manifest_links, subtitles, season, episode = show_hdvb(url, title)
     elif ('collaps' in engine):
         manifest_links, subtitles, season, episode = show_collaps(url, title)
+        direct = 1
 
     if manifest_links:
         list = sorted(manifest_links.iteritems(), key=itemgetter(0))
