@@ -5,7 +5,7 @@ import xbmc
 import xbmcgui
 import XbmcHelpers
 common = XbmcHelpers
-import tools
+from videohosts import tools
 
 URL = "https://ahoy.yohoho.online/"
 
@@ -32,7 +32,7 @@ VALUES = {
     "separator": ","
 }
 
-ENABLED_HOSTS = ("iframe", "kodik", "videocdn", "hdvb")
+ENABLED_HOSTS = ("iframe", "kodik", "videocdn", "hdvb", "collaps")
 
 _kp_id_ = ''
 

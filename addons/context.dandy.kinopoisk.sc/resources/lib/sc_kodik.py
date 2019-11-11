@@ -4,7 +4,7 @@ import xbmc
 import xbmcgui
 import XbmcHelpers
 common = XbmcHelpers
-import tools
+from videohosts import tools
 
 URL = "http://kodik.top"
 PARTS = ("/films/", "/serials/")
