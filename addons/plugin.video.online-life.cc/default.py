@@ -18,11 +18,9 @@ common = XbmcHelpers
 import Translit as translit
 translit = translit.Translit()
 
-# UnifiedSearch module
-try:
-    sys.path.append(os.path.dirname(__file__)+ '/../plugin.video.unified.search')
-    from unified_search import UnifiedSearch
-except: pass
+from operator import itemgetter
+
+from videohosts import host_manager
 
 # My Favorites module
 from MyFavorites import MyFavorites
@@ -72,9 +70,7 @@ class OnlineLife():
         page = params['page'] if 'page' in params else 1
 
         keyword = params['keyword'] if 'keyword' in params else None
-        external = 'unified' if 'unified' in params else None
-        if external == None:
-            external = 'usearch' if 'usearch' in params else None    
+        external = 'usearch' if 'usearch' in params else None    
 
         if mode == 'play':
             self.play(url)
@@ -171,8 +167,31 @@ class OnlineLife():
         genres = self.encode(', '.join(common.parseDOM(itemprop_genre, 'a')))
 
         desc = self.encode(common.parseDOM(story, "div", attrs={"style": "display:inline;"})[0])
-        link = self.getVideoSource(url)
 
+        manifest_links, subtitles, season, episode = host_manager.get_playlist(response["content"])
+
+        if manifest_links:
+             list = sorted(manifest_links.iteritems(), key=itemgetter(0))
+             if season:
+                title += " - s%se%s" % (season.zfill(2), episode.zfill(2)) 
+             for quality, link in list:
+                film_title = "[COLOR=lightgreen][%s][/COLOR] %s" % (str(quality), title)
+                uri = sys.argv[0] + '?mode=play&url=%s&title=%s' % (urllib.quote_plus(link), title)
+                item = xbmcgui.ListItem(film_title, iconImage=image, thumbnailImage=image)
+                item.setInfo(type='Video', infoLabels={'title': film_title, 'label': film_title, 'plot': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
+                item.setProperty('IsPlayable', 'true')
+                if subtitles: 
+                    item.setSubtitles([subtitles])
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
+        else:
+            self.showErrorMessage("Unknown host")
+            return
+
+        xbmcplugin.setContent(self.handle, 'movies')
+        xbmcplugin.endOfDirectory(self.handle, True)
+
+    def add(self, url):
+        link = self.getVideoSource(url)
         movie = link if not link.endswith('.txt') else None
         season = link if link.endswith('.txt') else None
 
@@ -240,8 +259,6 @@ class OnlineLife():
                         xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
                     xbmcplugin.setContent(self.handle, 'episodes')
-
-        xbmcplugin.endOfDirectory(self.handle, True)
 
     def getVideoID(self, url):
         return url.split('/')[-1].split('-')[0]
@@ -328,9 +345,7 @@ class OnlineLife():
     def search(self, keyword, external):
         self.log("*** Search")
 
-        keyword = keyword if (external != None) else self.getUserInput()
-        keyword = translit.rus(keyword) if (external == 'unified') else urllib.unquote_plus(keyword)
-        unified_search_results = []
+        keyword = urllib.unquote_plus(keyword) if (external != None) else self.getUserInput()
 
         if keyword:
             url = self.url + '/index.php?do=search'
@@ -362,49 +377,33 @@ class OnlineLife():
             container = common.parseDOM(response, "div", attrs={"id": "container"})
             posts = common.parseDOM(container, "div", attrs={"class": "custom-post"})
 
-            if external == "unified":
-                self.log("Perform unified search and return results")
-
+            if posts:
                 for i, post in enumerate(posts):
                     poster = common.parseDOM(post, "div", attrs={"class": "custom-poster"})
                     title = self.encode(common.stripTags(common.parseDOM(post, "a")[0]))
                     link = common.parseDOM(post, "a", ret="href")[0]
                     image = common.parseDOM(post, "img", ret="src")[0]
 
+                    uri = sys.argv[0] + '?mode=show&url=%s' % link
+                    item = xbmcgui.ListItem(title, thumbnailImage=image)
 
-                    unified_search_results.append({'title':  title, 'url': link, 'image': image, 'plugin': self.id})
+                    self.favorites.addContextMenuItem(item, {
+                        'title': title,
+                        'url': link,
+                        'image': image,
+                        'playable': False,
+                        'action': 'add',
+                        'plugin': self.id
+                    })
 
-                UnifiedSearch().collect(unified_search_results)
+                    xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
+                xbmcplugin.setContent(self.handle, 'movies')
             else:
-                if posts:
-                    for i, post in enumerate(posts):
-                        poster = common.parseDOM(post, "div", attrs={"class": "custom-poster"})
-                        title = self.encode(common.stripTags(common.parseDOM(post, "a")[0]))
-                        link = common.parseDOM(post, "a", ret="href")[0]
-                        image = common.parseDOM(post, "img", ret="src")[0]
-
-                        uri = sys.argv[0] + '?mode=show&url=%s' % link
-                        item = xbmcgui.ListItem(title, thumbnailImage=image)
-
-                        self.favorites.addContextMenuItem(item, {
-                            'title': title,
-                            'url': link,
-                            'image': image,
-                            'playable': False,
-                            'action': 'add',
-                            'plugin': self.id
-                        })
-
-                        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-
-                    xbmcplugin.setContent(self.handle, 'movies')
-                else:
-                    if external != "usearch": 
-                        item = xbmcgui.ListItem(self.language(2001), iconImage=self.icon, thumbnailImage=self.icon)
-                        xbmcplugin.addDirectoryItem(self.handle, '', item, True)
-
-                xbmcplugin.endOfDirectory(self.handle, True)
+                if external != "usearch": 
+                    item = xbmcgui.ListItem(self.language(2001), iconImage=self.icon, thumbnailImage=self.icon)
+                    xbmcplugin.addDirectoryItem(self.handle, '', item, True)
+            xbmcplugin.endOfDirectory(self.handle, True)
         else:
             self.menu()
 
