@@ -145,7 +145,7 @@ class OnlineLife():
 
             if pagenav and not items < 20:
                 uri = sys.argv[0] + '?mode=%s&url=%s&page=%s' % ("category", url, str(int(page) + 1))
-                item = xbmcgui.ListItem(self.language(9001), thumbnailImage=self.inext)
+                item = xbmcgui.ListItem("[COLOR=orange]" + self.language(9001) + "[/COLOR]", thumbnailImage=self.inext)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         else:
@@ -348,26 +348,16 @@ class OnlineLife():
         keyword = urllib.unquote_plus(keyword) if (external != None) else self.getUserInput()
 
         if keyword:
-            url = self.url + '/index.php?do=search'
+            url = self.url + '/?do=search'
 
             # Advanced search: titles only
             values = {
-                "beforeafter": "after",
-                "catlist[]": "0",
                 "do": "search",
-                "full_search": "1",
-                "replyless": "0",
-                "replylimit": "0",
-                "resorder": "desc",
-                "result_from":  "1",
-                "search_start": "1",
-                "searchdate": "0",
-                "searchuser": "",
-                "showposts": "0",
-                "sortby": "date",
-                "story": keyword.encode("cp1251"),
                 "subaction": "search",
-                "titleonly": "3"
+                "mode": "simple",  
+                "story": keyword.encode("cp1251"),
+                "x": "0",
+                "y": "0" 
             }
 
             data = urllib.urlencode(values)
@@ -399,10 +389,10 @@ class OnlineLife():
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
                 xbmcplugin.setContent(self.handle, 'movies')
-            else:
-                if external != "usearch": 
-                    item = xbmcgui.ListItem(self.language(2001), iconImage=self.icon, thumbnailImage=self.icon)
-                    xbmcplugin.addDirectoryItem(self.handle, '', item, True)
+            #else:
+            #    if external != "usearch": 
+            #        item = xbmcgui.ListItem(self.language(2001), iconImage=self.icon, thumbnailImage=self.icon)
+            #        xbmcplugin.addDirectoryItem(self.handle, '', item, True)
             xbmcplugin.endOfDirectory(self.handle, True)
         else:
             self.menu()
