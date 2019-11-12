@@ -261,7 +261,7 @@ class Kinoprosmotr():
                     except: 
                         pass
                 if iframe:
-                    if "tehranvd" in iframe:
+                    if re.search("vid\d+", iframe):
                         manifest_links, subtitles, season, episode = hdvb.get_playlist(iframe)
                         if manifest_links:
                             list = sorted(manifest_links.iteritems(), key=itemgetter(0))
