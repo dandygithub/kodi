@@ -20,8 +20,8 @@ import Translit as translit
 translit = translit.Translit()
 
 from operator import itemgetter
-from videohosts import videocdn
-from videohosts import hdvb
+
+from videohosts import host_manager
 
 socket.setdefaulttimeout(120)
 
@@ -137,24 +137,8 @@ class Kinokong():
         title = self.encode(common.parseDOM(container, "h1")[0])
         image = common.parseDOM(container, "img", attrs={"id": "imgbigp"}, ret="src")[0]
         quality = common.parseDOM(container, "div", attrs={"class": "full-quality"})
-        iframes = common.parseDOM(response["content"], "iframe", ret="src")
-        iframe = None
-        iframe_alt = None
-        for  item in iframes:
-          if  re.search("vid\d+", item):
-              iframe = item
-          if "videocdn" in item:
-              iframe_alt = item
 
-        manifest_links = {} 
-        subtitles = None
-        if iframe:
-            manifest_links, subtitles, season, episode = hdvb.get_playlist(iframe)
-        elif iframe_alt:
-            manifest_links, subtitles, season, episode = videocdn.get_playlist(iframe_alt)
-        else:
-            self.showErrorMessage("Unknown host")
-            return
+        manifest_links, subtitles, season, episode = host_manager.get_playlist(response["content"])
 
         if manifest_links:
              list = sorted(manifest_links.iteritems(), key=itemgetter(0))
@@ -162,7 +146,7 @@ class Kinokong():
                 title += " - s%se%s" % (season.zfill(2), episode.zfill(2)) 
              for quality, link in list:
                 film_title = "[COLOR=lightgreen][%s][/COLOR] %s" % (str(quality), title)
-                uri = sys.argv[0] + '?mode=play&url=%s&title=%s' % (urllib.quote_plus(link), urllib.quote_plus(title))
+                uri = sys.argv[0] + '?mode=play&url=%s&title=%s' % (urllib.quote_plus(link), title)
                 item = xbmcgui.ListItem(film_title, iconImage=image, thumbnailImage=image)
                 item.setInfo(type='Video', infoLabels={'title': film_title, 'label': film_title, 'plot': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
                 item.setProperty('IsPlayable', 'true')

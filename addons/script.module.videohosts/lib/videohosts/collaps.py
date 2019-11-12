@@ -109,6 +109,8 @@ def get_playlist(url):
     season = None
     episode = None
 
+    hlsList = []
+
     try: 
         response = tools.get_response(url, HEADERS, {}, "GET")
     except:
@@ -118,16 +120,15 @@ def get_playlist(url):
 
     if "episode:" in response:
         franchise = response.split("franchise:")[-1].split(",")[0].replace(" ", "")
-        hlsList, season, episode = select_episode(franchise, url)
-        hlsList = hlsList.replace("{", "").replace("}", "").replace("u'", "").replace("':", '":"').split(",")
-        xbmc.log("list_=" + repr(hlsList))
+        data, season, episode = select_episode(franchise, url)
+        if episode:
+            hlsList = data.replace("{", "").replace("}", "").replace("u'", "").replace("':", '":"').split(",")
     else:
         hlsList =  response.split("hlsList: {")[-1].split("}")[0].split(",")
 
     for item in hlsList:
         quality = int(item.split('":"')[0].replace('"', ""))
         url_ = item.split('":"')[1].replace('"', "").replace("'", "").replace(" ", "")
-        xbmc.log("url__=" + url_)
         manifest_links[quality] = url_
         
     return manifest_links, subtitles, season, episode 

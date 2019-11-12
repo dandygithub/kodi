@@ -20,8 +20,7 @@ common = XbmcHelpers
 import Translit as translit
 translit = translit.Translit()
 
-from videohosts import kodik
-from videohosts import hdvb
+from videohosts import host_manager
 
 class Kinoprosmotr():
     def __init__(self):
@@ -261,12 +260,11 @@ class Kinoprosmotr():
                     except: 
                         pass
                 if iframe:
-                    if re.search("vid\d+", iframe):
-                        manifest_links, subtitles, season, episode = hdvb.get_playlist(iframe)
-                        if manifest_links:
-                            list = sorted(manifest_links.iteritems(), key=itemgetter(0))
-                            for quality, link in list:
-                                links.append(link)
+                    manifest_links, subtitles, season, episode = host_manager.get_playlist(movie)
+                    if manifest_links:
+                        list = sorted(manifest_links.iteritems(), key=itemgetter(0))
+                        for quality, link in list:
+                            links.append(link)
                     else:
 	                    link=iframe
 	                    #import urlparse
