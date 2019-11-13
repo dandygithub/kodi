@@ -1,20 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.3.0" provider-name="dandy">
+<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.4.0" provider-name="dandy">
         <requires>
-                <import addon="xbmc.addon" version="13.0.0"/>
+                <import addon="xbmc.addon" version="16.0.0"/>
         </requires>
 	<extension point="xbmc.addon.repository" name="Dandy Kodi Add-ons Repository">
 		<info compressed="false">https://raw.github.com/dandygithub/kodi/master/addons/addons.xml</info>
 		<checksum>https://raw.github.com/dandygithub/kodi/master/addons/addons.xml.md5</checksum>
 		<datadir zip="true">https://raw.github.com/dandygithub/kodi/master/addons/zip/</datadir>
-		<dir minversion="13.0.0">
-			<info compressed="false">https://raw.github.com/mrstealth/xbmc-gotham/master/addons.xml</info>
-			<checksum>https://raw.github.com/mrstealth/xbmc-gotham/master/addons.xml.md5</checksum>
-			<datadir zip="true">https://raw.github.com/mrstealth/xbmc-gotham/master/zip/</datadir>
-		</dir>
 	</extension>
 	<extension point="xbmc.addon.metadata">
-		<summary>Install Add-ons by Dandy add-on repository</summary>
+		<summary>Install Add-ons from Dandy add-on repository</summary>
 		<description>Download and install add-ons from dandy</description>
 		<disclaimer>Add-ons for home usage in Kodi</disclaimer>
 		<platform>all</platform>
