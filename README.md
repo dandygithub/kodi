@@ -1,1 +1,1 @@
-# KODI Addons Project
+# Dandy's KODI Addons Project
