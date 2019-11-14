@@ -287,7 +287,7 @@
     </extension>
 </addon>
 
-<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.4.0" provider-name="dandy">
+<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.4.1" provider-name="dandy">
         <requires>
                 <import addon="xbmc.addon" version="16.0.0"/>
         </requires>
@@ -302,6 +302,28 @@
 		<disclaimer>Add-ons for home usage in Kodi</disclaimer>
 		<platform>all</platform>
 	</extension>
+</addon>
+
+<addon id="script.dandy.domain.manager" name="Domain Manager" version="1.0.0" provider-name="dandy">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.simplejson" version="3.3.0"/>
+    <import addon="script.module.xbmc.helpers" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.script" library="default.py">
+    <provides>executable</provides>
+  </extension>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">Domain Manager</summary>
+    <description lang="en">Manage domain setting in Kodi add-ons</description>
+    <disclaimer lang="en"></disclaimer>
+    <language></language>
+    <license>GNU GPL v.3</license>
+  </extension>
 </addon>
 
 <addon id="script.dandy.strm.marker" name="STRM Marker" version="1.0.1" provider-name="dandy">
