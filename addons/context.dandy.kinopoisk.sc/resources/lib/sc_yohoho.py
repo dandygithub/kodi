@@ -45,6 +45,17 @@ def prepare_url(host, url):
     #else:
     return url
 
+def get_add_info(translate, quality):
+    result = ""
+    if (not translate):
+        translate = ""
+    if (not quality):
+        quality = ""
+    if ((translate != "") or (quality != "")):
+        result = "({0})"
+    result = result.format((translate if (translate != "") else "") + (("," + quality) if (quality != "") else ""))
+    return result
+
 def get_content():
     vh_title = "yohoho."
     list_li = []
@@ -72,7 +83,7 @@ def get_content():
                 translate = host_data["translate"]
                 quality = host_data["quality"]
                 title_ = "*T*"
-                title = "[COLOR=orange][{0}][/COLOR] {1} ({2})".format(vh_title + host, tools.encode(title_), translate + "," + quality)
+                title = "[COLOR=orange][{0}][/COLOR] {1} {2}".format(vh_title + host, tools.encode(title_), get_add_info(translate, quality))
                 uri = sys.argv[0] + "?mode=show&url={0}".format(urllib.quote_plus(prepare_url(host, iframe)))
                 item = xbmcgui.ListItem(title)
                 list_li.append([uri, item, True])

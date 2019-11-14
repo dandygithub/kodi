@@ -6,7 +6,7 @@ import xbmc
 import xbmcgui
 import XbmcHelpers
 common = XbmcHelpers
-import tools
+from videohosts import tools
 
 socket.setdefaulttimeout(120)
 
