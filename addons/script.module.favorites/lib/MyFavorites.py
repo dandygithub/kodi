@@ -1,12 +1,13 @@
 #!/usr/bin/python
-# Writer (c) 2012-2017, MrStealth, dandy
-# Rev. 2.1.0
+# Writer (c) 2012-2019, MrStealth, dandy
+# Rev. 2.2.0
 # -*- coding: utf-8 -*-
 # License: GPLv3
 
 import os
 import sys
 import urllib
+import simplejson as json
 
 import xbmc
 import xbmcgui
@@ -15,20 +16,27 @@ import xbmcplugin
 
 import sqlite3 as sqlite
 
-# sys.path.append (xbmc.translatePath( os.path.join( os.getcwd(), 'resources', 'lib' ) ))
+SHOW = "mode=show&url=%s"
+PLAY = "mode=play&url=%s"
+
+REQUEST = {'jsonrpc': '2.0',
+           'method': '{0}',
+           'params': '{1}',
+           'id': 1
+           }
 
 class MyFavoritesDB():
-    def __init__(self, plugin):
-        self.addon = xbmcaddon.Addon(plugin)
-        self.database_file = os.path.join(xbmc.translatePath(self.addon.getAddonInfo('profile')), 'favorites.sqlite')
-
-        print self.database_file
-        self.connect()
+    def __init__(self, plugin, withCreate):
+        if plugin:
+            self.addon = xbmcaddon.Addon(plugin)
+            self.database_file = os.path.join(xbmc.translatePath(self.addon.getAddonInfo('profile')), 'favorites.sqlite')
+            self.existDB = os.path.isfile(self.database_file)
+            if ((self.existDB == True) or (withCreate == True)):
+                self.connect()
 
     def create_if_not_exists(self):
         if not os.path.exists(self.database_file):
             file(self.database_file, 'w').close()
-
         try:
             self.execute("CREATE TABLE IF NOT EXISTS favorites (title TEXT, url TEXT, image TEXT, playable BOOL NOT NULL)")
             self.db.commit()
@@ -68,8 +76,11 @@ class MyFavoritesDB():
         self.db.commit()
 
     def all(self):
-        self.execute("SELECT * FROM favorites ORDER BY title ASC")
-        return [{'title': x[0], 'url': x[1], 'image': x[2], 'playable': x[3]} for x in self.cursor.fetchall()]
+        try:
+            self.execute("SELECT * FROM favorites ORDER BY title ASC")
+            return [{'title': x[0], 'url': x[1], 'image': x[2], 'playable': x[3]} for x in self.cursor.fetchall()]
+        except:
+            return [] 
 
     def drop(self):
         if os.path.isfile(self.filename):
@@ -92,10 +103,22 @@ class MyFavorites():
         self.language = self.addon.getLocalizedString
         self.plugin = plugin
 
-        self.context_menu = os.path.join(os.path.join(self.path, 'lib' ), 'ContextMenuHandler.py')
-        self.database = MyFavoritesDB(self.plugin)
+        self.context_menu = os.path.join(os.path.join(self.path, 'lib'), 'ContextMenuHandler.py')
+        self.database = MyFavoritesDB(self.plugin, True)
         self.debug = self.addon.getSetting("debug") == 'true'
 
+
+    def jsonrpc(self, method, params):
+        request = REQUEST
+        request['method'] = method
+        request['params'] = params
+        response = xbmc.executeJSONRPC(json.dumps(request))
+        j = json.loads(response)
+        return j.get('result')
+
+    def getAddons(self):
+        result = self.jsonrpc("Addons.GetAddons", {'type': 'xbmc.addon.video', 'content': 'video', 'installed': True, 'enabled': True, 'properties': ['name']})
+        return result.get("addons"), result.get("limits")
 
     # === XBMC Helpers
     def ListItem(self, title=None):
@@ -123,7 +146,7 @@ class MyFavorites():
           for favorite in favorites:
             if favorite['playable']:
                 print "*** Playable item"
-                uri = sys.argv[0] + '?mode=play&url=%s' % favorite['url']
+                uri = sys.argv[0] + '?' + PLAY % favorite['url']
 
                 item = xbmcgui.ListItem(favorite['title'], iconImage = favorite['image'])
                 self.addContextMenuItem(item, {'title': favorite['title'], 'action': 'remove', 'plugin': self.plugin})
@@ -132,7 +155,7 @@ class MyFavorites():
                 xbmcplugin.addDirectoryItem(int(sys.argv[1]), uri, item, False)
             else:
                 print "Show mode"
-                uri = sys.argv[0] + '?mode=show&url=%s' % favorite['url']
+                uri = sys.argv[0] + '?' + SHOW % favorite['url']
 
                 item = xbmcgui.ListItem(favorite['title'], iconImage = favorite['image'])
                 self.addContextMenuItem(item, {'title': favorite['title'], 'action': 'remove', 'plugin': self.plugin})
@@ -144,6 +167,34 @@ class MyFavorites():
           item = xbmcgui.ListItem(self.language(1005), iconImage = self.icon)
           xbmcplugin.addDirectoryItem(int(sys.argv[1]), '', item, False)
 
+
+    def listEx(self):
+        self.log("*** List all favorites")
+
+        addons, limits = self.getAddons()
+        exist = False
+        for addon in addons:
+          addon_id = addon['addonid']
+          addon_name = addon['name']
+          addon_object = xbmcaddon.Addon(addon_id)
+          self.database = MyFavoritesDB(addon_id, False)
+          favorites = self.database.all()
+          if favorites:
+            for favorite in favorites:
+              exist = True
+              uri = 'plugin://' + addon_id + '/?' + (PLAY if favorite['playable'] else SHOW) % favorite['url']
+
+              item = xbmcgui.ListItem("[COLOR=orange][" + addon_name + "][/COLOR] " + favorite['title'].decode("utf8"), iconImage = favorite['image'])
+              item.setProperty('IsPlayable', "true" if favorite['playable'] else "false")
+
+              xbmcplugin.addDirectoryItem(int(sys.argv[1]), uri, item, not favorite['playable'])
+        
+        if exist == False:
+          item = xbmcgui.ListItem(self.language(1005), iconImage = self.icon)
+          xbmcplugin.addDirectoryItem(int(sys.argv[1]), '', item, False)
+
+        xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+        xbmcplugin.endOfDirectory(int(sys.argv[1]), True)
 
     # === COMMON FUNCTIONS
     def encode(self, string):

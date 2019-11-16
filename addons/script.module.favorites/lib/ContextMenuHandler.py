@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Writer (c) 2012-2017, MrStealth, dandy
+# Writer (c) 2012-2019, MrStealth, dandy
 # License: GPLv3
 
 import urllib
@@ -17,7 +17,7 @@ title = language(1000).encode('utf-8')
 params = dict([(k, urllib.unquote_plus(v)) for k,v in common.getParameters(sys.argv[1]).items()])
 
 from MyFavorites import MyFavoritesDB
-database = MyFavoritesDB(params['plugin'])
+database = MyFavoritesDB(params['plugin'], True)
 
 
 if params['action'] == "add":
