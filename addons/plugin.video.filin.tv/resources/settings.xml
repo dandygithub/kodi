@@ -1,6 +1,5 @@
 <settings>
   <setting id="translit" type="bool" label="Translit" default="false"/>
-  <setting id="unified_search" type="bool" label="Unified search" default="false"/>
   <setting type="bool" id="united_search" visible="false" default="true" />
   <setting type="text" id="us_command" visible="false" default="mode=search&keyword=" />
   <setting type="sep"/>
@@ -8,13 +7,3 @@
   <setting label=6002 type="labelenum" id="episodsViewMode" values="List|Big List|Media Info|Media Info 2|Fanart|Fanart 2" default="Big List"/>
   <setting label=7000 type="bool" id="quality" default="true"/>
 </settings>
-
-
-<!--
-50=List
-51=Big List
-52=Media Info
-54=Media Info 2
-57=Fanart 1 (My Personal Favourite)
-59=Fanart 2
---> 

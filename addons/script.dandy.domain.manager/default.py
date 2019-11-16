@@ -18,7 +18,7 @@ HANDLE = int(sys.argv[1])
 PARAMS = sys.argv[2]
 ICON = ADDON.getAddonInfo('icon')
 
-ENABLED_SETTINGS = ("domain", "site_domain")
+SETTINGS = ADDON.getSetting('settings') if ADDON.getSetting('settings') else "domain"
 
 def show_message(msg):
     xbmc.executebuiltin("XBMC.Notification(%s, %s, %s)" % ("MESSAGE", msg, str(5 * 1000)))
@@ -44,7 +44,7 @@ def get_addons():
 def find_domain_setting(addon):
     domain = None
     setting = None
-    for item in ENABLED_SETTINGS:
+    for item in SETTINGS.split(","):
         domain = addon.getSetting(item)
         if domain:
             setting = item

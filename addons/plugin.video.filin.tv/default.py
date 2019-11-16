@@ -1,6 +1,6 @@
 #!/usr/bin/python
-# Writer (c) 2012-2017, MrStealth, dandy
-# Rev. 2.2.0
+# Writer (c) 2012-2019, MrStealth, dandy
+# Rev. 2.4.0
 # -*- coding: utf-8 -*-
 
 import os
@@ -13,7 +13,8 @@ import json
 from urllib2 import Request, urlopen, URLError
 common = XbmcHelpers
 
-BASE_URL = 'http://www.filin.tv'
+DOMAIN = 'filin.tv'
+BASE_URL = 'http://' + DOMAIN
 pluginhandle = int(sys.argv[1])
 
 ID = 'plugin.video.filin.tv'
@@ -24,15 +25,6 @@ addon_path    = Addon.getAddonInfo('path')
 
 import Translit as translit
 translit = translit.Translit()
-
-# UnifiedSearch
-use_unified = True
-try:
-    sys.path.append(os.path.dirname(__file__)+ '/../plugin.video.unified.search')
-    from unified_search import UnifiedSearch
-except: 
-    use_unified = False
-    pass
 
 VIEW_MODES = {
     "List" : '50',
@@ -181,13 +173,9 @@ def USTranslit(keyword, external, transpar):
     if external == 'usearch':
         return urllib.unquote_plus(keyword)
     else:
-        return translit.rus(keyword) if ((transpar == None) or (transpar == "true")) else keyword
+        return translit.rus(keyword) if ((transpar != None) and (transpar == "true")) else keyword
 
 def search(keyword, external, transpar = None):
-
-    if (external == 'unified') and (use_unified == False):
-        return
-
     keyword = USTranslit(keyword, external, transpar) if (external != None) else getUserInput()
     if not keyword:
         return
@@ -215,9 +203,9 @@ def search(keyword, external, transpar = None):
     headers = {
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
         "Connection": "keep-alive",
-        "Host": "filin.tv",
-        "Origin": "http://filin.tv",
-        "Referer": "http://filin.tv/",
+        "Host": DOMAIN,
+        "Origin": BASE_URL,
+        "Referer": BASE_URL + "/",
         "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"
     }
 
@@ -244,8 +232,6 @@ def search(keyword, external, transpar = None):
             print 'The server couldn\'t fulfill the request.'
             print 'Error code: ', e.code
     else:
-        unified_search_results = []
-
         response = response.read()
         content = common.parseDOM(response, "div", attrs = { "id":"dle-content" })
         blocks = common.parseDOM(content, "div", attrs = { "class":"block" })
@@ -262,29 +248,23 @@ def search(keyword, external, transpar = None):
 
                 uri = sys.argv[0] + '?mode=SHOW&url=' + links[i] + "&thumbnail="
  
-                if (external == 'unified'):
-                    unified_search_results.append({'title': title, 'url': links[i], 'image': addon_icon, 'plugin': ID})
-                else:
-                    item = xbmcgui.ListItem(title, iconImage=addon_icon, thumbnailImage=addon_icon)
-      
-                    # TODO: move to "addFavorite" function
-                    script = "special://home/addons/plugin.video.filin.tv/contextmenuactions.py"
-                    params = "add|%s"%links[i] + "|%s"%title
-                    runner = "XBMC.RunScript(" + str(script)+ ", " + params + ")"
-                    item.addContextMenuItems([(localize(language(3001)), runner)])
+                item = xbmcgui.ListItem(title, iconImage=addon_icon, thumbnailImage=addon_icon)
+     
+                # TODO: move to "addFavorite" function
+                script = "special://home/addons/plugin.video.filin.tv/contextmenuactions.py"
+                params = "add|%s"%links[i] + "|%s"%title
+                runner = "XBMC.RunScript(" + str(script)+ ", " + params + ")"
+                item.addContextMenuItems([(localize(language(3001)), runner)])
   
-                    xbmcplugin.addDirectoryItem(pluginhandle, uri, item, True)
+                xbmcplugin.addDirectoryItem(pluginhandle, uri, item, True)
 
         if (lines == 0) and (external == None):
             item = xbmcgui.ListItem(colorize(language(2004), 'FFFF4000'))
             item.setProperty('IsPlayable', 'false')
             xbmcplugin.addDirectoryItem(pluginhandle, '', item, False)
 
-        if (external == 'unified'):
-            UnifiedSearch().collect(unified_search_results)
-        else: 
-            xbmcplugin.setContent(pluginhandle, 'movies')
-            xbmcplugin.endOfDirectory(pluginhandle, True)
+        xbmcplugin.setContent(pluginhandle, 'movies')
+        xbmcplugin.endOfDirectory(pluginhandle, True)
 
 
 def getCategories(url):
@@ -341,7 +321,7 @@ def getCategoryItems(url, categorie, page):
 
         if max >= 20 and max < len(links):
             uri = sys.argv[0] + '?mode=CNEXT&url=' + url + '&page=' + str(page+1) + '&categorie=' + categorie
-            item = xbmcgui.ListItem(localize(language(3000)))
+            item = xbmcgui.ListItem("[COLOR=orange]" + localize(language(3000)) + "[/COLOR]")
             xbmcplugin.addDirectoryItem(pluginhandle, uri, item, True)
 
         xbmcplugin.setContent(pluginhandle, 'movies')
@@ -349,26 +329,26 @@ def getCategoryItems(url, categorie, page):
 
 def listGenres():
     genres = [
-                 'http://www.filin.tv/otechestvennue/',
-                 'http://www.filin.tv/detectiv/',
-                 'http://www.filin.tv/romance/',
-                 'http://www.filin.tv/action/',
-                 'http://www.filin.tv/fantastika/',
-                 'http://www.filin.tv/kriminal/',
-                 'http://www.filin.tv/comedi/',
-                 'http://www.filin.tv/teleshou/',
-                 'http://www.filin.tv/multfilms/',
-                 'http://www.filin.tv/adventure/',
-                 'http://www.filin.tv/fantasy/',
-                 'http://www.filin.tv/horror/',
-                 'http://www.filin.tv/drama/',
-                 'http://www.filin.tv/history/',
-                 'http://www.filin.tv/triller/',
-                 'http://www.filin.tv/mystery/',
-                 'http://www.filin.tv/sport/',
-                 'http://www.filin.tv/musical/',
-                 'http://www.filin.tv/dokumentalnii/',
-                 'http://www.filin.tv/war/'
+                 BASE_URL + '/otechestvennue/',
+                 BASE_URL + '/detectiv/',
+                 BASE_URL + '/romance/',
+                 BASE_URL + '/action/',
+                 BASE_URL + '/fantastika/',
+                 BASE_URL + '/kriminal/',
+                 BASE_URL + '/comedi/',
+                 BASE_URL + '/teleshou/',
+                 BASE_URL + '/multfilms/',
+                 BASE_URL + '/adventure/',
+                 BASE_URL + '/fantasy/',
+                 BASE_URL + '/horror/',
+                 BASE_URL + '/drama/',
+                 BASE_URL + '/history/',
+                 BASE_URL + '/triller/',
+                 BASE_URL + '/mystery/',
+                 BASE_URL + '/sport/',
+                 BASE_URL + '/musical/',
+                 BASE_URL + '/dokumentalnii/',
+                 BASE_URL + '/war/'
     ]
 
 
@@ -483,7 +463,7 @@ def getItems(url):
 
     next = url + '/page/2' if url.find("page") == -1 else url[:-1] + str(int(url[-1])+1)
 
-    xbmcItem(next, localize(language(3000)), 'RNEXT')
+    xbmcItem(next, "[COLOR=orange]" + localize(language(3000)) + "[/COLOR]", 'RNEXT')
 
     try:
         mode = VIEW_MODES[Addon.getSetting('seasonsViewMode')]
@@ -627,9 +607,7 @@ try:
 except: pass
 
 keyword = params['keyword'] if 'keyword' in params else None
-external = 'unified' if 'unified' in params else None
-if external == None:
-    external = 'usearch' if 'usearch' in params else None    
+external = 'usearch' if 'usearch' in params else None    
 transpar = params['translit'] if 'translit' in params else None
 
 if mode == 'RNEXT':
