@@ -28,7 +28,7 @@ socket.setdefaulttimeout(120)
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0"
 PLAYLIST_DOMAIN = 's9.cdnapponline.com'
-QUALITY_TYPES = (360, 480, 720, 1080)
+QUALITY_TYPES = (360, 480, 720, 1080, 2160)
 
 
 class HdrezkaTV:
@@ -338,6 +338,8 @@ class HdrezkaTV:
         for link in links:
             if not ("Ultra" in link):
                 manifest_links[int(link.split("]")[0].replace("[", "").replace("p", ""))] = link.split("]")[1]
+            else:
+                manifest_links[2160] = link.split("]")[1]
         return manifest_links
 
     def show(self, url):
