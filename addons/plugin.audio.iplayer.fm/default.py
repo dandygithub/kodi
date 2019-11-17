@@ -22,7 +22,7 @@ class iPlayer():
 
         self.language = self.addon.getLocalizedString
         self.handle = int(sys.argv[1])
-        self.url = 'http://iplayer.fm'
+        self.url = 'https://ipleer.fm'
 
         self.icover = os.path.join(self.path, 'resources/icons/cover.png')
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
@@ -54,11 +54,11 @@ class iPlayer():
         item = xbmcgui.ListItem('[COLOR=FF00FFF0]%s[/COLOR]' % self.language(4003), iconImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        uri = sys.argv[0] + '?mode=%s&url=%s' % ('playlist', 'http://iplayer.fm/random')
+        uri = sys.argv[0] + '?mode=%s&url=%s' % ('playlist', self.url + '/random')
         item = xbmcgui.ListItem('[COLOR=FF00FFF0]%s[/COLOR]' % self.language(4004), iconImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getPlaylist('http://iplayer.fm/top')
+        self.getPlaylist(self.url + '/top/page/2/')
 
     def getPlaylist(self, url):
         page = common.fetchPage({"link": url})
@@ -120,9 +120,10 @@ class iPlayer():
         links = common.parseDOM(styles, "a", ret="href")
 
         for i, genre in enumerate(genres):
-            uri = sys.argv[0] + '?mode=%s&url=%s' % ('playlist', urllib.quote(self.url + links[i]))
-            item = xbmcgui.ListItem(genre, iconImage=self.icon)
-            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+            if (links[i] != "/"):
+                uri = sys.argv[0] + '?mode=%s&url=%s' % ('playlist', urllib.quote(self.url + links[i]))
+                item = xbmcgui.ListItem(genre, iconImage=self.icon)
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.endOfDirectory(self.handle, True)
 
