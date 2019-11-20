@@ -230,7 +230,7 @@ class HdrezkaTV:
 
         if not len(titles) < 16:
             uri = sys.argv[0] + '?mode=%s&url=%s&page=%d' % ("index", url, page + 1)
-            item = xbmcgui.ListItem(self.language(1004), iconImage=self.inext)
+            item = xbmcgui.ListItem("[COLOR=orange]" + self.language(1004) + "[/COLOR]", iconImage=self.inext)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'movies')
@@ -327,6 +327,39 @@ class HdrezkaTV:
 
         return iframe
 
+    def selectTranslator3(self, content, tvshow, post_id, url):
+        try:
+            div = common.parseDOM(content, 'ul', attrs={'id': 'translators-list'})[0]
+        except:
+            return tvshow
+        titles = common.parseDOM(div, 'li')
+        ids = common.parseDOM(div, 'li', ret="data-translator_id")
+        if len(titles) > 1:
+            dialog = xbmcgui.Dialog()
+            index_ = dialog.select(self.language(1006), titles)
+            if int(index_) < 0:
+                index_ = 0
+        else:
+            index_ = 0
+        idt = ids[index_]
+
+        data = {
+            "id": post_id,
+            "translator_id": idt
+        }
+        headers = {
+            "Host": self.domain,
+            "Origin": "http://" + self.domain,
+            "Referer": url,
+            "User-Agent": USER_AGENT,
+            "X-Requested-With": "XMLHttpRequest"
+        }
+        response = self.post_response(self.url + "/ajax/get_cdn_series/", data, headers).json()
+        seasons = response["seasons"]
+        episodes = response["episodes"]
+        playlist = common.parseDOM(episodes, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
+        return playlist
+
     def getIFrame(self, content):
         return self.selectTranslator2(content)
 
@@ -349,9 +382,12 @@ class HdrezkaTV:
         content = common.parseDOM(response.text, "div", attrs={"class": "b-content__main"})[0]
         image = self.url + common.parseDOM(content, "img", attrs={"itemprop": "image"}, ret="src")[0]
         title = common.parseDOM(content, "h1")[0]
+        post_id = common.parseDOM(content, "input", attrs={"id": "post_id"}, ret="value")[0]
 
         tvshow = common.parseDOM(response.text, "div", attrs={"id": "simple-episodes-tabs"})
         if tvshow:
+            if self.translator == "select":
+                tvshow = self.selectTranslator3(content, tvshow, post_id, url)
             titles = common.parseDOM(tvshow, "li")
             ids = common.parseDOM(tvshow, "li", ret='data-id')
             seasons = common.parseDOM(tvshow, "li", ret='data-season_id')
