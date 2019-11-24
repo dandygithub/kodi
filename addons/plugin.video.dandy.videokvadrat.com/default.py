@@ -11,6 +11,8 @@ from operator import itemgetter
 import XbmcHelpers
 common = XbmcHelpers
 
+import SearchHistory
+
 class Videokvadrat():
     def __init__(self):
         self.id = 'plugin.video.dandy.videokvadrat.com'
@@ -84,12 +86,8 @@ class Videokvadrat():
         uri = sys.argv[0] + '?mode=%s' % ("clean")
         item = xbmcgui.ListItem("[COLOR=FF00FF00][%s][/COLOR]" % self.language(1002), iconImage=self.icon, thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-        
-        words = []
-        history = self.addon.getSetting('history')
-        if history:
-        	words = history.split(",")
-        
+
+        words = SearchHistory.get_history()
         for word in reversed(words):
         	uri = sys.argv[0] + '?mode=%s&keyword=%s&url=%s' % ("search_main", word, self.url)
         	item = xbmcgui.ListItem(word, iconImage=self.icon, thumbnailImage=self.icon)
@@ -98,7 +96,7 @@ class Videokvadrat():
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def clean(self):
-        self.addon.setSetting('history', '')
+        SearchHistory.clean()
       
     def index_(self, content):
         div = common.parseDOM(content, "div", attrs={"class": "row"})[0]
@@ -334,13 +332,8 @@ class Videokvadrat():
         if kbd.isConfirmed():
             keyword = kbd.getText()
 
-        words = []
-        history = self.addon.getSetting('history')
-        if history:
-        	words = history.split(",")
-        if keyword and keyword not in words:
-        	words.append(keyword)
-        	self.addon.setSetting('history', ','.join(words))
+        SearchHistory.add_to_history(keyword)
+
         return keyword
 
     def search(self, url, keyword, main):

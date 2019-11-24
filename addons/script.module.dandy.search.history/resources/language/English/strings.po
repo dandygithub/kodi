@@ -1,0 +1,15 @@
+# Kodi Media Center language file
+# Addon Name: Search History
+# Addon id: script.module.dandy.search.history
+# Addon Provider: dandy
+
+msgid ""
+msgstr ""
+
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+msgctxt "#32000"
+msgid "[COLOR lightgreen]Search[/COLOR] History"
+msgstr ""

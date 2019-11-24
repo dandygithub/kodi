@@ -168,10 +168,11 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.dandy.videokvadrat.com" name="videokvadrat.com" version="1.1.5" provider-name="dandy">
+<addon id="plugin.video.dandy.videokvadrat.com" name="videokvadrat.com" version="1.1.6" provider-name="dandy">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.xbmc.helpers" version="2.1.0"/>
+        <import addon="script.module.dandy.search.history" version="1.0.0"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">>
         <provides>video</provides>
@@ -341,6 +342,35 @@
     <disclaimer lang="en"></disclaimer>
     <language></language>
     <license>GNU GPL v.3</license>
+  </extension>
+</addon>
+
+<addon id="script.module.dandy.search.history" name="Search History" version="1.0.0" provider-name="dandy">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="script.module.autocompletion" version="1.0.0"/>
+  </requires>
+  <extension point='xbmc.python.module' library='resources/lib' />
+  <extension point='xbmc.service' library="default.py" />
+  <!--<extension point="xbmc.python.script" library="default.py">
+    <provides>executable</provides>
+  </extension>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="kodi.context.item" library="default.py">
+    <item>
+      <label>$ADDON[script.module.dandy.search.history 32000]</label>
+      <visible>Container.Content(tvshows)|Container.Content(movies)|Container.Content(musicvideos)</visible>
+    </item>
+  </extension>-->
+  <extension point="kodi.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">Search History</summary>
+    <description lang="en">Search History</description>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
+    <forum></forum>
+    <source></source>
   </extension>
 </addon>
 
