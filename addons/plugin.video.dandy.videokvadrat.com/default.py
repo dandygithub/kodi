@@ -49,8 +49,6 @@ class Videokvadrat():
             self.index(url, page, kind)
         if mode == 'history':
             self.history()
-        if mode == 'clean':
-            self.clean()
         if (mode == 'search') or (mode == 'search_main'):
             self.search(url, keyword, mode == "search_main")
         if (mode == 'parts'):
@@ -83,10 +81,6 @@ class Videokvadrat():
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def history(self):    
-        uri = sys.argv[0] + '?mode=%s' % ("clean")
-        item = xbmcgui.ListItem("[COLOR=FF00FF00][%s][/COLOR]" % self.language(1002), iconImage=self.icon, thumbnailImage=self.icon)
-        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-
         words = SearchHistory.get_history()
         for word in reversed(words):
         	uri = sys.argv[0] + '?mode=%s&keyword=%s&url=%s' % ("search_main", word, self.url)
@@ -95,9 +89,6 @@ class Videokvadrat():
 
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def clean(self):
-        SearchHistory.clean()
-      
     def index_(self, content):
         div = common.parseDOM(content, "div", attrs={"class": "row"})[0]
         titlesdiv = common.parseDOM(div, "div", attrs={"class": "title"})

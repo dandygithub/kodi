@@ -168,7 +168,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.dandy.videokvadrat.com" name="videokvadrat.com" version="1.1.6" provider-name="dandy">
+<addon id="plugin.video.dandy.videokvadrat.com" name="videokvadrat.com" version="1.1.7" provider-name="dandy">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.xbmc.helpers" version="2.1.0"/>
@@ -220,12 +220,13 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.kinokong.net" name="Kinokong.net" version="1.4.4" provider-name="MrStealth, dandy">
+<addon id="plugin.video.kinokong.net" name="Kinokong.net" version="1.4.5" provider-name="MrStealth, dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.1.0"/>
     <import addon="script.module.translit" version="2.1.0"/>
     <import addon="script.module.videohosts" version="1.0.0"/>
+    <import addon="script.module.dandy.search.history" version="1.0.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
     <provides>video</provides>
@@ -288,7 +289,7 @@
     </extension>
 </addon>
 
-<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.4.1" provider-name="dandy">
+<addon id="repository.dandy.kodi" name="Dandy's Kodi Repository" version="1.4.2" provider-name="dandy">
         <requires>
                 <import addon="xbmc.addon" version="16.0.0"/>
         </requires>
@@ -345,17 +346,15 @@
   </extension>
 </addon>
 
-<addon id="script.module.dandy.search.history" name="Search History" version="1.0.0" provider-name="dandy">
+<addon id="script.module.dandy.search.history" name="Search History" version="1.0.1" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.autocompletion" version="1.0.0"/>
   </requires>
-  <extension point='xbmc.python.module' library='resources/lib' />
-  <extension point='xbmc.service' library="default.py" />
-  <!--<extension point="xbmc.python.script" library="default.py">
+  <extension point="xbmc.python.script" library="default.py">
     <provides>executable</provides>
   </extension>
-  <extension point="xbmc.python.pluginsource" library="default.py">
+  <!--<extension point="xbmc.python.pluginsource" library="default.py">
     <provides>video</provides>
   </extension>
   <extension point="kodi.context.item" library="default.py">
@@ -364,6 +363,7 @@
       <visible>Container.Content(tvshows)|Container.Content(movies)|Container.Content(musicvideos)</visible>
     </item>
   </extension>-->
+  <extension point='xbmc.python.module' library='resources/lib' />
   <extension point="kodi.addon.metadata">
     <platform>all</platform>
     <summary lang="en">Search History</summary>
@@ -419,7 +419,7 @@
   </extension>
 </addon>
 
-<addon id='script.module.xbmc.helpers' version='2.1.0' name='Xbmc helpers module based on Parsedom module' provider-name='mrstealth, dandy'>
+<addon id='script.module.xbmc.helpers' version='2.1.1' name='Xbmc helpers module based on Parsedom module' provider-name='mrstealth, dandy'>
   <requires>
     <import addon="xbmc.python" version="2.1.0" />
   </requires>

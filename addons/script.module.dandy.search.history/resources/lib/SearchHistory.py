@@ -6,9 +6,10 @@
 import sys
 import xbmcaddon
 
-HANDLE = int(sys.argv[1])
 ID = 'script.module.dandy.search.history'
 ADDON = xbmcaddon.Addon(ID)
+HANDLE = int(sys.argv[1]) if (len(sys.argv) > 1) else None
+PARAMS = sys.argv[2] if (len(sys.argv) > 2) else None
 PATH = ADDON.getAddonInfo('path')
 
 def get_history():
