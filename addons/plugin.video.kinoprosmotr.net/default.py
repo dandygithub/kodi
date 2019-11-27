@@ -22,6 +22,8 @@ translit = translit.Translit()
 
 from videohosts import host_manager
 
+import SearchHistory as history
+
 class Kinoprosmotr():
     def __init__(self):
         self.id = 'plugin.video.kinoprosmotr.net'
@@ -54,12 +56,16 @@ class Kinoprosmotr():
         page = params['page'] if 'page' in params else 1
 
         keyword = params['keyword'] if 'keyword' in params else None
-        external = 'usearch' if 'usearch' in params else None    
+        external = 'main' if 'main' in params else None
+        if not external:
+            external = 'usearch' if 'usearch' in params else None
 
         if mode == 'play':
             self.playItem(url, url2)
         if mode == 'search':
             self.search(keyword, external)
+        if mode == 'history':
+            self.history()
         if mode == 'genres':
             self.listGenres(url)
         if mode == 'show':
@@ -71,7 +77,11 @@ class Kinoprosmotr():
 
     def menu(self):
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", self.url)
-        item = xbmcgui.ListItem("[COLOR=FF00FF00][%s][/COLOR]" % self.language(2000), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(2000), thumbnailImage=self.icon)
+        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        uri = sys.argv[0] + '?mode=%s&url=%s' % ("history", self.url)
+        item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(2002), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("genres", self.url)
@@ -418,6 +428,15 @@ class Kinoprosmotr():
         item = xbmcgui.ListItem(path=url + "|Referer="+url2)
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
+    def history(self):
+        words = history.get_history()
+        for word in reversed(words):
+            uri = sys.argv[0] + '?mode=%s&keyword=%s&main=1' % ("search", word)
+            item = xbmcgui.ListItem(word, iconImage=self.icon, thumbnailImage=self.icon)
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        xbmcplugin.endOfDirectory(self.handle, True)
+
     def getUserInput(self):
         kbd = xbmc.Keyboard()
         kbd.setDefault('')
@@ -430,6 +449,9 @@ class Kinoprosmotr():
                 keyword = translit.rus(kbd.getText())
             else:
                 keyword = kbd.getText()
+        
+            history.add_to_history(keyword) 
+
         return keyword
 
     def search(self, keyword, external):

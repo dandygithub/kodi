@@ -25,6 +25,8 @@ from videohosts import host_manager
 # My Favorites module
 from MyFavorites import MyFavorites
 
+import SearchHistory as history
+
 # YouTube module
 sys.path.append(os.path.join(os.path.dirname(__file__), "lib"))
 
@@ -70,12 +72,16 @@ class OnlineLife():
         page = params['page'] if 'page' in params else 1
 
         keyword = params['keyword'] if 'keyword' in params else None
-        external = 'usearch' if 'usearch' in params else None    
+        external = 'main' if 'main' in params else None
+        if not external:
+            external = 'usearch' if 'usearch' in params else None
 
         if mode == 'play':
             self.play(url)
         if mode == 'search':
             self.search(keyword, external)
+        if mode == 'history':
+            self.history()
         if mode == 'genres':
             self.listGenres(url)
         if mode == 'show':
@@ -90,6 +96,10 @@ class OnlineLife():
     def menu(self):
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", self.url)
         item = xbmcgui.ListItem("[B][COLOR=FF00FF00]%s[/COLOR][/B]" % self.language(2000), thumbnailImage=self.icon)
+        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        uri = sys.argv[0] + '?mode=%s&url=%s' % ("history", self.url)
+        item = xbmcgui.ListItem("[B][COLOR=FF00FF00]%s[/COLOR][/B]" % self.language(2003), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         self.favorites.ListItem()
@@ -328,6 +338,15 @@ class OnlineLife():
         except Exception, e:
             self.showErrorMessage(e)
 
+    def history(self):
+        words = history.get_history()
+        for word in reversed(words):
+            uri = sys.argv[0] + '?mode=%s&keyword=%s&main=1' % ("search", word)
+            item = xbmcgui.ListItem(word, iconImage=self.icon, thumbnailImage=self.icon)
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        xbmcplugin.endOfDirectory(self.handle, True)
+
     def getUserInput(self):
         kbd = xbmc.Keyboard()
         kbd.setDefault('')
@@ -340,6 +359,9 @@ class OnlineLife():
                 keyword = translit.rus(kbd.getText())
             else:
                 keyword = kbd.getText()
+
+            history.add_to_history(keyword)
+
         return keyword
 
     def search(self, keyword, external):

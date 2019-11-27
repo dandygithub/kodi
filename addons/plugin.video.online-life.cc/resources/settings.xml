@@ -4,7 +4,7 @@
     <setting id="translit" type="bool" label="2002" default="false" />
     <setting type="sep"/>
     <setting id="hd_youtube_videos" type="bool" label="Youtube HD videos enabled" default="false" />    
-    <setting id="domain" type="text" label="Domain" default="2.onlinelifetv.com"/>
+    <setting id="domain" type="text" label="Domain" default="3.onlinelifetv.com"/>
     <setting type="bool" id="united_search" visible="false" default="true" />
     <setting type="text" id="us_command" visible="false" default="mode=search&keyword=" />
 </settings>
