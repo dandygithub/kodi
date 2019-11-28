@@ -37,5 +37,5 @@ def delete_from_history(keyword):
     if history:
         words = history.split(",")
         if keyword and keyword in words:
-            words.delete(keyword)
+            words.remove(keyword)
             ADDON.setSetting('history', ','.join(words))

@@ -11,5 +11,5 @@ msgstr ""
 "Language: en\n"
 
 msgctxt "#32000"
-msgid "[COLOR lightgreen]Search[/COLOR] History"
+msgid "[COLOR=lightgreen]Add[/COLOR] to history"
 msgstr ""
