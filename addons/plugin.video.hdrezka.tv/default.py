@@ -21,9 +21,11 @@ import xbmcaddon
 import xbmcgui
 import xbmcplugin
 from videohosts import moonwalk
+import SearchHistory as history
 
 common = XbmcHelpers
 transliterate = Translit()
+
 socket.setdefaulttimeout(120)
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0"
@@ -77,7 +79,9 @@ class HdrezkaTV:
         params = common.getParameters(sys.argv[2])
         mode = params.get('mode')
         url = urllib.unquote_plus(params['url']) if 'url' in params else None
-        external = 'usearch' if 'usearch' in params else None
+        external = 'main' if 'main' in params else None
+        if not external:
+            external = 'usearch' if 'usearch' in params else None
 
         if mode == 'play':
             self.play(url)
@@ -102,6 +106,8 @@ class HdrezkaTV:
             self.sub_categories(url)
         if mode == 'search':
             self.search(params.get('keyword'), external)
+        if mode == 'history':
+            self.history()
         if mode == 'collections':
             self.collections(int(params.get('page', 1)))
         elif mode is None:
@@ -110,6 +116,10 @@ class HdrezkaTV:
     def menu(self):
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", self.url)
         item = xbmcgui.ListItem("[COLOR=FF00FF00][%s][/COLOR]" % self.language(1000), thumbnailImage=self.icon)
+        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        uri = sys.argv[0] + '?mode=%s&url=%s' % ("history", self.url)
+        item = xbmcgui.ListItem("[COLOR=FF00FF00][%s][/COLOR]" % self.language(1008), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("categories", self.url)
@@ -534,6 +544,14 @@ class HdrezkaTV:
         response = self.get_response(self.url + '/engine/ajax/getvideo.php', data, referer=referer).json()
         return response['link']['hls']
 
+    def history(self):
+        words = history.get_history()
+        for word in reversed(words):
+            uri = sys.argv[0] + '?mode=%s&keyword=%s&main=1' % ("search", word)
+            item = xbmcgui.ListItem(word, iconImage=self.icon, thumbnailImage=self.icon)
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+        xbmcplugin.endOfDirectory(self.handle, True)
+
     def getUserInput(self):
         kbd = xbmc.Keyboard()
         kbd.setDefault('')
@@ -546,6 +564,9 @@ class HdrezkaTV:
                 keyword = transliterate.rus(kbd.getText())
             else:
                 keyword = kbd.getText()
+
+            history.add_to_history(keyword)
+             
         return keyword
 
     def search(self, keyword, external):
