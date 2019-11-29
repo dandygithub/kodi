@@ -217,7 +217,8 @@ class HdrezkaTV:
             info = self.get_item_description(post_ids[i])
             title = "%s %s [COLOR=55FFFFFF](%s)[/COLOR]" % (name, color_rating(info['rating']), country_years[i])
             image = self._normalize_url(common.parseDOM(div_covers[i], "img", ret='src')[0])
-            uri = sys.argv[0] + '?mode=show&url=%s' % links[i].replace("http:", "https:")
+            link = self.dom_protocol + "://" + links[i].split("://")[-1]
+            uri = sys.argv[0] + '?mode=show&url=%s' % link
             year, country, genre = get_media_attributes(country_years[i])
             item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
             item.setInfo(
