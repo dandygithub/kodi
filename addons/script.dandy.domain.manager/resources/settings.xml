@@ -2,5 +2,6 @@
 <settings>
     <category label="Common">
         <setting label="Settings list" type="text" id="settings" default="domain,site_domain"/>
+        <setting label="Protocol settings list" type="text" id="protocol" default="dom_protocol"/>        
     </category>
 </settings>
