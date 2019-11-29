@@ -19,16 +19,31 @@ HANDLE = int(sys.argv[1]) if (len(sys.argv) > 1) else None
 PARAMS = sys.argv[2] if (len(sys.argv) > 2) else None
 ICON = ADDON.getAddonInfo('icon')
 
+def exist_us():
+    result = False
+    try:
+        addon_us = xbmcaddon.Addon("plugin.video.united.search")
+        result = True 
+    except:
+        pass 
+    return result
+
 def list_items():
     words = history.get_history()
-    for word in reversed(words):
-        uri = "plugin://plugin.video.united.search/?action=search&keyword=%s" % word
-        item = xbmcgui.ListItem(word, iconImage=ICON, thumbnailImage=ICON)
+    exist = exist_us()
 
-        commands = []
-        uricmd = sys.argv[0] + '?mode=delete&keyword=%s' % word
-        commands.append(("[COLOR=orange]Delete[/COLOR] item", "Container.Update(%s)" % (uricmd), ))
-        item.addContextMenuItems(commands)
+    for word in reversed(words):
+        if (exist == True):
+	    uri = "plugin://plugin.video.united.search/?action=search&keyword=%s" % word
+            item = xbmcgui.ListItem(word, iconImage=ICON, thumbnailImage=ICON)
+
+            commands = []
+            uricmd = sys.argv[0] + '?mode=delete&keyword=%s' % word
+            commands.append(("[COLOR=orange]Delete[/COLOR] item", "Container.Update(%s)" % (uricmd), ))
+            item.addContextMenuItems(commands)
+        else:
+	    uri = sys.argv[0] + '?mode=delete&keyword=%s' % word
+            item = xbmcgui.ListItem(word, iconImage=ICON, thumbnailImage=ICON)
 
         xbmcplugin.addDirectoryItem(HANDLE, uri, item, False)
     xbmcplugin.endOfDirectory(HANDLE, True)
@@ -39,7 +54,9 @@ def search_by_us(keyword):
     #xbmc.executebuiltin("Container.Update(%s)" % uricmd)
 
 def delete_item(keyword):
-    words = history.delete_from_history(keyword)
+    if (xbmcgui.Dialog().yesno("", "", "Delete item from history?") == True):
+        words = history.delete_from_history(keyword)
+        xbmc.executebuiltin("Container.Update(%s)" % sys.argv[0])
 
 def main():
     params = common.getParameters(PARAMS)
