@@ -47,9 +47,10 @@ def select_translator(content, url):
         tr_div = common.parseDOM(content, 'div', attrs={"class": "bar-button pull-right"})[0]
     except:
         return content, url
-
     translators_ = common.parseDOM(tr_div, 'a')
-    translators = common.parseDOM(translators_, 'span')
+    translators = []
+    for item in translators_:
+        translators.append(tools.strip(item)) 
     tr_values = common.parseDOM(tr_div, 'a', ret="href")
 
     if len(translators) > 1:
@@ -88,7 +89,6 @@ def select_episode(data, url):
     url_ = url
     sindex = None
     eindex = None
-    data, url = select_translator(data, url)
     surl, season, sindex = select_season(data)
     if season == "":
         return "", sindex, eindex
@@ -132,8 +132,10 @@ def get_playlist(url):
     except:
         return manifest_links, subtitles, season, episode 
 
+    response, url = select_translator(response, url)
+
     data_type = common.parseDOM(response, "div", attrs={"id": "videoframe"}, ret="data-type")[0]
-        
+
     #tvshow
     if (data_type == "serial"):
         response, season, episode = select_episode(response, url)
