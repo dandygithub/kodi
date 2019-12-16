@@ -216,7 +216,9 @@ class HdrezkaTV:
         for i, name in enumerate(titles):
             info = self.get_item_description(post_ids[i])
             title = "%s %s [COLOR=55FFFFFF](%s)[/COLOR]" % (name, color_rating(info['rating']), country_years[i])
-            image = self._normalize_url(common.parseDOM(div_covers[i], "img", ret='src')[0])
+            #image = self._normalize_url(common.parseDOM(div_covers[i], "img", ret='src')[0])
+            image = common.parseDOM(div_covers[i], "img", ret='src')[0]
+		
             link = self.dom_protocol + "://" + links[i].split("://")[-1]
             uri = sys.argv[0] + '?mode=show&url=%s' % link
             year, country, genre = get_media_attributes(country_years[i])
@@ -589,7 +591,9 @@ class HdrezkaTV:
                 link = common.parseDOM(videoitem, "a", ret='href')[0]
                 title = common.parseDOM(videoitem, "a")[1]
 
-                image = self._normalize_url(common.parseDOM(videoitem, "img", ret='src')[0])
+                #image = self._normalize_url(common.parseDOM(videoitem, "img", ret='src')[0])
+                image = common.parseDOM(videoitem, "img", ret='src')[0]
+
                 descriptiondiv = common.parseDOM(videoitem, "div", attrs={"class": "b-content__inline_item-link"})[0]
                 description = common.parseDOM(descriptiondiv, "div")[0]
 
