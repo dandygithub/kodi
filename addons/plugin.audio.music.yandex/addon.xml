@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.audio.music.yandex" name="Яндекс Музыка" version="0.1.1" provider-name="DesSolo, dandy">
+<addon id="plugin.audio.music.yandex" name="Яндекс Музыка" version="0.1.2" provider-name="DesSolo, dandy">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
     </requires>

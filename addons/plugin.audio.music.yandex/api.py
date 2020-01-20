@@ -265,10 +265,10 @@ class YandexMusic(AbstractYandexModel):
         return self.make_response('/handlers/main.jsx', params=params)
 
     def get_albums(self, ids):
-        data = {
+        params = {
             'albumIds': ','.join(map(str, ids))
         }
-        return self.make_response('/handlers/albums.jsx', data=data)
+        return self.make_response('/handlers/albums.jsx', params=params)
 
     def get_playlists(self, ids):
         data = {
