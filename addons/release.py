@@ -29,7 +29,7 @@ for directory in os.listdir("."):
             if not os.path.exists(zip_dir):
                 os.makedirs(zip_dir)
 
-            os.system("copy /Y %s %s" %(os.path.join(fulldir, "icon.png"), zip_dir))
+            os.system("copy /Y %s %s" %(os.path.join(fulldir, "icon1.png"), zip_dir))
             os.system("copy /Y %s %s" %(os.path.join(fulldir, "fanart.jpg"), zip_dir))
             os.system("copy /Y %s %s" %(os.path.join(fulldir, "changelog.txt"), zip_dir))
 
