@@ -15,7 +15,12 @@ jobs:
         architecture: 'x64'
     - name: Build zip files
       run: python ci_release.py
-    - name: Run a multi-line script
+    - name: Commit files
       run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git commit -m "Add zip files" -a
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
