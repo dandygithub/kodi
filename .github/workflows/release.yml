@@ -1,4 +1,4 @@
-name: CI
+name: Release new version
 
 on: [push]
 
@@ -9,8 +9,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Run a one-line script
-      run: echo Hello, world!
+    - name: Build zip files
+      run: python ci_release.py
     - name: Run a multi-line script
       run: |
         echo Add other actions to build,
