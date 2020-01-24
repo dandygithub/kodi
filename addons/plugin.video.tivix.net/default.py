@@ -7,6 +7,7 @@ import XbmcHelpers
 import json
 import datetime, time
 from resources.lib.decoder import decoder
+import re, base64
 
 socket.setdefaulttimeout(120)
 common = XbmcHelpers
@@ -147,6 +148,7 @@ class Tivix():
                 channels[channelid]["epg"] = data[channelid]
             except:
                 pass
+
         return channels
 
     def getLocalTime(self, epgstart, epgend):
@@ -213,22 +215,49 @@ class Tivix():
         if cname == None:
             xbmcplugin.setContent(self.handle, 'files')
             xbmcplugin.endOfDirectory(self.handle, True)
-
         return currname, duration, listItems
 
+    def tivixDecode(self, x):
+        a = x[2:]
+        file3_separator = '//'
+        # bk0, bk1...bk4
+        bk = ['3d4788f5-ef50-4329-afb6-c400ae0897fa', '44d1e467-f246-4669-92e1-8ee6b6b3b314', '970e632e-2d80-47c9-85e3-2910c42cb8df',
+              '33f3b87a-1c7c-4076-a689-55c56a6d09d7', 'ce2173f7-f004-4699-afbd-c10747362fd4']
+        for k in reversed(bk):
+            a = a.replace(file3_separator + base64.standard_b64encode(urllib.quote(k, safe='~()*!.\'')), '')
+        try:
+            template = base64.standard_b64decode(a)
+        except:
+            template = ''
+        return template
+
+    def getPlaylist(self, html): 
+        v1 = re.search(re.compile(r"firstIpProtect.+\'(.+?)\'"), html).group(1)
+        v2 = re.search(re.compile(r"secondIpProtect.+\'(.+?)\'"), html).group(1)
+        v3 = re.search(re.compile(r"portProtect.+\'(.+?)\'"), html).group(1)
+
+        uri = re.search(re.compile(r'Playerjs\(.+file:"(.+?)"}'), html)
+        if uri:
+            uri = uri.group(1)
+            if uri[:2] == '#2':
+                template = self.tivixDecode(uri)
+            if template[:4] == 'http':
+                url = template.replace('{v1}',v1).replace('{v2}', v2).replace('{v3}', v3)
+                url = url.split('\n')[0]
+        return url
 
     def show(self, link, image, name):
         response = common.fetchPage({"link": link})
         cid = link.split(self.url + "/")[-1].split("-")[0]
-        streams = self.getStreamURL(response['content'])
-        if streams:
+        playlist = self.getPlaylist(response['content'])
+        if playlist:
             description = self.strip(response['content'].split("<!--dle_image_end-->")[1].split("<div")[0])
             currname = '' 
             duration = ''
             #description = common.parseDOM(response['content'], "meta", attrs={"name": "description"}, ret = "content")[0]
             if (self.use_epg == "true"):
                 currname, duration, listItems = self.getEPG(cid = cid, cname=name, image=image)
-            uri = sys.argv[0] + '?mode=play&url=%s&url2=%s' % (urllib.quote_plus(streams[0]), link)
+            uri = sys.argv[0] + '?mode=play&url=%s&url2=%s' % (urllib.quote_plus(playlist), link)
             item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(1004),  iconImage=image, thumbnailImage=image)
             item.setInfo(type='Video', infoLabels={'title': currname if currname != '' else name, 'plot': description, 'duration': duration})
             item.setProperty('IsPlayable', 'true')
