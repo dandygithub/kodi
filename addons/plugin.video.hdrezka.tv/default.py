@@ -358,7 +358,8 @@ class HdrezkaTV:
 
         data = {
             "id": post_id,
-            "translator_id": idt
+            "translator_id": idt,
+            "action": "get_episodes"
         }
         headers = {
             "Host": self.domain,
