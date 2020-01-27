@@ -94,6 +94,7 @@ class HdrezkaTV:
                 params.get('episode_id'),
                 urllib.unquote_plus(params['title']),
                 params.get('image'),
+                params.get('idt'),
                 urllib.unquote_plus(params['data'])
             )
         if mode == 'show':
@@ -344,7 +345,7 @@ class HdrezkaTV:
         try:
             div = common.parseDOM(content, 'ul', attrs={'id': 'translators-list'})[0]
         except:
-            return tvshow
+            return tvshow, "0"
         titles = common.parseDOM(div, 'li')
         ids = common.parseDOM(div, 'li', ret="data-translator_id")
         if len(titles) > 1:
@@ -372,7 +373,7 @@ class HdrezkaTV:
         seasons = response["seasons"]
         episodes = response["episodes"]
         playlist = common.parseDOM(episodes, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
-        return playlist
+        return playlist, idt
 
     def getIFrame(self, content):
         return self.selectTranslator2(content)
@@ -400,19 +401,25 @@ class HdrezkaTV:
 
         tvshow = common.parseDOM(response.text, "div", attrs={"id": "simple-episodes-tabs"})
         if tvshow:
+            idt = "0"
+            try:  
+               idt = common.parseDOM(content, "li", attrs={"class": "b-translator__item active"}, ret="data-translator_id")[0]
+            except:
+               pass
             if self.translator == "select":
-                tvshow = self.selectTranslator3(content, tvshow, post_id, url)
+                tvshow, idt = self.selectTranslator3(content, tvshow, post_id, url)
             titles = common.parseDOM(tvshow, "li")
             ids = common.parseDOM(tvshow, "li", ret='data-id')
             seasons = common.parseDOM(tvshow, "li", ret='data-season_id')
             episodes = common.parseDOM(tvshow, "li", ret='data-episode_id')
             data = common.parseDOM(tvshow, "li", ret='data-cdn_url')
+
             for i, title_ in enumerate(titles):
                 title_ = "%s (%s %s)" % (title_, self.language(1005), seasons[i])
                 url_episode = url
                 uri = sys.argv[0] + '?mode=play_episode&url=%s&urlm=%s&post_id=%s&season_id=%s&episode_id=%s&title=%s' \
-                                    '&image=%s&data=%s' % (
-                          url_episode, url, ids[i], seasons[i], episodes[i], title_, image, data[i])
+                                    '&image=%s&idt=%s&data=%s' % (
+                          url_episode, url, ids[i], seasons[i], episodes[i], title_, image, idt, data[i])
                 item = xbmcgui.ListItem(title_, iconImage=image, thumbnailImage=image)
                 item.setInfo(type='Video', infoLabels={'title': title_})
                 if self.quality != 'select':
@@ -625,9 +632,25 @@ class HdrezkaTV:
             item.setSubtitles([subtitles])
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
-    def play_episode(self, url, referer, post_id, season_id, episode_id, title, image, data):
+    def play_episode(self, url, referer, post_id, season_id, episode_id, title, image, idt, data):
         log("*** play_episode")
-        url_episode = url + "?nocontrols=1&season=%s&episode=%s" % (season_id, episode_id)
+        if (data == "null"):
+            data = {
+                "id": post_id,
+                "translator_id": idt,
+                "season": season_id,
+                "episode": episode_id,
+                "action": "get_stream"
+            }
+            headers = {
+                "Host": self.domain,
+                "Origin": "http://" + self.domain,
+                "Referer": url,
+                "User-Agent": USER_AGENT,
+                "X-Requested-With": "XMLHttpRequest"
+            }
+            response = self.post_response(self.url + "/ajax/get_cdn_series/", data, headers).json()
+            data = response["url"] 
         links = self.get_links(data)
         self.selectQuality(links, title, image, None)
         xbmcplugin.setContent(self.handle, 'episodes')
