@@ -397,8 +397,8 @@ class Seasonvar():
         description = common.parseDOM(response["content"], 'meta', attrs={'name': 'description'}, ret='content')[0] if common.parseDOM(response["content"], 'meta', attrs={'name': 'description'}, ret='content') else ''
         response = common.fetchPage({"link": self.getURLPlayList(url, response["content"], 2), "cookie": self.getCookies()})
         json_playlist = json.loads(response["content"])
-        playlist = json_playlist['playlist']
-        playlist_ = playlist[idPlaylist]['playlist']
+        playlist = json_playlist[idPlaylist]
+        playlist_ = playlist['folder']
 
         self.parsePlaylist(url, playlist_, image, description, "")
 
@@ -413,7 +413,7 @@ class Seasonvar():
         else:
             return title1 + " " + title2
 
-    def parsePlaylist(self, url, playlist, image, description, title, season, title_orig):
+    def parsePlaylist(self, url, playlist, image, description, title, season="", title_orig=""):
         for episode in playlist:
             etitle = self.strip(episode['title'].replace("<br>", "  "))
             playlist_ = None
@@ -424,7 +424,7 @@ class Seasonvar():
                 url = base64.b64decode(url[2:])
                 url = url.split(" ")[0]
             except:
-                playlist_ = episode['playlist']
+                playlist_ = episode['folder']
             if playlist_:
                 self.addplaylists.append(playlist_)
                 uri = sys.argv[0] + '?mode=playlist&url=%s&idpl=%d' % (url, (len(self.addplaylists)-1))
