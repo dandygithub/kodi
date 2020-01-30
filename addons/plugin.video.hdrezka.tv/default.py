@@ -341,11 +341,11 @@ class HdrezkaTV:
 
         return iframe
 
-    def selectTranslator3(self, content, tvshow, post_id, url):
+    def selectTranslator3(self, content, tvshow, post_id, url, idt):
         try:
             div = common.parseDOM(content, 'ul', attrs={'id': 'translators-list'})[0]
         except:
-            return tvshow, "0"
+            return tvshow, idt
         titles = common.parseDOM(div, 'li')
         ids = common.parseDOM(div, 'li', ret="data-translator_id")
         if len(titles) > 1:
@@ -405,9 +405,13 @@ class HdrezkaTV:
             try:  
                idt = common.parseDOM(content, "li", attrs={"class": "b-translator__item active"}, ret="data-translator_id")[0]
             except:
-               pass
+               try: 
+                   idt = response.text.split("sof.tv.initCDNSeriesEvents")[-1].split("{")[0]
+                   idt = idt.split(",")[1].strip()
+               except:
+                   pass
             if self.translator == "select":
-                tvshow, idt = self.selectTranslator3(content, tvshow, post_id, url)
+                tvshow, idt = self.selectTranslator3(content, tvshow, post_id, url, idt)
             titles = common.parseDOM(tvshow, "li")
             ids = common.parseDOM(tvshow, "li", ret='data-id')
             seasons = common.parseDOM(tvshow, "li", ret='data-season_id')
@@ -714,3 +718,5 @@ def log(msg, level=xbmc.LOGNOTICE):
 
 plugin = HdrezkaTV()
 plugin.main()
+
+#sof.tv.initCDNSeriesEvents(1826, 13, 1, 1, false, 'rezka.ag', false, {
