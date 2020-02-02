@@ -90,7 +90,7 @@ class Kinokong():
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getCategoryItems(self.url + '/film/2019-1', 1)
+        self.getCategoryItems(self.url + '/filmi/2020', 1)
 
     def getCategoryItems(self, url, page):
         #print "*** Get category items %s" % url
