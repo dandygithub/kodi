@@ -134,6 +134,8 @@ class RuTube():
         self.prev = params['prev'] if 'prev' in params else ''
 
         tab = int(params['tab']) if 'tab' in params else 0
+
+        lock = params['lock'] if 'lock' in params else '0'
  
         if mode == 'search':
             self.search(keyword, external, page)
@@ -148,7 +150,7 @@ class RuTube():
         elif mode == 'show':
             self.show(url)
         elif mode == 'play':
-            self.play(url, name)
+            self.play(url, name, lock)
         else:
             self.mainMenu()
 
@@ -166,7 +168,6 @@ class RuTube():
         response = self.get_url(url)
         jdata = re.compile("window.applicationState = {(.*?)};").findall(response)[0].replace("\\x3d", "=").replace("\\x26", "&").replace("\\x3e", ">").replace("\\x3c", "<")
         js = json.loads('{'+jdata+'}')
-        
         jspart = js["sideNavStore"]["links"]["profile_woodpecker"][0]
         for i, item in enumerate(jspart["links"]):
             if (not main) or (i in SELECTED_MAIN_TABS):
@@ -497,12 +498,16 @@ class RuTube():
             ct_list.append((params, self.icon, False, {"title": "[COLOR=orange]" + html_unescape(name) + "[/COLOR]"}))
 
         articles = common.parseDOM(container, "article")
-        titles = common.parseDOM(articles, "a", attrs={"class": "element-cover__link"}, ret="title")
-        urls = common.parseDOM(articles, "a", attrs={"class": "element-cover__link"}, ret="href")
+        contents = common.parseDOM(articles, "div", attrs={"class": "element-cover__content"})
+        titles = common.parseDOM(contents, "a", attrs={"class": "element-cover__link"}, ret="title")
+        urls = common.parseDOM(contents, "a", attrs={"class": "element-cover__link"}, ret="href")
 
         if (len(titles) > 0):
             for i, item in enumerate(titles):
-                params = "?mode=play&url=%s"%(QT(self.url + urls[i]))
+                lock = "1" if common.parseDOM(contents[i], "button", attrs={"class": "element-cover__club-lock"}) else "0"
+                params = "?mode=play&url=%s&lock=%s"%(QT(self.url + urls[i]), lock)
+                if (lock == "1"):
+                    item = "[COLOR=red]" + item + "[/COLOR]"
                 imagel = common.parseDOM(articles[i], "img", ret="src")
                 if (not imagel):
 	                imagel = common.parseDOM(articles[i], "div", attrs={"class": "element-cover__img"}, ret="style")
@@ -672,9 +677,13 @@ class RuTube():
           else:
               return urls[index].replace("\n", "")
 
-    def play(self, url, name):
+    def play(self, url, name, lock):
         self.log("-play:")
         
+        if (lock == "1"):
+           showErrorMessage("Content blocked by site")
+           return
+
         uri = None
         uri = self.get_rutube(url)
            
@@ -852,7 +861,7 @@ def error(message):
 
 def showErrorMessage(msg):
     xbmc.log(msg.encode('utf-8'))
-    xbmc.executebuiltin("XBMC.Notification(%s, %s, %s)" % ("ERROR:", msg.encode('utf-8'), str(10 * 1000)))
+    xbmc.executebuiltin("XBMC.Notification(%s, %s, %s)" % ("ERROR:", msg.encode('utf-8'), str(5 * 1000)))
 
 def encode(string):
     return string.decode('cp1251').encode('utf-8')
