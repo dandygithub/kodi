@@ -70,6 +70,8 @@ class Kinokong():
             self.history()
         if mode == 'genres':
             self.listGenres(url)
+        if mode == 'podborka':
+            self.podborka(url)
         if mode == 'show':
             self.getFilmInfo(url)
         if mode == 'category':
@@ -88,6 +90,10 @@ class Kinokong():
 
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("genres", self.url)
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
+        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        uri = sys.argv[0] + '?mode=%s&url=%s' % ("podborka", self.url + "/kino-podborka.html")
+        item = xbmcgui.ListItem("[COLOR=orange]%s[/COLOR]" % self.language(1003), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         self.getCategoryItems(self.url + '/filmi/2020', 1)
@@ -134,6 +140,27 @@ class Kinokong():
             uri = sys.argv[0] + '?mode=%s&url=%s&page=%s' % ("category", url, str(int(page) + 1))
             item = xbmcgui.ListItem("[COLOR=orange]" + self.language(9000) + "[/COLOR]", thumbnailImage=self.inext, iconImage=self.inext)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        xbmcplugin.setContent(self.handle, 'movies')
+        xbmcplugin.endOfDirectory(self.handle, True)
+
+    def podborka(self, url):
+        print "*** podborka for url %s " % url
+        response = common.fetchPage({"link": url})
+
+        if response["status"] == 200:
+            content = common.parseDOM(response["content"], "div", attrs={"id": "dle-content"})
+            titles = common.parseDOM(content, "span", attrs={"class": "podborki-title"})
+            links = common.parseDOM(content, "a", ret="href")
+            images = common.parseDOM(content, "img", ret="src")
+
+            for i, title in enumerate(titles):
+                title = self.strip(self.encode(title))
+                uri = sys.argv[0] + '?mode=category&url=%s' % (self.url + "/" + links[i])
+                item = xbmcgui.ListItem(title, iconImage=self.url + "/" + images[i], thumbnailImage=self.url + "/" + images[i])
+                item.setInfo(type='Video', infoLabels={'title': title})
+
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'movies')
         xbmcplugin.endOfDirectory(self.handle, True)
