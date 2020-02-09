@@ -108,13 +108,15 @@ def get_playlist(url):
     try: 
         response = tools.get_response(url if "http" in url else "https:" + url, HEADERS, {}, "GET")
     except:
-        return manifest_links, subtitles, season, episode 
+       return manifest_links, subtitles, season, episode 
 
     tr_value = select_translator(response)
+    if not tr_value:
+        tr_value = "0"
 
     links_ = replace_(common.parseDOM(response, "input", attrs={"id": "files"}, ret="value")[0])
     links = json.loads(links_)
-  
+
     #tvshow
     videoType = common.parseDOM(response, "input", attrs={"id": "videoType"}, ret="value")[0]
     if (videoType == "tv_series"):

@@ -135,12 +135,33 @@ def get_playlist(url):
     except:
         return manifest_links, subtitles, season, episode 
 
+    #EXTM3U
+    #EXT-X-VERSION:3
+    #EXT-X-STREAM-INF:BANDWIDTH=1023000,RESOLUTION=1746x720
+    #hls/720.m3u8
+    #EXT-X-STREAM-INF:BANDWIDTH=568000,RESOLUTION=1164x480
+    #hls/480.m3u8
+    #EXT-X-STREAM-INF:BANDWIDTH=376000,RESOLUTION=872x360
+    #hls/360.m3u8
     #EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=400000,RESOLUTION=640x358\n./360/index.m3u8\n#EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=858x482\n./480/index.m3u8\n#EXT-X-STREAM-INF:BANDWIDTH=2000000,RESOLUTION=1280x718\n./720/index.m3u8\n#EXT-X-STREAM-INF:BANDWIDTH=3000000,RESOLUTION=1920x1080\n./1080/index.m3u8\n#EXT-X-STREAM-INF:BANDWIDTH=12000000,RESOLUTION=3840x2160\n./2160/index.m3u8\n
 
+    #EXTM3U
+    #EXT-X-STREAM-INF:BANDWIDTH=400000,RESOLUTION=640x266
+    #./360/index.m3u8
+    #EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=858x356
+    #./480/index.m3u8
+    #EXT-X-STREAM-INF:BANDWIDTH=2000000,RESOLUTION=1280x532
+    #./720/index.m3u8
+
     block = url_.replace("index.m3u8", "")
-    urls = re.compile("\.\/.*?\n").findall(response)
-    for url in urls:
-        manifest_links[int(url.split("/")[1])] = block + url.replace("./", "").replace("\n", "")
+    urls = re.compile("hls\/.*?\.m3u8").findall(response)
+    if urls:
+        for url in urls:
+            manifest_links[int(url.split("/")[1].split(".")[0])] = block + url.replace("./", "").replace("\n", "")
+    else:
+        urls = re.compile("\.\/.*?\n").findall(response)
+        for url in urls:
+            manifest_links[int(url.split("/")[1])] = block + url.replace("./", "").replace("\n", "")
 
     return manifest_links, subtitles, season, episode 
    
