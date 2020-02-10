@@ -11,6 +11,7 @@ import sys, os
 import urllib
 import simplejson as json
 
+sys.path.append(os.path.dirname(__file__)+ '/../script.extendedinfo')
 sys.path.append(os.path.dirname(__file__)+ '/../script.extendedinfo/resources/lib')
 try:
     sys.path.append(os.path.dirname(__file__)+ '/../script.module.urllib3/lib')
@@ -21,6 +22,7 @@ try:
     sys.path.append(os.path.dirname(__file__)+ '/../script.module.requests/lib')
     sys.path.append(os.path.dirname(__file__)+ '/../script.module.youtube.dl/lib')
     sys.path.append(os.path.dirname(__file__)+ '/../script.module.autocompletion/lib')
+    sys.path.append(os.path.dirname(__file__)+ '/../script.module.addon.signals/lib')
 except:
     pass
 import TheMovieDB as tmdb
@@ -66,7 +68,7 @@ def edit_title(title):
         kbd.setHeading('Edit title')
         kbd.doModal()
         if kbd.isConfirmed():
-            title = kbd.getText()
+            title = kbd.getText().decode('utf8')
         else: 
             title = ""
     return title
