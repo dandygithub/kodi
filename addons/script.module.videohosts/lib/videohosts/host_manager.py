@@ -78,7 +78,7 @@ def get_playlist(data):
             mode = "auto"
 
     if mode == "auto":
-        for k, v in iframes_hm:
+        for k, v in iframes_hm.items():
             if (len(manifest_links) > 0):
                break 
             manifest_links, subtitles, season, episode = get_playlist_by_vhost(k, v)
