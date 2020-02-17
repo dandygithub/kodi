@@ -218,7 +218,7 @@ class HdrezkaTV:
             info = self.get_item_description(post_ids[i])
             title = "%s %s [COLOR=55FFFFFF](%s)[/COLOR]" % (name, color_rating(info['rating']), country_years[i])
             #image = self._normalize_url(common.parseDOM(div_covers[i], "img", ret='src')[0])
-            image = common.parseDOM(div_covers[i], "img", ret='src')[0]
+            image = self.url + common.parseDOM(div_covers[i], "img", ret='src')[0]
 		
             link = self.dom_protocol + "://" + links[i].split("://")[-1]
             uri = sys.argv[0] + '?mode=show&url=%s' % link
