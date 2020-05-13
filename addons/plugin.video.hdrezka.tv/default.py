@@ -390,6 +390,26 @@ class HdrezkaTV:
                 manifest_links[2160] = link.split("]")[1]
         return manifest_links
 
+    def selectTranslator4(self, content, links):
+        try:
+            div = common.parseDOM(content, 'ul', attrs={'id': 'translators-list'})[0]
+        except:
+            return links
+        titles = common.parseDOM(div, 'li')
+        ids = common.parseDOM(div, 'li', ret="data-translator_id")
+        if len(titles) > 1:
+            dialog = xbmcgui.Dialog()
+            index_ = dialog.select(self.language(1006), titles)
+            if int(index_) < 0:
+                return links
+            else:
+              translatorData = common.parseDOM(div, 'li', ret="data-cdn_url")[index_]
+              translatorLinks = self.get_links(translatorData)
+              return translatorLinks
+
+        else:
+            return links
+
     def show(self, url):
         log("*** Show video %s" % url)
         response = self.get_response(url)
@@ -432,6 +452,8 @@ class HdrezkaTV:
         else:
             data = response.text.split('"streams":"')[-1].split('",')[0]
             links = self.get_links(data)
+            if self.translator == "select":
+                links = self.selectTranslator4(content, links)
             self.selectQuality(links, title, image, None)
             
         xbmcplugin.setContent(self.handle, 'episodes')
