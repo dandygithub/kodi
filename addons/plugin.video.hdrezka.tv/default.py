@@ -13,6 +13,7 @@ import urllib
 import urllib2
 from operator import itemgetter
 import requests
+import time
 
 from Translit import Translit
 import XbmcHelpers
@@ -384,13 +385,14 @@ class HdrezkaTV:
         links = data.replace("\/", "/").split(",")
         manifest_links = {}
         for link in links:
+	    log(link)
             if not ("Ultra" in link):
                 manifest_links[int(link.split("]")[0].replace("[", "").replace("p", ""))] = link.split("]")[1]
             else:
                 manifest_links[2160] = link.split("]")[1]
         return manifest_links
 
-    def selectTranslator4(self, content, links):
+    def selectTranslator4(self, content, links, post_id, url):
         try:
             div = common.parseDOM(content, 'ul', attrs={'id': 'translators-list'})[0]
         except:
@@ -403,10 +405,37 @@ class HdrezkaTV:
             if int(index_) < 0:
                 return links
             else:
-              translatorData = common.parseDOM(div, 'li', ret="data-cdn_url")[index_]
-              translatorLinks = self.get_links(translatorData)
-              return translatorLinks
+              translatorUrls = common.parseDOM(div, 'li', ret="data-cdn_url");
+              if (len(translatorUrls) > index_):
+                url = translatorUrls[index_];
+                log("Have url for translator %s" % url)
+                translatorLinks = self.get_links(url)
+                return translatorLinks
+              else:
+                idt = ids[index_]
+                log("Request url for translator %s" % idt)
 
+                data = {
+                    "id": post_id,
+                    "translator_id": idt,
+                    "action": 'get_movie'
+                }
+                headers = {
+                    "Host": self.domain,
+                    "Origin": "http://" + self.domain,
+                    "Referer": url,
+                    "User-Agent": USER_AGENT,
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+                t = str(int(time.time()));
+                response = self.post_response(self.url + "/ajax/get_cdn_series?t=" + t, data, headers).json()
+                
+                if response["success"] == False:
+                    self.showErrorMessage(response["message"])
+                    return links
+                url = response["url"]
+                links = self.get_links(url)
+                return links
         else:
             return links
 
@@ -453,7 +482,7 @@ class HdrezkaTV:
             data = response.text.split('"streams":"')[-1].split('",')[0]
             links = self.get_links(data)
             if self.translator == "select":
-                links = self.selectTranslator4(content, links)
+                links = self.selectTranslator4(content, links, post_id, url)
             self.selectQuality(links, title, image, None)
             
         xbmcplugin.setContent(self.handle, 'episodes')
