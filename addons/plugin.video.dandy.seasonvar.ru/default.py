@@ -44,14 +44,52 @@ FILTER_TYPE_COUNTRIES = 1
 FILTER_TYPE_YEARS = 2
 FILTER_TYPES = ((0, 1, 2), ('genre', 'country', 'year'), ('quotG', 'quotC', 'quotY'))
 
+class SeasonvarTranslators():
+
+    def __init__(self, data_path):
+        self.data_path = data_path
+        
+        self.data = {}
+        if os.path.exists(self.data_path):
+            try:
+                self.data = json.load(open(self.data_path))
+            except:
+                pass
+
+    def remove(self, item_id):
+        if not item_id in self.data:
+            return
+            
+        del self.data[item_id]
+
+        self.save()
+
+    def add(self, item_id, translator):
+        self.data[item_id] = translator
+
+        self.save()
+
+    def save(self):
+        json.dump(self.data, open(self.data_path, "w"))
+
+    def contains(self, item_id):
+        return item_id in self.data
+
+    def get(self, item_id):
+        return self.data[item_id]
+
 class Seasonvar():
 
     def __init__(self):
         self.id = 'plugin.video.dandy.seasonvar.ru'
         self.addon = xbmcaddon.Addon(self.id)
         self.icon = self.addon.getAddonInfo('icon')
-        self.path = self.addon.getAddonInfo('path')
+        self.path = self.addon.getAddonInfo('path').decode('utf-8')
         self.profile = self.addon.getAddonInfo('profile')
+        self.data_path = os.path.join(self.path, 'data')
+
+        if not (os.path.exists(self.data_path) and os.path.isdir(self.data_path)):
+            os.makedirs(self.data_path)
 
         self.language = self.addon.getLocalizedString
 
@@ -91,6 +129,8 @@ class Seasonvar():
         self.contentFilter = None     
 
         self.addplaylists = []                   
+        
+        self.translators = SeasonvarTranslators(os.path.join(self.data_path, "translators.json"))
         
         #self.login()
 
@@ -161,6 +201,12 @@ class Seasonvar():
         
         if mode == 'play':
             self.playItem(url)
+        if mode == 'tranalation':
+            season_id = self.getSeasonIdFromLink(url)
+            if season_id:
+                self.translators.remove(season_id)
+
+            self.show(url, title, (withMSeason == "1"))
         if mode == 'search':
             self.search(keyword, external, transpar, strong)
         if mode == 'show':
@@ -234,6 +280,9 @@ class Seasonvar():
             commands = []
             uricmd = sys.argv[0] + '?mode=search&keyword=%s&strong=1' % (title.split('/')[0].strip())
             commands.append((self.language(2000), "Container.Update(%s)" % (uricmd), ))
+
+            self.addTranslationMenuItem(commands, self.url + link, title)
+
             item.addContextMenuItems(commands)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
             
@@ -304,6 +353,9 @@ class Seasonvar():
                 commands = []
                 uricmd = sys.argv[0] + '?mode=search&url=%s&keyword=%s&strong=1' % (self.url, title.split('/')[0].strip())                
                 commands.append((self.language(2000), "Container.Update(%s)" % (uricmd), ))
+
+            	self.addTranslationMenuItem(commands, self.url + link, title)
+
                 item.addContextMenuItems(commands)
 
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
@@ -311,6 +363,28 @@ class Seasonvar():
             xbmcplugin.setContent(self.handle, 'tvshows')
             xbmcplugin.endOfDirectory(self.handle, True)
             
+    def addTranslationMenuItem(self, commands, url, title):
+
+        if self.translator == "standard":
+            return
+
+        uricmd = sys.argv[0] + '?mode=tranalation&url=%s&title=%s&wm=0' % (url, title)
+
+        cmd_title = self.language(6000)
+        season_id = self.getSeasonIdFromLink(url)
+        if season_id and self.translators.contains(season_id):
+            cmd_title += " (%s)" % self.translators.get(season_id)
+
+        commands.append((cmd_title, "Container.Update(%s)" % (uricmd), ))
+
+    def getSeasonIdFromLink(self, link):
+        chunks = link.split('-')
+
+        if len(chunks) < 2:
+            return None
+
+        return chunks[1] 
+
     def getCookies(self):
         sc = ""
         if self.vip == True:
@@ -335,7 +409,8 @@ class Seasonvar():
 #      <script>pl[68] = "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vncf2gIf2ETf2gofyQIf2gIf2waf2gIf2wnf2gIf2f=f2gIf2waf2gofyQIf2gofyh=8cEV9cAn8UoNzDgisBaePDlN4v2M9ygn9y7D937DpICC";</script>        <li class="label">û⦰鳥 𐦰森⸼/li>
 #  </ul>
 
-    def selectTranslator(self, content):
+    def selectTranslator(self, content, id_season):
+
         playlist0 = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
         try:
             div = common.parseDOM(content, 'ul', attrs={'class': 'pgs-trans'})[0]
@@ -344,22 +419,36 @@ class Seasonvar():
         titles = common.parseDOM(div, 'li', attrs={'data-click': 'translate'})
         playlists = common.parseDOM(div, 'script')        
         if len(titles) > 1:
-            dialog = xbmcgui.Dialog()
-            index_ = dialog.select(self.language(6000), titles)
+
+            index_ = -1
+
+            if self.translators.contains(id_season):
+                translator = self.translators.get(id_season)
+                if translator in titles:
+                    index_ = titles.index(translator)
+
+            if int(index_) < 0:
+                dialog = xbmcgui.Dialog()
+                index_ = dialog.select(self.language(6000), titles)
+
             if int(index_) < 0:
                 index_ = 0
+            else:
+                self.translators.add(id_season, titles[index_])
         else:
-            index_ = 0    
+            index_ = 0
+            
         playlist = playlist0 if index_ == 0 else playlists[index_-1]
         playlist = playlist.split('] = "')[-1].split('";')[0]
+
         return playlist
 
-    def getURLPlayListFromContent(self, content, kind):
+    def getURLPlayListFromContent(self, content, kind, idseason):
         if (kind == 0):
             if self.translator == "standard":
                 playlist = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
             else:
-                playlist = self.selectTranslator(content) 
+                playlist = self.selectTranslator(content, idseason) 
         elif (kind == 2):
             playlist = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
         else:
@@ -389,7 +478,7 @@ class Seasonvar():
         request = urllib2.Request(self.url + "/player.php", urllib.urlencode(values), headers)
         content = urllib2.urlopen(request).read()            
         
-        return self.getURLPlayListFromContent(content, kind)
+        return self.getURLPlayListFromContent(content, kind, idseason)
         
     def partPlaylist(self, url, idPlaylist):
         response = common.fetchPage({"link": url, "cookie": self.getCookies()})
@@ -508,6 +597,13 @@ class Seasonvar():
                 item = xbmcgui.ListItem(self.strip(title), iconImage=image, thumbnailImage=image)
                 item.setInfo(type='Video', infoLabels={'title': title})
                 item.select(title.find('>>>') > -1)
+
+                commands = []
+
+                self.addTranslationMenuItem(commands, url, title)
+
+                item.addContextMenuItems(commands)
+
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
            
         else:
@@ -586,6 +682,13 @@ class Seasonvar():
                     uri = sys.argv[0] + '?mode=show&url=%s&wm=1' % url
                     item = xbmcgui.ListItem(title, thumbnailImage=image)
                     item.setInfo(type='Video', infoLabels={'title': title, 'plot': descr})
+
+                    commands = []
+
+                    self.addTranslationMenuItem(commands, url, title)
+
+                    item.addContextMenuItems(commands)
+
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
     def search(self, keyword, external, transpar = None, strong = None):
@@ -622,6 +725,13 @@ class Seasonvar():
                         else:
                             uri = sys.argv[0] + '?mode=show&url=%s&wm=1' % url
                             item = xbmcgui.ListItem(title, thumbnailImage=self.icon)
+
+                            commands = []
+
+                            self.addTranslationMenuItem(commands, url, title)
+
+                            item.addContextMenuItems(commands)
+
                             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
             if (external == 'unified'):
@@ -694,6 +804,13 @@ class Seasonvar():
                     item.setInfo(type='Video', infoLabels={'title': title})
                     if titleadd > "":
                         item.setProperty('IsAvailable', 'false')
+
+                    commands = []
+
+                    self.addTranslationMenuItem(commands, self.url + filmlinks[j], title)
+
+                    item.addContextMenuItems(commands)
+                        
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
             else:
                 uri = sys.argv[0] + '?mode=filter&ft=%d&fv=%s&ab=%s' % (filterType, filterValue, i)
