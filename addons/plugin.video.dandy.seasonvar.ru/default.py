@@ -160,7 +160,7 @@ class Seasonvar():
         title =  urllib.unquote_plus(params['title']) if 'title' in params else None
         
         if mode == 'play':
-            self.playItem(url)
+            self.playItem(params['itemid'])
         if mode == 'search':
             self.search(keyword, external, transpar, strong)
         if mode == 'show':
@@ -414,6 +414,9 @@ class Seasonvar():
             return title1 + " " + title2
 
     def parsePlaylist(self, url, playlist, image, description, title, season="", title_orig=""):
+
+        win = xbmcgui.Window(xbmcgui.getCurrentWindowId())
+        win.clearProperties()
         for episode in playlist:
             etitle = self.strip(episode['title'].replace("<br>", "  "))
             playlist_ = None
@@ -432,7 +435,10 @@ class Seasonvar():
                 item.setInfo(type='Video', infoLabels={'title': etitle})
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
             else:    
-                uri = sys.argv[0] + '?mode=play&url=%s' % url
+
+                itemid = episode['galabel'] # ИД сериала + ИД серии, глобально уникальный 
+
+                uri = sys.argv[0] + '?mode=play&itemid=%s' % (itemid)
                 sub_name = None
                 subtitle = None
                 try:
@@ -442,7 +448,11 @@ class Seasonvar():
                     pass
                 #xbmc.log("subtitle=" + repr(subtitle))                    
                 item = xbmcgui.ListItem(label=self.getTitle(title, etitle, title_orig, season), iconImage=image, thumbnailImage=image)
-                labels = {'title': self.getTitle(title, etitle, title_orig, season, 1), 'plot': description, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0}
+
+                labels = {'title': self.getTitle(title, etitle, title_orig, season, 1), 'plot': description}
+                
+                win.setProperty("seasonvar_real_url_" + itemid, url)
+
                 item.setInfo(type='Video', infoLabels=labels)
                 item.setProperty('IsPlayable', 'true')
                 if subtitle and (subtitle != ''):
@@ -540,9 +550,14 @@ class Seasonvar():
 
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def playItem(self, url):
-        print "*** play url %s" % url
-        item = xbmcgui.ListItem(path=url)
+    def playItem(self, item_id):
+        print "*** play id %s" % item_id
+
+        window = xbmcgui.Window(xbmcgui.getCurrentWindowId())
+
+        item_url = window.getProperty("seasonvar_real_url_" + item_id)
+
+        item = xbmcgui.ListItem(path=item_url)
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
     def USTranslit(self, keyword, transpar):
