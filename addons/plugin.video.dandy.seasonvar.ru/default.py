@@ -335,34 +335,55 @@ class Seasonvar():
         request = urllib2.Request(url_, urllib.urlencode(values), headers)
         content = urllib2.urlopen(request).read()            
 
-        if content:
-            items = common.parseDOM(content, "a", attrs={"class": "pst rside-p"})
-            urls = common.parseDOM(content, "a", attrs={"class": "pst rside-p"}, ret="href")
-            for i, item in enumerate(items):
-                titlediv = common.parseDOM(item, "div", attrs={"class": "rside-d"})[0]
-                title = common.parseDOM(titlediv, "div", attrs={"class": "rside-t"})[0]
-                titleadd = self.strip(common.parseDOM(titlediv, "div", attrs={"class": "rside-ss"})[0].replace('<br>', ','))
-                title_ = self.strip(title + ' [COLOR=FF00FFF0][' + titleadd + '][/COLOR]')
-                title_ = ' '.join(title_.split()).strip()
-                image = common.parseDOM(item, "img", ret="data-src")[0]
-                link = urls[i]
-                uri = sys.argv[0] + '?mode=show&url=%s&title=%s&wm=0' % (self.url + link, title)
-                item = xbmcgui.ListItem(title_, iconImage=image, thumbnailImage=image)
-                item.setInfo(type='Video', infoLabels={'title': title_})
+        items = self.parseSidebar(content)
 
-                commands = []
-                uricmd = sys.argv[0] + '?mode=search&url=%s&keyword=%s&strong=1' % (self.url, title.split('/')[0].strip())                
-                commands.append((self.language(2000), "Container.Update(%s)" % (uricmd), ))
+        for item in items:
 
-                self.addTranslationMenuItem(commands, self.url + link, title)
+            uri = sys.argv[0] + '?mode=show&url=%s&title=%s&wm=0' % (item["link"], item["title"])
+            list_item = xbmcgui.ListItem(item["title_full"], iconImage=item["image"], thumbnailImage=item["image"])
+            list_item.setInfo(type='Video', infoLabels={'title': item["title_full"]})
 
-                item.addContextMenuItems(commands)
+            commands = []
+            uricmd = sys.argv[0] + '?mode=search&url=%s&keyword=%s&strong=1' % (self.url, item["title"].split('/')[0].strip())                
+            commands.append((self.language(2000), "Container.Update(%s)" % (uricmd), ))
 
-                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+            self.addTranslationMenuItem(commands, item["link"], item["title"])
+
+            list_item.addContextMenuItems(commands)
+
+            xbmcplugin.addDirectoryItem(self.handle, uri, list_item, True)
+        
+        xbmcplugin.setContent(self.handle, 'tvshows')
+        xbmcplugin.endOfDirectory(self.handle, True)
             
-            xbmcplugin.setContent(self.handle, 'tvshows')
-            xbmcplugin.endOfDirectory(self.handle, True)
+    def parseSidebar(self, content):
+        if not content:
+            return []
+
+        sidebar_items = []
+
+        items = common.parseDOM(content, "a", attrs={"class": "pst rside-p"})
+        urls = common.parseDOM(content, "a", attrs={"class": "pst rside-p"}, ret="href")
+
+        for i, item in enumerate(items):
             
+            titlediv = common.parseDOM(item, "div", attrs={"class": "rside-d"})[0]
+            title = common.parseDOM(titlediv, "div", attrs={"class": "rside-t"})[0]
+            titleadd = self.strip(common.parseDOM(titlediv, "div", attrs={"class": "rside-ss"})[0].replace('<br>', ','))
+            title_ = self.strip(title + ' [COLOR=FF00FFF0][' + titleadd + '][/COLOR]')
+            title_ = ' '.join(title_.split()).strip()
+
+            sidebar_item = {
+                "title": title,
+                "title_full": title_,
+                "image": common.parseDOM(item, "img", ret="data-src")[0],
+                "link": self.url + urls[i]
+            }
+
+            sidebar_items.append(sidebar_item)
+
+        return sidebar_items
+
     def addTranslationMenuItem(self, commands, url, title):
 
         if self.translator == "standard":
@@ -667,7 +688,8 @@ class Seasonvar():
         return keyword
 
     def newSearchMethod(self, keyword, external, unified_search_results, strong):
-        url = self.url +  '/search?q=' + keyword
+        url = self.url +  '/search?' +  urllib.urlencode({"q" : keyword})
+
         response = common.fetchPage({"link": url})
         data =  response["content"]
         searchitems = common.parseDOM(data, 'div', attrs={'class': 'pgs-search-wrap'})
@@ -714,7 +736,8 @@ class Seasonvar():
             if self.new_search_method and (self.new_search_method == "true"):
                 self.newSearchMethod(keyword_, external, unified_search_results, strong)
             else:
-                url = self.url + '/autocomplete.php?query=' + keyword_       
+
+                url = self.url + '/autocomplete.php?' + urllib.urlencode({"query" : keyword_})
                 response = common.fetchPage({"link": url})
                 count = 1
                 s = json.loads(response["content"])
