@@ -96,7 +96,7 @@ class Kinokong():
         item = xbmcgui.ListItem("[COLOR=orange]%s[/COLOR]" % self.language(1003), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getCategoryItems(self.url + '/filmi/2020', 1)
+        self.getCategoryItems(self.url + '/filmy/2020-novinki-god', 1)
 
     def getCategoryItems(self, url, page):
         #print "*** Get category items %s" % url
@@ -114,7 +114,9 @@ class Kinokong():
             links = common.parseDOM(link_container, "a", ret="href")
             images = common.parseDOM(items, "img", ret="src")
 
-            descs = common.parseDOM(items, "i")
+            desc_container = common.parseDOM(items, "span", attrs={"class": "main-sliders-popup"})
+            descs = common.parseDOM(desc_container, "i")
+            qualities = common.parseDOM(desc_container, "b")
             pagenav = common.parseDOM(content, "div", attrs={"class": "navigation"})
 
             for i, title in enumerate(titles):
@@ -127,11 +129,15 @@ class Kinokong():
                 genres = common.parseDOM(genres_cont, "a")
                 genre = self.encode(', '.join(genres))
                 description = self.strip(self.encode(descs[i]))
+                try:
+                    quality = qualities[i]
+                except:
+                    quality = "NONE"
 
                 uri = sys.argv[0] + '?mode=show&url=%s' % (links[i])
 		self.log("image: %s"  % image)
 		self.log("uri: %s"  % uri)
-                item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
+                item = xbmcgui.ListItem(title + " [COLOR=lightgreen][" + quality  + "][/COLOR]", iconImage=image, thumbnailImage=image)
                 item.setInfo(type='Video', infoLabels={'title': title, 'genre': genre, 'plot': description})
 
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
@@ -308,8 +314,8 @@ class Kinokong():
         genres = common.parseDOM(menu, "li")
 
         links = [
-          self.url + '/film/',
-          self.url + '/film/2019-1/',
+          self.url + '/filmy/',
+          self.url + '/filmy/2020-novinki-god/',
           self.url + '/series/',
           self.url + '/cartoons/',
           self.url + '/animes/',
