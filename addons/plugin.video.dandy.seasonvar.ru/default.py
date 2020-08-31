@@ -201,26 +201,28 @@ class Seasonvar():
         
         if mode == 'play':
             self.playItem(params['itemid'])
-        if mode == 'tranalation':
+        elif mode == 'tranalation':
             season_id = self.getSeasonIdFromLink(url)
             if season_id:
                 self.translators.remove(season_id)
 
             self.show(url, title, (withMSeason == "1"))
-        if mode == 'search':
+        elif mode == 'search':
             self.search(keyword, external, transpar, strong)
-        if mode == 'show':
+        elif mode == 'show':
             self.show(url, title, (withMSeason == "1"))
-        if mode == 'filter':
+        elif mode == 'filter':
             self.getFilter(filterType, filterValue, alphaBeta)
-        if mode == 'nextdate':
+        elif mode == 'nextdate':
             self.getItemsByDate(page)
-        if mode == 'playlist':
+        elif mode == 'playlist':
             self.partPlaylist(url, idPlaylist)
-        elif mode is None:
+        elif mode in ['paused', 'wishlist', 'history']:
+            self.mainMenu(mode)
+        else:
             self.mainMenu()
 
-    def mainMenu(self):
+    def mainMenu(self, itemsSourse = None):
         #self.addon.setSetting('cookie', '')
         self.login()
         self.cookie=self.addon.getSetting('cookie') if self.addon.getSetting('cookie') else None 
@@ -231,11 +233,25 @@ class Seasonvar():
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", self.url)
         item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(2000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
         uri = sys.argv[0] + '?mode=%s' % ("filter")
         item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(3000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getItems()
+        if self.vip:
+            uri = sys.argv[0] + '?mode=%s' % ("paused")
+            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(7000), thumbnailImage=self.icon)
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+            uri = sys.argv[0] + '?mode=%s' % ("wishlist")
+            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(7001), thumbnailImage=self.icon)
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+            uri = sys.argv[0] + '?mode=%s' % ("history")
+            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(7002), thumbnailImage=self.icon)
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        self.getItems(itemsSourse)
 
         xbmcplugin.setContent(self.handle, 'tvshows')
         xbmcplugin.endOfDirectory(self.handle, True)
@@ -301,22 +317,10 @@ class Seasonvar():
         xbmcplugin.setContent(self.handle, 'tvshows')
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def getItems(self, page = 0):
+    def getItems(self, itemsSourse = None, page = 0):
         print "*** Get items"
         content = None
 
-        if (self.begin_render_type == None) or (self.begin_render_type == 'new'):
-            url_ = self.url + '/ajax.php?mode=new'
-        elif (self.begin_render_type == 'popular'):
-            url_ = self.url + '/ajax.php?mode=pop'
-        elif (self.begin_render_type == 'newest'):
-            url_ = self.url + '/ajax.php?mode=newest'
-        elif (self.begin_render_type == 'bydate'):
-            self.getItemsByDate(page)
-            return
-        else:
-            url_ = self.url + '/ajax.php?mode=new'
-            
         values = {
             "ganre": "",
             "country": "",
@@ -324,7 +328,29 @@ class Seasonvar():
             "main": "1"
         }
 
+        if itemsSourse is None:
+            itemsSourse = self.begin_render_type
+
+        if (itemsSourse == None) or (itemsSourse == 'new'):
+            url_ = self.url + '/ajax.php?mode=new'
+        elif (itemsSourse == 'popular'):
+            url_ = self.url + '/ajax.php?mode=pop'
+        elif (itemsSourse == 'newest'):
+            url_ = self.url + '/ajax.php?mode=newest'
+        elif itemsSourse in ['paused', 'wishlist']:
+            url_ = self.url + '/?mod=pause'
+            values.clear()
+        elif itemsSourse == 'history':
+            url_ = self.url + '/?mod=history'
+            values.clear()
+        elif (itemsSourse == 'bydate'):
+            self.getItemsByDate(page)
+            return
+        else:
+            url_ = self.url + '/ajax.php?mode=new'
+            
         headers = {
+            "Cookie": self.getCookies(),
             "Host" : self.url.split("://")[1],
             "Origin": self.url,
             "Connection" : "keep-alive",
@@ -332,10 +358,18 @@ class Seasonvar():
             "Referer" : self.url + "/",
             "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0"
         }
+
         request = urllib2.Request(url_, urllib.urlencode(values), headers)
         content = urllib2.urlopen(request).read()            
 
-        items = self.parseSidebar(content)
+        if itemsSourse == 'paused':
+            items = self.parsePaused(content, "marks-new")
+        elif itemsSourse == 'wishlist':
+            items = self.parsePaused(content, 'marks-want')
+        elif itemsSourse == 'history':
+            items = self.parseHistory(content)
+        else:
+            items = self.parseSidebar(content)
 
         for item in items:
 
@@ -356,6 +390,71 @@ class Seasonvar():
         xbmcplugin.setContent(self.handle, 'tvshows')
         xbmcplugin.endOfDirectory(self.handle, True)
             
+    def parseHistory(self, content):
+
+        if not content:
+            return []
+
+        items_container = common.parseDOM(content, "div", attrs={"class": "pgs-history-c"})
+        if len(items_container) != 1:
+            return []
+
+        history_items = []
+
+        items = common.parseDOM(items_container[0], "a")
+        urls = common.parseDOM(items_container[0], "a", ret="href")
+
+        for i, item in enumerate(items):
+            
+            title = common.parseDOM(item, "b")[0]
+            titleadd = item.split('</b>')[1]
+            title_ = self.strip(title + ' [COLOR=FF00FFF0][' + titleadd + '][/COLOR]')
+            title_ = ' '.join(title_.split()).strip()
+
+            history_item = {
+                "title": title,
+                "title_full": title_,
+                "image": self.getSerialImage(urls[i]),
+                "link": self.url + urls[i]
+            }
+
+            history_items.append(history_item)
+
+        return history_items
+
+    def parsePaused(self, content, tab_id):
+
+        if not content:
+            return []
+
+        items_container = common.parseDOM(content, 'li', attrs={'data-tabr': tab_id})
+        if len(items_container) != 1:
+            return []
+
+        paused_items = []
+
+        items = common.parseDOM(items_container[0], "div", attrs={"class": "pgs-marks-el"})
+
+        for i, item in enumerate(items):
+            
+            urls = common.parseDOM(item, "a", ret="href")
+            titlediv = common.parseDOM(item, "div", attrs={"class": "pgs-marks-txt"})[0]
+            title = common.parseDOM(titlediv, "div", attrs={"class": "pgs-marks-name"})[0]
+            titleadd = self.strip(common.parseDOM(titlediv, "div", attrs={"class": "pgs-marks-current"})[0].replace('<br>', ','))
+            title_ = self.strip(title + ' [COLOR=FF00FFF0][' + titleadd + '][/COLOR]')
+            title_ = ' '.join(title_.split()).strip()
+
+            paused_item = {
+                "title": title,
+                "title_full": title_,
+                "image": self.getSerialImage(urls[0]),
+                "link": urls[0]
+            }
+
+            paused_items.append(paused_item)
+
+        return paused_items
+
     def parseSidebar(self, content):
         if not content:
             return []
@@ -803,7 +902,7 @@ class Seasonvar():
         
     def getFilterToValues(self, filterType, filterValue):
         values = {}
-    if filterValue != "all":
+        if filterValue != "all":
             values["filter[" + FILTER_TYPES[2][filterType] + "][]"] = urllib.unquote_plus(filterValue)
         values["filter[sortTo][]"] = "name"
         values["filter[rait]"] = "kp"                     
