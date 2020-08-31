@@ -217,15 +217,40 @@ class Tivix():
             xbmcplugin.endOfDirectory(self.handle, True)
         return currname, duration, listItems
 
+
+    def tivixClearUrl(self, url_code):
+        const_begin_musor = "//"
+        Size_musor_symbols = 48
+        Musor_keys = []
+        url_code = url_code.replace("#2","")
+        len_url_code = len(url_code)
+        begin_find = 0
+        while True:
+            if (not const_begin_musor in url_code): break
+            pos_begin_musor = url_code.find(const_begin_musor, begin_find)
+            if (not pos_begin_musor > 0):
+                begin_find = 0
+                continue
+            key1 = url_code[pos_begin_musor:pos_begin_musor + Size_musor_symbols+2]
+            if (const_begin_musor[1:] in key1[2:]):
+                begin_find = begin_find+1
+                continue
+            if (not key1 in Musor_keys): Musor_keys.append(key1)
+            url_code = url_code.replace(key1, "")
+            begin_find = 0
+            continue
+        return url_code
+
     def tivixDecode(self, x):
-        a = x[2:]
-        file3_separator = '//'
+        # a = x[2:]
+        # file3_separator = '//'
         # bk0, bk1...bk4
         # bk = ['3d4788f5-ef50-4329-afb6-c400ae0897fa', '44d1e467-f246-4669-92e1-8ee6b6b3b314', '970e632e-2d80-47c9-85e3-2910c42cb8df',
         #       '33f3b87a-1c7c-4076-a689-55c56a6d09d7', 'ce2173f7-f004-4699-afbd-c10747362fd4']
-        bk = ['c3304152-58da-417b-a6cb-52b868c012ae', '90944160-2d81-4756-a925-7cb6a8cbb090', '3036b479-6c95-4250-abd2-91910b1f02a5', '19202e40-a6d3-425d-bc0d-2fdf01ff3a8e']
-        for k in reversed(bk):
-            a = a.replace(file3_separator + base64.standard_b64encode(urllib.quote(k, safe='~()*!.\'')), '')
+        # bk = ['c3304152-58da-417b-a6cb-52b868c012ae', '90944160-2d81-4756-a925-7cb6a8cbb090', '3036b479-6c95-4250-abd2-91910b1f02a5', '19202e40-a6d3-425d-bc0d-2fdf01ff3a8e']
+        # for k in reversed(bk):
+        #     a = a.replace(file3_separator + base64.standard_b64encode(urllib.quote(k, safe='~()*!.\'')), '')
+        a = self.tivixClearUrl(x)
         try:
             template = base64.standard_b64decode(a)
         except:
