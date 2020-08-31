@@ -128,7 +128,7 @@ class Seasonvar():
         self.contentBegin  = None                
         self.contentFilter = None     
 
-        self.addplaylists = []                   
+        self.addplaylists = []
         
         self.translators = SeasonvarTranslators(os.path.join(self.data_path, "translators.json"))
         
@@ -190,7 +190,7 @@ class Seasonvar():
         idPlaylist = int(params['idpl']) if 'idpl' in params else 0
 
         page = int(params['page']) if 'page' in params else None
-	if page == 0:	
+        if page == 0:	
             xbmc.executebuiltin('Container.Update(%s, replace)' % sys.argv[0])
 
         filterType = int(params['ft']) if 'ft' in params else None
@@ -354,7 +354,7 @@ class Seasonvar():
                 uricmd = sys.argv[0] + '?mode=search&url=%s&keyword=%s&strong=1' % (self.url, title.split('/')[0].strip())                
                 commands.append((self.language(2000), "Container.Update(%s)" % (uricmd), ))
 
-            	self.addTranslationMenuItem(commands, self.url + link, title)
+                self.addTranslationMenuItem(commands, self.url + link, title)
 
                 item.addContextMenuItems(commands)
 
@@ -400,15 +400,6 @@ class Seasonvar():
         secure = div.split("'secureMark': '")[-1].split("',")[0]
         return idseason, idserial, secure
 
-#<script>var pl = {'0': "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vnc8cEV9cAn8UoNzDgisBaePDlN4v2M9ygn9y7D937DpICC"};</script>
-# <ul class="pgs-trans">
-#          <li data-click="translate" data-translate="0">Ҳᮤᱲ</li>
-#                <li data-click="translate" data-translate="1">ҳ⳨󱹼/li>
-#      <script>pl[1] = "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vncf2gIf2Eof2gofyQcf2gIf2wof2gofyQTf2gIf2wbf2gofyQTf2gofyQIf2gofyh=8cEV9cAn8UoNzDgisBaePDlN4v2M9ygn9y7D937DpICC";</script>          <li data-click="translate" data-translate="16">BaibaKo</li>
-#      <script>pl[16] = "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vncgZFN7ZF84TLop39IOSMe16pV85hd43MV1vaRPyEVOyEUpcAUpczC";</script>          <li data-click="translate" data-translate="68">Ӱ檫汻</li>
-#      <script>pl[68] = "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vncf2gIf2ETf2gofyQIf2gIf2waf2gIf2wnf2gIf2f=f2gIf2waf2gofyQIf2gofyh=8cEV9cAn8UoNzDgisBaePDlN4v2M9ygn9y7D937DpICC";</script>        <li class="label">û⦰鳥 𐦰森⸼/li>
-#  </ul>
-
     def selectTranslator(self, content, id_season):
 
         playlist0 = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
@@ -417,7 +408,8 @@ class Seasonvar():
         except:
             return playlist0 
         titles = common.parseDOM(div, 'li', attrs={'data-click': 'translate'})
-        playlists = common.parseDOM(div, 'script')        
+        playlists = common.parseDOM(div, 'script')
+
         if len(titles) > 1:
 
             index_ = -1
@@ -546,7 +538,7 @@ class Seasonvar():
                 item.setProperty('IsPlayable', 'true')
                 if subtitle and (subtitle != ''):
                     item.setSubtitles([subtitle])
-                xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, False)            
 
     def getPlaylistByUppod(self, content):
         divplayer = common.parseDOM(content, 'div', attrs={'id': 'videoplayer719'})
@@ -586,7 +578,7 @@ class Seasonvar():
         description = common.parseDOM(content, 'meta', attrs={'name': 'description'}, ret='content')[0] if common.parseDOM(response["content"], 'meta', attrs={'name': 'description'}, ret='content') else ''
         multiseason = self.getMultiseasonDiv(content)
         title_orig_div = common.parseDOM(content, 'div', attrs={'class': 'pgs-sinfo_list'})[0]
-	title_orig = common.parseDOM(title_orig_div, 'span')[0].replace("&#039;", "'")
+        title_orig = common.parseDOM(title_orig_div, 'span')[0].replace("&#039;", "'")
         title_ = common.parseDOM(content, 'meta', attrs={'property': 'og:title'}, ret='content')[0]
         parts = title_.split(" ")
         season = None
@@ -788,8 +780,8 @@ class Seasonvar():
         
     def getFilterToValues(self, filterType, filterValue):
         values = {}
-	if filterValue != "all":
-	        values["filter[" + FILTER_TYPES[2][filterType] + "][]"] = urllib.unquote_plus(filterValue)
+    if filterValue != "all":
+            values["filter[" + FILTER_TYPES[2][filterType] + "][]"] = urllib.unquote_plus(filterValue)
         values["filter[sortTo][]"] = "name"
         values["filter[rait]"] = "kp"                     
         return values
