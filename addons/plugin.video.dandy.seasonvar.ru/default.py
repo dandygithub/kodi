@@ -758,6 +758,19 @@ class Seasonvar():
 
         xbmcplugin.endOfDirectory(self.handle, True)
 
+        focus_on = None
+        if "#rewind=" in url:
+            focus_on = url.split("#rewind=")[1]
+
+            focus_on = focus_on.split("_")[0]
+
+            xbmc.sleep(100)
+            win = xbmcgui.Window(xbmcgui.getCurrentWindowId())
+            cid = win.getFocusId()
+
+            ctl = win.getControl(cid)
+            ctl.selectItem(int(focus_on))
+
     def playItem(self, item_id):
         print "*** play id %s" % item_id
 
