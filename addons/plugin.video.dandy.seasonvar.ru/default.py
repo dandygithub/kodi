@@ -96,7 +96,7 @@ class Seasonvar():
         self.handle = int(sys.argv[1])
         self.params = sys.argv[2]
 
-        self.url = 'http://seasonvar.ru'
+        self.url = self.addon.getSetting('domain')
 
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.debug = False
@@ -116,7 +116,7 @@ class Seasonvar():
             self.vip = True
         
         self.headers = {
-                "Host" : "seasonvar.ru",
+                "Host" : self.url.split("://")[1],
                 "Connection" : "keep-alive",
                 "X-Requested-With" : "XMLHttpRequest",
                 "Referer" : self.url,
@@ -147,7 +147,7 @@ class Seasonvar():
         if login:
             password = self.addon.getSetting('password')
             headers = {
-                "Host" : "seasonvar.ru",
+                "Host" : self.url.split("://")[1],
                 "Referer" : self.url + '/',
                 "Origin" : self.url,
                 "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36"
@@ -246,7 +246,7 @@ class Seasonvar():
         else:    
             #response = common.fetchPage({"link": url})            
             #image = response["content"].split('<meta property="og:image" content="')[-1].split('">')[0]
-            image = "http://cdn.seasonvar.ru/oblojka/%s.jpg" % (url.split("serial-")[-1].split("-")[0])
+            image = "http://cdn." + self.url.split("://")[1] + "/oblojka/%s.jpg" % (url.split("serial-")[-1].split("-")[0])
             return image if image else self.icon
 
     def getItemsByDate(self, page):
@@ -325,11 +325,11 @@ class Seasonvar():
         }
 
         headers = {
-            "Host" : "seasonvar.ru",
-            "Origin": "http://seasonvar.ru",
+            "Host" : self.url.split("://")[1],
+            "Origin": self.url,
             "Connection" : "keep-alive",
             "X-Requested-With" : "XMLHttpRequest",
-            "Referer" : "http://seasonvar.ru/",
+            "Referer" : self.url + "/",
             "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0"
         }
         request = urllib2.Request(url_, urllib.urlencode(values), headers)
@@ -461,7 +461,7 @@ class Seasonvar():
         
         headers = {
             "Cookie": self.getCookies(),
-            "Host": "seasonvar.ru",
+            "Host": self.url.split("://")[1],
             "Origin": self.url,
             "Referer": url,
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36",

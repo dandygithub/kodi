@@ -1,4 +1,5 @@
 <settings>
+  <setting id="domain" type="text" label="Site URL" default="http://seasonvar.ru"/>
   <setting id="translit" type="bool" label="Translit" default="false"/>
   <setting id="unified_search" type="bool" label="Unified search" default="false"/>
   <setting type="bool" id="united_search" visible="false" default="true" />
