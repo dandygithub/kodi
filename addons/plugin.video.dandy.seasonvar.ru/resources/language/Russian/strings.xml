@@ -21,6 +21,10 @@
 
     <string id="6000">Выбор озвучки</string>
 
+    <string id="7000">На чём остановились</string>
+    <string id="7001">Хочу посмотреть</string>
+    <string id="7002">История</string>
+
     <string id="9000">следующая страница (%s) >>></string>
     <string id="9001">в начало >>></string>
 </strings>

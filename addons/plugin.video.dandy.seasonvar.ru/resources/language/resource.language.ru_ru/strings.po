@@ -1,0 +1,89 @@
+﻿# Kodi Media Center language file
+# Addon Name: seasonvar.ru
+# Addon id: plugin.video.dandy.seasonvar.ru
+# Addon Provider: 
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ru\n"
+
+msgctxt "#1000"
+msgid "Жанры кино"
+msgstr "Жанры кино"
+
+msgctxt "#1001"
+msgid "Сериалы"
+msgstr "Сериалы"
+
+msgctxt "#1002"
+msgid "Мультфильмы"
+msgstr "Мультфильмы"
+
+msgctxt "#2000"
+msgid "Поиск"
+msgstr "Поиск"
+
+msgctxt "#2001"
+msgid "К сожалению, поиск по сайту не дал никаких результатов."
+msgstr "К сожалению, поиск по сайту не дал никаких результатов."
+
+msgctxt "#3000"
+msgid "Фильтр"
+msgstr "Фильтр"
+
+msgctxt "#4000"
+msgid "Жанры"
+msgstr "Жанры"
+
+msgctxt "#4001"
+msgid "Страны"
+msgstr "Страны"
+
+msgctxt "#4002"
+msgid "Годы"
+msgstr "Годы"
+
+msgctxt "#5000"
+msgid "Сезон"
+msgstr "Сезон"
+
+msgctxt "#5001"
+msgid "Серия"
+msgstr "Серия"
+
+msgctxt "#5002"
+msgid "смотреть онлайн"
+msgstr "смотреть онлайн"
+
+msgctxt "#5003"
+msgid "онлайн"
+msgstr "онлайн"
+
+msgctxt "#5004"
+msgid "сериал"
+msgstr "сериал"
+
+msgctxt "#6000"
+msgid "Выбор озвучки"
+msgstr "Выбор озвучки"
+
+msgctxt "#7000"
+msgid "На чём остановились"
+msgstr "На чём остановились"
+
+msgctxt "#7001"
+msgid "Хочу посмотреть"
+msgstr "Хочу посмотреть"
+
+msgctxt "#7002"
+msgid "История"
+msgstr "История"
+
+msgctxt "#9000"
+msgid "следующая страница (%s) >>>"
+msgstr "следующая страница (%s) >>>"
+
+msgctxt "#9001"
+msgid "в начало >>>"
+msgstr "в начало >>>"
