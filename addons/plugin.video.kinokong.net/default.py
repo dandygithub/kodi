@@ -133,11 +133,12 @@ class Kinokong():
                     quality = qualities[i]
                 except:
                     quality = "NONE"
+                title = title + " [COLOR=lightgreen][" + quality  + "][/COLOR]"    
 
                 uri = sys.argv[0] + '?mode=show&url=%s' % (links[i])
 		self.log("image: %s"  % image)
 		self.log("uri: %s"  % uri)
-                item = xbmcgui.ListItem(title + " [COLOR=lightgreen][" + quality  + "][/COLOR]", iconImage=image, thumbnailImage=image)
+                item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
                 item.setInfo(type='Video', infoLabels={'title': title, 'genre': genre, 'plot': description})
 
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)

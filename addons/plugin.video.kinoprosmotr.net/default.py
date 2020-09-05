@@ -335,7 +335,7 @@ class Kinoprosmotr():
                 for i, link in enumerate(links):   
                     uri = sys.argv[0] + '?mode=play&url=%s&url2=%s' % (link,url2)
                     item = xbmcgui.ListItem("#%d. " % (i+1) + title,  iconImage=image)
-                    item.setInfo(type='Video', infoLabels={'title': title, 'genre': genres, 'plot': desc, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
+                    item.setInfo(type='Video', infoLabels={'title': "#%d. " % (i+1) + title, 'genre': genres, 'plot': desc, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
                     item.setProperty('IsPlayable', 'true')
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
