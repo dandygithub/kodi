@@ -63,7 +63,7 @@ def select_season(data):
     if index_ < 0:
         return "", ""
     else:
-        return values[index_], str(int(seasons[index_].split(" ")[-1]))
+        return values[index_], str(int(seasons[index_].split(" ")[0]))
 
 def select_episode(data, url):
     sindex = None
@@ -72,6 +72,7 @@ def select_episode(data, url):
     data_, tr_value = select_translator(data, url)
 
     season, sindex = select_season(data_)
+    
     if season == "":
         return "", sindex, eindex
 

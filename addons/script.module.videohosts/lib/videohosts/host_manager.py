@@ -59,8 +59,8 @@ def get_playlist(data):
             iframes_hm["HDVB"] = item
         elif re.search("api\d+", item):
             iframes_hm["COLLAPS"] = item
-        elif "videocdn" in item:
-            iframes_hm["VIDEOCDN"] = item
+#        elif "videocdn" in item:
+#            iframes_hm["VIDEOCDN"] = item
         elif "videoframe" in item:
             iframes_hm["VIDEOFRAME"] = item
 

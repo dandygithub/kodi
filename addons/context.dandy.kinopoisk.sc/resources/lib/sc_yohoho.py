@@ -32,7 +32,8 @@ VALUES = {
     "separator": ","
 }
 
-ENABLED_HOSTS = ("iframe", "kodik", "videocdn", "hdvb", "collaps")
+#ENABLED_HOSTS = ("iframe", "kodik", "videocdn", "hdvb", "collaps")
+ENABLED_HOSTS = ("hdvb", "collaps")
 
 _kp_id_ = ''
 
