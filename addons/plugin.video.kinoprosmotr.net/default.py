@@ -119,6 +119,7 @@ class Kinoprosmotr():
             descs = common.parseDOM(teaser, "div", attrs={"class": "teaser_desc"})
 
             infos = common.parseDOM(teaser, "ul", attrs={"class": "teaser_ads"})
+            details = common.parseDOM(teaser, "ul", attrs={"class": "teaser_file_details"})
 
             ratings = common.parseDOM(movie, "li", attrs={"class": "current-rating"})
             pagenav = common.parseDOM(response["content"], "div", attrs={"id": "pagenav"})
@@ -126,6 +127,7 @@ class Kinoprosmotr():
             for i, title in enumerate(titles):
                 items += 1
                 info = common.parseDOM(infos[i], "li")
+                detail = common.parseDOM(details[i], "li")
 
                 image = images[i]
                 genre = self.encode(', '.join(common.parseDOM(info[2], "a")))
@@ -138,10 +140,9 @@ class Kinoprosmotr():
                     tmp = year.split(' ')
                     year = tmp[0]
                     season = tmp[1]+tmp[2]
-                    title = "%s %s %s" % (self.encode(title), self.encode(season), year)
-
+                    title = "%s %s %s [COLOR=lightgreen][%s][/COLOR]" % (self.encode(title), self.encode(season), year, detail[2].split('</span>')[-1])
                 except IndexError:
-                    title = "%s (%s)" % (self.encode(title), year)
+                    title = "%s (%s) [COLOR=lightgreen][%s][/COLOR]" % (self.encode(title), year, detail[2].split('</span>')[-1])
 
                 uri = sys.argv[0] + '?mode=show&url=%s' % (links[i])
                 item = xbmcgui.ListItem(title, iconImage=self.icon, thumbnailImage=self.url+image)
@@ -154,7 +155,7 @@ class Kinoprosmotr():
 
         if pagenav and not items < 10:
             uri = sys.argv[0] + '?mode=%s&url=%s&page=%s' % ("category", url, str(int(page) + 1))
-            item = xbmcgui.ListItem("[COLOR=orange]Next page >>[/COLOR]", thumbnailImage=self.inext)
+            item = xbmcgui.ListItem("[COLOR=orange]" + self.language(2003) + "[/COLOR]", thumbnailImage=self.inext)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'movies')
