@@ -43,6 +43,7 @@ FILTER_TYPE_GENRES = 0
 FILTER_TYPE_COUNTRIES = 1
 FILTER_TYPE_YEARS = 2
 FILTER_TYPES = ((0, 1, 2), ('genre', 'country', 'year'), ('quotG', 'quotC', 'quotY'))
+WINDOW_VIDEO_NAV = 10025
 
 class SeasonvarTranslators():
 
@@ -616,7 +617,7 @@ class Seasonvar():
 
     def parsePlaylist(self, url, playlist, image, description, title, season="", title_orig=""):
 
-        win = xbmcgui.Window(xbmcgui.getCurrentWindowId())
+        win = xbmcgui.Window(WINDOW_VIDEO_NAV)
         win.clearProperties()
         for episode in playlist:
             etitle = self.strip(episode['title'].replace("<br>", "  "))
@@ -774,7 +775,7 @@ class Seasonvar():
     def playItem(self, item_id):
         print "*** play id %s" % item_id
 
-        window = xbmcgui.Window(xbmcgui.getCurrentWindowId())
+        window = xbmcgui.Window(WINDOW_VIDEO_NAV)
 
         item_url = window.getProperty("seasonvar_real_url_" + item_id)
 
