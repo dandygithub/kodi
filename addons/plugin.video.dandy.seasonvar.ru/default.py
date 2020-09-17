@@ -201,7 +201,7 @@ class Seasonvar():
         title =  urllib.unquote_plus(params['title']) if 'title' in params else None
         
         if mode == 'play':
-            self.playItem(params['itemid'])
+            self.playItem(params['serial'], params['season'], params['episode'])
         elif mode == 'tranalation':
             season_id = self.getSeasonIdFromLink(url)
             if season_id:
@@ -597,12 +597,15 @@ class Seasonvar():
         response = common.fetchPage({"link": url, "cookie": self.getCookies()})
         image = common.parseDOM(response["content"], 'link', attrs={'rel': 'image_src'}, ret='href')[0] if common.parseDOM(response["content"], 'link', attrs={'rel': 'image_src'}, ret='href') else None
         description = common.parseDOM(response["content"], 'meta', attrs={'name': 'description'}, ret='content')[0] if common.parseDOM(response["content"], 'meta', attrs={'name': 'description'}, ret='content') else ''
+        
+        idseason, idserial, secure = self.getParamsForRequestPlayList(response["content"])
         response = common.fetchPage({"link": self.getURLPlayList(url, response["content"], 2), "cookie": self.getCookies()})
+        
         json_playlist = json.loads(response["content"])
         playlist = json_playlist[idPlaylist]
         playlist_ = playlist['folder']
 
-        self.parsePlaylist(url, playlist_, image, description, "")
+        self.parsePlaylist(url, playlist_, image, description, "", "", idserial)
 
         xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
@@ -615,21 +618,19 @@ class Seasonvar():
         else:
             return title1 + " " + title2
 
-    def parsePlaylist(self, url, playlist, image, description, title, season="", title_orig=""):
+    def parsePlaylist(self, season_url, playlist, image, description, title, season, title_orig, idserial):
 
         win = xbmcgui.Window(WINDOW_VIDEO_NAV)
-        win.clearProperties()
+
         for episode in playlist:
             etitle = self.strip(episode['title'].replace("<br>", "  "))
             playlist_ = None
-            try:
-                regex = r"(\/\/.*?=)"
-                url = re.sub(regex, '', episode['file']);
-                import base64
-                url = base64.b64decode(url[2:])
-                url = url.split(" ")[0]
-            except:
+            
+            url = self.decodeEpisodeFileURL(episode)
+
+            if not url:
                 playlist_ = episode['folder']
+
             if playlist_:
                 self.addplaylists.append(playlist_)
                 uri = sys.argv[0] + '?mode=playlist&url=%s&idpl=%d' % (url, (len(self.addplaylists)-1))
@@ -639,8 +640,10 @@ class Seasonvar():
             else:    
 
                 itemid = episode['galabel'] # ИД сериала + ИД серии, глобально уникальный 
+                season_doc = season_url.split("/")[-1]
+                season_doc = season_doc.split("#")[0]
 
-                uri = sys.argv[0] + '?mode=play&itemid=%s' % (itemid)
+                uri = sys.argv[0] + '?mode=play&serial=%s&season=%s&episode=%s' % (idserial, season_doc, itemid)
                 sub_name = None
                 subtitle = None
                 try:
@@ -730,27 +733,10 @@ class Seasonvar():
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
            
         else:
-            if not self.checkAccessContent(response["content"]):
-                return
+            playlist = self.extractPlaylist(url, content)
 
-            self.addplaylists = []
-            try: 
-                response = common.fetchPage({"link": self.getURLPlayList(url, content, 0), "cookie": self.getCookies()})
-                json_playlist = json.loads(response["content"])
-            except:
-                self.showErrorMessage("Content unavailable")
-                return
-            playlist = json_playlist
-            if not playlist:
-                try:
-                    response = common.fetchPage({"link": self.getURLPlayList(url, content, 1), "cookie": self.getCookies()})
-                    json_playlist = json.loads(response["content"])
-                    playlist = json_playlist['playlist']
-                except:
-                    self.showErrorMessage("Content unavailable")
-                    return
-
-            self.parsePlaylist(url, playlist, image, description, title, season, title_orig)
+            idseason, idserial, secure = self.getParamsForRequestPlayList(content)
+            self.parsePlaylist(url, playlist, image, description, title, season, title_orig, idserial)
 
         if withMSeason and multiseason:
            xbmcplugin.setContent(self.handle, 'files')
@@ -772,14 +758,80 @@ class Seasonvar():
             ctl = win.getControl(cid)
             ctl.selectItem(int(focus_on))
 
-    def playItem(self, item_id):
-        print "*** play id %s" % item_id
+
+    def decodeEpisodeFileURL(self, episode):
+        try:
+            regex = r"(\/\/.*?=)"
+            url = re.sub(regex, '', episode['file'])
+            import base64
+            url = base64.b64decode(url[2:])
+            url = url.split(" ")[0]
+
+            return url
+        except Exception as e:
+            self.log("Exception: %s" % str(e))
+            return ""
+
+
+    def extractPlaylist(self, url, content = None):
+
+        if content is None:
+            response = common.fetchPage({"link": url, "cookie": self.getCookies()})
+            content = response["content"]
+
+        if not self.checkAccessContent(content):
+            return []
+
+        self.addplaylists = []
+
+        try: 
+            response = common.fetchPage({"link": self.getURLPlayList(url, content, 0), "cookie": self.getCookies()})
+            json_playlist = json.loads(response["content"])
+        except Exception as e:
+            self.showErrorMessage("Content unavailable")
+            return []
+
+        playlist = json_playlist
+
+        if not playlist:
+            try:
+                response = common.fetchPage({"link": self.getURLPlayList(url, content, 1), "cookie": self.getCookies()})
+                json_playlist = json.loads(response["content"])
+
+                if type(json_playlist) is dict:
+                    playlist = json_playlist['playlist']
+                elif type(json_playlist) is list:
+                    playlist = json_playlist
+                else:
+                    raise ValueError("Content unavailable")
+
+            except Exception as e:
+                self.showErrorMessage("Content unavailable")
+                return []
+
+        return playlist
+
+    def playItem(self, serial, season, episode):
+        print "*** play id %s" % episode
 
         window = xbmcgui.Window(WINDOW_VIDEO_NAV)
 
-        item_url = window.getProperty("seasonvar_real_url_" + item_id)
+        season_url = self.url +  '/' +  season
 
-        item = xbmcgui.ListItem(path=item_url)
+        episode_url = window.getProperty("seasonvar_real_url_" + episode)
+
+        if not episode_url:
+            playlist = self.extractPlaylist(season_url)
+
+            for item in playlist:
+                if episode == item['galabel']:
+                    episode_url = self.decodeEpisodeFileURL(item)
+                    break
+
+            if not episode_url:
+                return
+
+        item = xbmcgui.ListItem(path=episode_url)
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
     def USTranslit(self, keyword, transpar):
