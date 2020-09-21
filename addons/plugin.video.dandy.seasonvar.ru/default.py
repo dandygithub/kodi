@@ -128,7 +128,7 @@ class Seasonvar():
         self.contentBegin  = None                
         self.contentFilter = None     
 
-        self.addplaylists = []                   
+        self.addplaylists = []
         
         self.translators = SeasonvarTranslators(os.path.join(self.data_path, "translators.json"))
         
@@ -190,7 +190,7 @@ class Seasonvar():
         idPlaylist = int(params['idpl']) if 'idpl' in params else 0
 
         page = int(params['page']) if 'page' in params else None
-	if page == 0:	
+        if page == 0:	
             xbmc.executebuiltin('Container.Update(%s, replace)' % sys.argv[0])
 
         filterType = int(params['ft']) if 'ft' in params else None
@@ -201,26 +201,28 @@ class Seasonvar():
         
         if mode == 'play':
             self.playItem(params['itemid'])
-        if mode == 'tranalation':
+        elif mode == 'tranalation':
             season_id = self.getSeasonIdFromLink(url)
             if season_id:
                 self.translators.remove(season_id)
 
             self.show(url, title, (withMSeason == "1"))
-        if mode == 'search':
+        elif mode == 'search':
             self.search(keyword, external, transpar, strong)
-        if mode == 'show':
+        elif mode == 'show':
             self.show(url, title, (withMSeason == "1"))
-        if mode == 'filter':
+        elif mode == 'filter':
             self.getFilter(filterType, filterValue, alphaBeta)
-        if mode == 'nextdate':
+        elif mode == 'nextdate':
             self.getItemsByDate(page)
-        if mode == 'playlist':
+        elif mode == 'playlist':
             self.partPlaylist(url, idPlaylist)
-        elif mode is None:
+        elif mode in ['paused', 'wishlist', 'history']:
+            self.mainMenu(mode)
+        else:
             self.mainMenu()
 
-    def mainMenu(self):
+    def mainMenu(self, itemsSourse = None):
         #self.addon.setSetting('cookie', '')
         self.login()
         self.cookie=self.addon.getSetting('cookie') if self.addon.getSetting('cookie') else None 
@@ -231,11 +233,25 @@ class Seasonvar():
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", self.url)
         item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(2000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
         uri = sys.argv[0] + '?mode=%s' % ("filter")
         item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(3000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getItems()
+        if self.vip:
+            uri = sys.argv[0] + '?mode=%s' % ("paused")
+            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(7000), thumbnailImage=self.icon)
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+            uri = sys.argv[0] + '?mode=%s' % ("wishlist")
+            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(7001), thumbnailImage=self.icon)
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+            uri = sys.argv[0] + '?mode=%s' % ("history")
+            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(7002), thumbnailImage=self.icon)
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+
+        self.getItems(itemsSourse)
 
         xbmcplugin.setContent(self.handle, 'tvshows')
         xbmcplugin.endOfDirectory(self.handle, True)
@@ -301,22 +317,10 @@ class Seasonvar():
         xbmcplugin.setContent(self.handle, 'tvshows')
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def getItems(self, page = 0):
+    def getItems(self, itemsSourse = None, page = 0):
         print "*** Get items"
         content = None
 
-        if (self.begin_render_type == None) or (self.begin_render_type == 'new'):
-            url_ = self.url + '/ajax.php?mode=new'
-        elif (self.begin_render_type == 'popular'):
-            url_ = self.url + '/ajax.php?mode=pop'
-        elif (self.begin_render_type == 'newest'):
-            url_ = self.url + '/ajax.php?mode=newest'
-        elif (self.begin_render_type == 'bydate'):
-            self.getItemsByDate(page)
-            return
-        else:
-            url_ = self.url + '/ajax.php?mode=new'
-            
         values = {
             "ganre": "",
             "country": "",
@@ -324,7 +328,29 @@ class Seasonvar():
             "main": "1"
         }
 
+        if itemsSourse is None:
+            itemsSourse = self.begin_render_type
+
+        if (itemsSourse == None) or (itemsSourse == 'new'):
+            url_ = self.url + '/ajax.php?mode=new'
+        elif (itemsSourse == 'popular'):
+            url_ = self.url + '/ajax.php?mode=pop'
+        elif (itemsSourse == 'newest'):
+            url_ = self.url + '/ajax.php?mode=newest'
+        elif itemsSourse in ['paused', 'wishlist']:
+            url_ = self.url + '/?mod=pause'
+            values.clear()
+        elif itemsSourse == 'history':
+            url_ = self.url + '/?mod=history'
+            values.clear()
+        elif (itemsSourse == 'bydate'):
+            self.getItemsByDate(page)
+            return
+        else:
+            url_ = self.url + '/ajax.php?mode=new'
+            
         headers = {
+            "Cookie": self.getCookies(),
             "Host" : self.url.split("://")[1],
             "Origin": self.url,
             "Connection" : "keep-alive",
@@ -332,37 +358,131 @@ class Seasonvar():
             "Referer" : self.url + "/",
             "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0"
         }
+
         request = urllib2.Request(url_, urllib.urlencode(values), headers)
         content = urllib2.urlopen(request).read()            
 
-        if content:
-            items = common.parseDOM(content, "a", attrs={"class": "pst rside-p"})
-            urls = common.parseDOM(content, "a", attrs={"class": "pst rside-p"}, ret="href")
-            for i, item in enumerate(items):
-                titlediv = common.parseDOM(item, "div", attrs={"class": "rside-d"})[0]
-                title = common.parseDOM(titlediv, "div", attrs={"class": "rside-t"})[0]
-                titleadd = self.strip(common.parseDOM(titlediv, "div", attrs={"class": "rside-ss"})[0].replace('<br>', ','))
-                title_ = self.strip(title + ' [COLOR=FF00FFF0][' + titleadd + '][/COLOR]')
-                title_ = ' '.join(title_.split()).strip()
-                image = common.parseDOM(item, "img", ret="data-src")[0]
-                link = urls[i]
-                uri = sys.argv[0] + '?mode=show&url=%s&title=%s&wm=0' % (self.url + link, title)
-                item = xbmcgui.ListItem(title_, iconImage=image, thumbnailImage=image)
-                item.setInfo(type='Video', infoLabels={'title': title_})
+        if itemsSourse == 'paused':
+            items = self.parsePaused(content, "marks-new")
+        elif itemsSourse == 'wishlist':
+            items = self.parsePaused(content, 'marks-want')
+        elif itemsSourse == 'history':
+            items = self.parseHistory(content)
+        else:
+            items = self.parseSidebar(content)
 
-                commands = []
-                uricmd = sys.argv[0] + '?mode=search&url=%s&keyword=%s&strong=1' % (self.url, title.split('/')[0].strip())                
-                commands.append((self.language(2000), "Container.Update(%s)" % (uricmd), ))
+        for item in items:
 
-            	self.addTranslationMenuItem(commands, self.url + link, title)
+            uri = sys.argv[0] + '?mode=show&url=%s&title=%s&wm=0' % (item["link"], item["title"])
+            list_item = xbmcgui.ListItem(item["title_full"], iconImage=item["image"], thumbnailImage=item["image"])
+            list_item.setInfo(type='Video', infoLabels={'title': item["title_full"]})
 
-                item.addContextMenuItems(commands)
+            commands = []
+            uricmd = sys.argv[0] + '?mode=search&url=%s&keyword=%s&strong=1' % (self.url, item["title"].split('/')[0].strip())                
+            commands.append((self.language(2000), "Container.Update(%s)" % (uricmd), ))
 
-                xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+            self.addTranslationMenuItem(commands, item["link"], item["title"])
+
+            list_item.addContextMenuItems(commands)
+
+            xbmcplugin.addDirectoryItem(self.handle, uri, list_item, True)
+        
+        xbmcplugin.setContent(self.handle, 'tvshows')
+        xbmcplugin.endOfDirectory(self.handle, True)
             
-            xbmcplugin.setContent(self.handle, 'tvshows')
-            xbmcplugin.endOfDirectory(self.handle, True)
+    def parseHistory(self, content):
+
+        if not content:
+            return []
+
+        items_container = common.parseDOM(content, "div", attrs={"class": "pgs-history-c"})
+        if len(items_container) != 1:
+            return []
+
+        history_items = []
+
+        items = common.parseDOM(items_container[0], "a")
+        urls = common.parseDOM(items_container[0], "a", ret="href")
+
+        for i, item in enumerate(items):
             
+            title = common.parseDOM(item, "b")[0]
+            titleadd = item.split('</b>')[1]
+            title_ = self.strip(title + ' [COLOR=FF00FFF0][' + titleadd + '][/COLOR]')
+            title_ = ' '.join(title_.split()).strip()
+
+            history_item = {
+                "title": title,
+                "title_full": title_,
+                "image": self.getSerialImage(urls[i]),
+                "link": self.url + urls[i]
+            }
+
+            history_items.append(history_item)
+
+        return history_items
+
+    def parsePaused(self, content, tab_id):
+
+        if not content:
+            return []
+
+        items_container = common.parseDOM(content, 'li', attrs={'data-tabr': tab_id})
+        if len(items_container) != 1:
+            return []
+
+        paused_items = []
+
+        items = common.parseDOM(items_container[0], "div", attrs={"class": "pgs-marks-el"})
+
+        for i, item in enumerate(items):
+            
+            urls = common.parseDOM(item, "a", ret="href")
+            titlediv = common.parseDOM(item, "div", attrs={"class": "pgs-marks-txt"})[0]
+            title = common.parseDOM(titlediv, "div", attrs={"class": "pgs-marks-name"})[0]
+            titleadd = self.strip(common.parseDOM(titlediv, "div", attrs={"class": "pgs-marks-current"})[0].replace('<br>', ','))
+            title_ = self.strip(title + ' [COLOR=FF00FFF0][' + titleadd + '][/COLOR]')
+            title_ = ' '.join(title_.split()).strip()
+
+            paused_item = {
+                "title": title,
+                "title_full": title_,
+                "image": self.getSerialImage(urls[0]),
+                "link": urls[0]
+            }
+
+            paused_items.append(paused_item)
+
+        return paused_items
+
+    def parseSidebar(self, content):
+        if not content:
+            return []
+
+        sidebar_items = []
+
+        items = common.parseDOM(content, "a", attrs={"class": "pst rside-p"})
+        urls = common.parseDOM(content, "a", attrs={"class": "pst rside-p"}, ret="href")
+
+        for i, item in enumerate(items):
+            
+            titlediv = common.parseDOM(item, "div", attrs={"class": "rside-d"})[0]
+            title = common.parseDOM(titlediv, "div", attrs={"class": "rside-t"})[0]
+            titleadd = self.strip(common.parseDOM(titlediv, "div", attrs={"class": "rside-ss"})[0].replace('<br>', ','))
+            title_ = self.strip(title + ' [COLOR=FF00FFF0][' + titleadd + '][/COLOR]')
+            title_ = ' '.join(title_.split()).strip()
+
+            sidebar_item = {
+                "title": title,
+                "title_full": title_,
+                "image": common.parseDOM(item, "img", ret="data-src")[0],
+                "link": self.url + urls[i]
+            }
+
+            sidebar_items.append(sidebar_item)
+
+        return sidebar_items
+
     def addTranslationMenuItem(self, commands, url, title):
 
         if self.translator == "standard":
@@ -400,15 +520,6 @@ class Seasonvar():
         secure = div.split("'secureMark': '")[-1].split("',")[0]
         return idseason, idserial, secure
 
-#<script>var pl = {'0': "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vnc8cEV9cAn8UoNzDgisBaePDlN4v2M9ygn9y7D937DpICC"};</script>
-# <ul class="pgs-trans">
-#          <li data-click="translate" data-translate="0">Ҳᮤᱲ</li>
-#                <li data-click="translate" data-translate="1">ҳ⳨󱹼/li>
-#      <script>pl[1] = "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vncf2gIf2Eof2gofyQcf2gIf2wof2gofyQTf2gIf2wbf2gofyQTf2gofyQIf2gofyh=8cEV9cAn8UoNzDgisBaePDlN4v2M9ygn9y7D937DpICC";</script>          <li data-click="translate" data-translate="16">BaibaKo</li>
-#      <script>pl[16] = "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vncgZFN7ZF84TLop39IOSMe16pV85hd43MV1vaRPyEVOyEUpcAUpczC";</script>          <li data-click="translate" data-translate="68">Ӱ檫汻</li>
-#      <script>pl[68] = "8DGe76RezcwWpcgnOB2c7jGZmBFu7vwVmy2b9Zlh7yADmyFup3gIOyAb8DlT7vncf2gIf2ETf2gofyQIf2gIf2waf2gIf2wnf2gIf2f=f2gIf2waf2gofyQIf2gofyh=8cEV9cAn8UoNzDgisBaePDlN4v2M9ygn9y7D937DpICC";</script>        <li class="label">û⦰鳥 𐦰森⸼/li>
-#  </ul>
-
     def selectTranslator(self, content, id_season):
 
         playlist0 = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
@@ -417,7 +528,8 @@ class Seasonvar():
         except:
             return playlist0 
         titles = common.parseDOM(div, 'li', attrs={'data-click': 'translate'})
-        playlists = common.parseDOM(div, 'script')        
+        playlists = common.parseDOM(div, 'script')
+
         if len(titles) > 1:
 
             index_ = -1
@@ -546,7 +658,7 @@ class Seasonvar():
                 item.setProperty('IsPlayable', 'true')
                 if subtitle and (subtitle != ''):
                     item.setSubtitles([subtitle])
-                xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, False)            
 
     def getPlaylistByUppod(self, content):
         divplayer = common.parseDOM(content, 'div', attrs={'id': 'videoplayer719'})
@@ -586,7 +698,7 @@ class Seasonvar():
         description = common.parseDOM(content, 'meta', attrs={'name': 'description'}, ret='content')[0] if common.parseDOM(response["content"], 'meta', attrs={'name': 'description'}, ret='content') else ''
         multiseason = self.getMultiseasonDiv(content)
         title_orig_div = common.parseDOM(content, 'div', attrs={'class': 'pgs-sinfo_list'})[0]
-	title_orig = common.parseDOM(title_orig_div, 'span')[0].replace("&#039;", "'")
+        title_orig = common.parseDOM(title_orig_div, 'span')[0].replace("&#039;", "'")
         title_ = common.parseDOM(content, 'meta', attrs={'property': 'og:title'}, ret='content')[0]
         parts = title_.split(" ")
         season = None
@@ -646,6 +758,19 @@ class Seasonvar():
 
         xbmcplugin.endOfDirectory(self.handle, True)
 
+        focus_on = None
+        if "#rewind=" in url:
+            focus_on = url.split("#rewind=")[1]
+
+            focus_on = focus_on.split("_")[0]
+
+            xbmc.sleep(100)
+            win = xbmcgui.Window(xbmcgui.getCurrentWindowId())
+            cid = win.getFocusId()
+
+            ctl = win.getControl(cid)
+            ctl.selectItem(int(focus_on))
+
     def playItem(self, item_id):
         print "*** play id %s" % item_id
 
@@ -675,7 +800,8 @@ class Seasonvar():
         return keyword
 
     def newSearchMethod(self, keyword, external, unified_search_results, strong):
-        url = self.url +  '/search?q=' + keyword
+        url = self.url +  '/search?' +  urllib.urlencode({"q" : keyword})
+
         response = common.fetchPage({"link": url})
         data =  response["content"]
         searchitems = common.parseDOM(data, 'div', attrs={'class': 'pgs-search-wrap'})
@@ -722,7 +848,8 @@ class Seasonvar():
             if self.new_search_method and (self.new_search_method == "true"):
                 self.newSearchMethod(keyword_, external, unified_search_results, strong)
             else:
-                url = self.url + '/autocomplete.php?query=' + keyword_       
+
+                url = self.url + '/autocomplete.php?' + urllib.urlencode({"query" : keyword_})
                 response = common.fetchPage({"link": url})
                 count = 1
                 s = json.loads(response["content"])
@@ -788,8 +915,8 @@ class Seasonvar():
         
     def getFilterToValues(self, filterType, filterValue):
         values = {}
-	if filterValue != "all":
-	        values["filter[" + FILTER_TYPES[2][filterType] + "][]"] = urllib.unquote_plus(filterValue)
+        if filterValue != "all":
+            values["filter[" + FILTER_TYPES[2][filterType] + "][]"] = urllib.unquote_plus(filterValue)
         values["filter[sortTo][]"] = "name"
         values["filter[rait]"] = "kp"                     
         return values
