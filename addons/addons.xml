@@ -152,7 +152,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.dandy.seasonvar.ru" name="seasonvar.ru" version="1.9.4" provider-name="dandy">
+<addon id="plugin.video.dandy.seasonvar.ru" name="seasonvar.ru" version="1.9.5" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.1.0"/>
@@ -180,23 +180,6 @@
     <extension point= "xbmc.addon.metadata">
         <summary>videokvadrat.com</summary>
         <description>Видеоквадрат (http://videokvadrat.com)</description>
-        <description>For personal use only</description>
-        <platform>all</platform>
-    </extension>
-</addon>
-
-<addon id="plugin.video.filin.tv" name="Filin.tv" version="2.4.0" provider-name="mrstealth, dandy">
-    <requires>
-        <import addon="xbmc.python" version="2.1.0"/>
-        <import addon="script.module.xbmc.helpers" version="2.0.0"/>
-        <import addon="script.module.translit" version="2.0.1"/>
-    </requires>
-    <extension point="xbmc.python.pluginsource" library="default.py">
-        <provides>video</provides>
-    </extension>
-    <extension point= "xbmc.addon.metadata">
-        <summary>Browse and stream from filin.tv</summary>
-        <description>Enables watching streams on filin.tv that are flash enabled.</description>
         <description>For personal use only</description>
         <platform>all</platform>
     </extension>
