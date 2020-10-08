@@ -811,6 +811,23 @@ class Seasonvar():
 
         return playlist
 
+    def updateSiteHistory(self, season_url, serial_id, season_id, file_id):
+
+        headers = self.headers
+        headers["Cookie"] = self.getCookies()
+        headers["Referer"] = season_url
+
+        values = {
+            "id_season": season_id,
+            "file_id": file_id,
+            "serial_id": serial_id,
+            "svid1": self.cookie,
+            "idTrans": 0 # неважно
+        }
+
+        request = urllib2.Request(self.url + "/plStat.php", urllib.urlencode(values), headers)
+        content = urllib2.urlopen(request).read()
+
     def playItem(self, serial, season, episode):
         print "*** play id %s" % episode
 
@@ -830,6 +847,10 @@ class Seasonvar():
 
             if not episode_url:
                 return
+
+        if self.vip:
+            (season_id, file_id) = episode.split("_")			
+            self.updateSiteHistory(season_url, serial, season_id, file_id)
 
         item = xbmcgui.ListItem(path=episode_url)
         xbmcplugin.setResolvedUrl(self.handle, True, item)
