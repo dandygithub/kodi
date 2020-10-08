@@ -227,7 +227,7 @@ class HdrezkaTV:
             item.setInfo(
                 type='video',
                 infoLabels={
-                    'title': name,
+                    'title': title,
                     'genre': genre,
                     'year': year,
                     'country': country,
@@ -341,11 +341,11 @@ class HdrezkaTV:
 
         return iframe
 
-    def selectTranslator3(self, content, tvshow, post_id, url, idt):
+    def selectTranslator3(self, content, tvshow, post_id, url, idt, action):
         try:
             div = common.parseDOM(content, 'ul', attrs={'id': 'translators-list'})[0]
         except:
-            return tvshow, idt
+            return tvshow, idt, None
         titles = common.parseDOM(div, 'li')
         ids = common.parseDOM(div, 'li', ret="data-translator_id")
         if len(titles) > 1:
@@ -360,7 +360,7 @@ class HdrezkaTV:
         data = {
             "id": post_id,
             "translator_id": idt,
-            "action": "get_episodes"
+            "action": action
         }
         headers = {
             "Host": self.domain,
@@ -369,11 +369,23 @@ class HdrezkaTV:
             "User-Agent": USER_AGENT,
             "X-Requested-With": "XMLHttpRequest"
         }
+        
+        #{"success":true,"message":"","url":"[360p]https:\/\/stream.voidboost.cc\/8\/8\/1\/3\/3\/ddddfc45662e813d93128d783cb46e7f:2020101118\/3dxox.mp4:hls:manifest.m3u8 or https:\/\/stream.voidboost.cc\/61e68929526165ffb2e5483777a4bd94:2020101118\/8\/8\/1\/3\/3\/3dxox.mp4,[480p]https:\/\/stream.voidboost.cc\/8\/8\/1\/3\/3\/ddddfc45662e813d93128d783cb46e7f:2020101118\/ppjm0.mp4:hls:manifest.m3u8 or https:\/\/stream.voidboost.cc\/6498b090482768d1433d456b2e35c46a:2020101118\/8\/8\/1\/3\/3\/ppjm0.mp4,[720p]https:\/\/stream.voidboost.cc\/8\/8\/1\/3\/3\/ddddfc45662e813d93128d783cb46e7f:2020101118\/0w0az.mp4:hls:manifest.m3u8 or https:\/\/stream.voidboost.cc\/b10164963f454ad391b2a13460568561:2020101118\/8\/8\/1\/3\/3\/0w0az.mp4,[1080p]https:\/\/stream.voidboost.cc\/8\/8\/1\/3\/3\/ddddfc45662e813d93128d783cb46e7f:2020101118\/n9qju.mp4:hls:manifest.m3u8 or https:\/\/stream.voidboost.cc\/b8a860d0938b593ed4b64723944b9a12:2020101118\/8\/8\/1\/3\/3\/n9qju.mp4,[1080p Ultra]https:\/\/stream.voidboost.cc\/8\/8\/1\/3\/3\/ddddfc45662e813d93128d783cb46e7f:2020101118\/4l9xx.mp4:hls:manifest.m3u8 or https:\/\/stream.voidboost.cc\/13c067a1dcd54be75007a74bde421b17:2020101118\/8\/8\/1\/3\/3\/4l9xx.mp4","quality":"480p","subtitle":"[\u0420\u0443\u0441\u0441\u043a\u0438\u0439]https:\/\/static.voidboost.com\/view\/BmdZqxHeI9zXhhEWUUP70g\/1602429855\/8\/8\/1\/3\/3\/c1lz5sebdx.vtt,[\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430]https:\/\/static.voidboost.com\/view\/F8mGgsIZee6XMjvtXSojhQ\/1602429855\/8\/8\/1\/3\/3\/f0zfov3en4.vtt,[English]https:\/\/static.voidboost.com\/view\/enBDXHLd9y6OByIGY8AiZQ\/1602429855\/8\/8\/1\/3\/3\/ut8ik78tq5.vtt","subtitle_lns":{"off":"","\u0420\u0443\u0441\u0441\u043a\u0438\u0439":"ru","\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430":"ua","English":"en"},"subtitle_def":"ru","thumbnails":"\/ajax\/get_cdn_tiles\/0\/32362\/?t=1602170655"}
+        
         response = self.post_response(self.url + "/ajax/get_cdn_series/", data, headers).json()
-        seasons = response["seasons"]
-        episodes = response["episodes"]
-        playlist = common.parseDOM(episodes, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
-        return playlist, idt
+        
+        subtitles = None
+        if (action == "get_movie"):
+            playlist = [response["url"] ]
+            try:
+                subtitles = response["subtitle"].split(']')[1].split(',')[0].replace("\/", "/")
+            except:
+                pass
+        else:
+            seasons = response["seasons"]
+            episodes = response["episodes"]
+            playlist = common.parseDOM(episodes, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
+        return playlist, idt, subtitles
 
     def getIFrame(self, content):
         return self.selectTranslator2(content)
@@ -398,20 +410,20 @@ class HdrezkaTV:
         image = self.url + common.parseDOM(content, "img", attrs={"itemprop": "image"}, ret="src")[0]
         title = common.parseDOM(content, "h1")[0]
         post_id = common.parseDOM(content, "input", attrs={"id": "post_id"}, ret="value")[0]
-
+        idt = "0"
+        try:  
+           idt = common.parseDOM(content, "li", attrs={"class": "b-translator__item active"}, ret="data-translator_id")[0]
+        except:
+           try: 
+               idt = response.text.split("sof.tv.initCDNSeriesEvents")[-1].split("{")[0]
+               idt = idt.split(",")[1].strip()
+           except:
+               pass
+        subtitles = None       
         tvshow = common.parseDOM(response.text, "div", attrs={"id": "simple-episodes-tabs"})
         if tvshow:
-            idt = "0"
-            try:  
-               idt = common.parseDOM(content, "li", attrs={"class": "b-translator__item active"}, ret="data-translator_id")[0]
-            except:
-               try: 
-                   idt = response.text.split("sof.tv.initCDNSeriesEvents")[-1].split("{")[0]
-                   idt = idt.split(",")[1].strip()
-               except:
-                   pass
             if self.translator == "select":
-                tvshow, idt = self.selectTranslator3(content, tvshow, post_id, url, idt)
+                tvshow, idt, subtitles = self.selectTranslator3(content, tvshow, post_id, url, idt, "get_episodes")
             titles = common.parseDOM(tvshow, "li")
             ids = common.parseDOM(tvshow, "li", ret='data-id')
             seasons = common.parseDOM(tvshow, "li", ret='data-season_id')
@@ -430,9 +442,13 @@ class HdrezkaTV:
                     item.setProperty('IsPlayable', 'true')
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True if self.quality == 'select' else False)
         else:
-            data = response.text.split('"streams":"')[-1].split('",')[0]
+            content = [ response.text ]
+            if (self.translator == "select"):
+                content, idt, subtitles = self.selectTranslator3(content[0], content, post_id, url, idt, "get_movie")
+            data = content[0].split('"streams":"')[-1].split('",')[0]
+                
             links = self.get_links(data)
-            self.selectQuality(links, title, image, None)
+            self.selectQuality(links, title, image, subtitles)
             
         xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
@@ -597,27 +613,33 @@ class HdrezkaTV:
             response = self.get_response(self.url, data)
 
             content = common.parseDOM(response.text, "div", attrs={"class": "b-content__inline_items"})
-            videos = common.parseDOM(content, "div", attrs={"class": "b-content__inline_item"})
+            items = common.parseDOM(content, "div", attrs={"class": "b-content__inline_item"})
+            post_ids = common.parseDOM(content, "div", attrs={"class": "b-content__inline_item"}, ret="data-id")
+            link_containers = common.parseDOM(items, "div", attrs={"class": "b-content__inline_item-link"})
+            links = common.parseDOM(link_containers, "a", ret='href')
+            titles = common.parseDOM(link_containers, "a")
+            country_years = common.parseDOM(link_containers, "div")
 
-            for i, videoitem in enumerate(videos):
-                link = common.parseDOM(videoitem, "a", ret='href')[0]
-                title = common.parseDOM(videoitem, "a")[1]
-
-                #image = self._normalize_url(common.parseDOM(videoitem, "img", ret='src')[0])
-                image = common.parseDOM(videoitem, "img", ret='src')[0]
-
-                descriptiondiv = common.parseDOM(videoitem, "div", attrs={"class": "b-content__inline_item-link"})[0]
-                description = common.parseDOM(descriptiondiv, "div")[0]
-
-                uri = sys.argv[0] + '?mode=show&url=%s' % urllib.quote(link)
-                item = xbmcgui.ListItem(
-                    "%s [COLOR=55FFFFFF][%s][/COLOR]" % (title, description),
-                    iconImage=image,
-                    thumbnailImage=image
+            for i, name in enumerate(titles):
+                info = self.get_item_description(post_ids[i])
+                title = "%s %s [COLOR=55FFFFFF](%s)[/COLOR]" % (name, color_rating(info['rating']), country_years[i])
+                image = self.url + common.parseDOM(items[i], "img", ret='src')[0]
+                link = self.dom_protocol + "://" + links[i].split("://")[-1]
+                uri = sys.argv[0] + '?mode=show&url=%s' % link
+                year, country, genre = get_media_attributes(country_years[i])
+                item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
+                item.setInfo(
+                    type='video',
+                    infoLabels={
+                        'title': title,
+                        'genre': genre,
+                        'year': year,
+                        'country': country,
+                        'plot': info['description'],
+                        'rating': info['rating']
+                    }
                 )
-                item.setInfo(type='Video', infoLabels={'title': title})
-                is_serial = common.parseDOM(videoitem, 'span', attrs={"class": "info"})
-
+                is_serial = common.parseDOM(items[i], 'span', attrs={"class": "info"})
                 if (self.quality != 'select') and not is_serial:
                     item.setProperty('IsPlayable', 'true')
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
