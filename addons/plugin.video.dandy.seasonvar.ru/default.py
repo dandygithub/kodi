@@ -605,7 +605,7 @@ class Seasonvar():
         playlist = json_playlist[idPlaylist]
         playlist_ = playlist['folder']
 
-        self.parsePlaylist(url, playlist_, image, description, "", "", idserial)
+        self.parsePlaylist(url, playlist_, image, description, "", "", "", idserial)
 
         xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
@@ -633,7 +633,7 @@ class Seasonvar():
 
             if playlist_:
                 self.addplaylists.append(playlist_)
-                uri = sys.argv[0] + '?mode=playlist&url=%s&idpl=%d' % (url, (len(self.addplaylists)-1))
+                uri = sys.argv[0] + '?mode=playlist&url=%s&idpl=%d' % (season_url, (len(self.addplaylists)-1))
                 item = xbmcgui.ListItem('[COLOR=FFFFD700]' + etitle + '[/COLOR]', iconImage=image, thumbnailImage=image)
                 item.setInfo(type='Video', infoLabels={'title': etitle})
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
