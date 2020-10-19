@@ -217,9 +217,7 @@ class HdrezkaTV:
         for i, name in enumerate(titles):
             info = self.get_item_description(post_ids[i])
             title = "%s %s [COLOR=55FFFFFF](%s)[/COLOR]" % (name, color_rating(info['rating']), country_years[i])
-            #image = self._normalize_url(common.parseDOM(div_covers[i], "img", ret='src')[0])
-            image = common.parseDOM(div_covers[i], "img", ret='src')[0]
-		
+            image = self._normalize_url(common.parseDOM(div_covers[i], "img", ret='src')[0])
             link = self.dom_protocol + "://" + links[i].split("://")[-1]
             uri = sys.argv[0] + '?mode=show&url=%s' % link
             year, country, genre = get_media_attributes(country_years[i])
@@ -623,7 +621,7 @@ class HdrezkaTV:
             for i, name in enumerate(titles):
                 info = self.get_item_description(post_ids[i])
                 title = "%s %s [COLOR=55FFFFFF](%s)[/COLOR]" % (name, color_rating(info['rating']), country_years[i])
-                image = self.url + common.parseDOM(items[i], "img", ret='src')[0]
+                image = self._normalize_url(common.parseDOM(items[i], "img", ret='src')[0])
                 link = self.dom_protocol + "://" + links[i].split("://")[-1]
                 uri = sys.argv[0] + '?mode=show&url=%s' % link
                 year, country, genre = get_media_attributes(country_years[i])
@@ -698,7 +696,7 @@ class HdrezkaTV:
             xbmcplugin.endOfDirectory(self.handle, True)
 
     def _normalize_url(self, item):
-        if not item.startswith(self.url):
+        if not item.startswith("http"):
             item = self.url + item
         return item
 
