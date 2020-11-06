@@ -26,7 +26,9 @@ class Tivix():
 
         self.language = self.addon.getLocalizedString
         self.handle = int(sys.argv[1])
-        self.url = 'http://tivix.co'
+
+        self.url = self.addon.getSetting('domain') if self.addon.getSetting('domain') else "http://tv.tivix.co"
+        self.domain =  self.url.split("://")[1]
 
         if (self.use_epg == "true"):
             self.epg = self.loadEPG()
@@ -82,7 +84,7 @@ class Tivix():
             if (not filter) or (title[:len(filter)].upper() == filter.upper()):
                 items += 1
 
-                if links[i] == "http://tivix.co/263-predlozheniya-pozhelaniya-zamechaniya-po-saytu.html":
+                if links[i] == self.url + "/263-predlozheniya-pozhelaniya-zamechaniya-po-saytu.html":
                     continue
 
                 image = self.url + images[i]
@@ -112,11 +114,11 @@ class Tivix():
         self.parse(response["content"], url, page)
 
     def loadEPG(self):
-        url = 'http://tivix.co/engine/api/getChannelList.php'
+        url = self.url +  "/engine/api/getChannelList.php"
         headers = {
             "Accept": "application/json, text/javascript, */*; q=0.01",
-            "Host": "tivix.co", 
-            "Referer": "http://tivix.co/chto-seychas-na-tv.html",
+            "Host": self.domain, 
+            "Referer": self.url + "/chto-seychas-na-tv.html",
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.62 Safari/537.36",
             "X-Requested-With": "XMLHttpRequest"
         }
@@ -126,12 +128,12 @@ class Tivix():
         channels = json.loads(response)
 #{"11":{"title":"\u0421\u0422\u0421","image_url":"http:\/\/tivix.co\/uploads\/posts\/2016-04\/1461317169_sts.png","id":"11","alt_name":"sts","cat":"29,27,24,16,17","tv_link":"https:\/\/tv.mail.ru\/channel\/1112\/73\/"},        
 
-        url = 'http://s.programma.space/channels/tivix/program/nearest/'
+        url = "https://s.programma.space/channels/tivix/program/nearest/"
         headers = {
             "Accept": "application/json, text/javascript, */*; q=0.01",
-            "Host": "schedule.tivix.co",
-            "Origin": "http://tivix.co",
-            "Referer": "http://tivix.co/chto-seychas-na-tv.html",
+            "Host": "s.programma.space",
+            "Origin": self.url,
+            "Referer": self.url + "/",
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.62 Safari/537.36"
         }
         try:
@@ -275,7 +277,7 @@ class Tivix():
 
     def show(self, link, image, name):
         response = common.fetchPage({"link": link})
-        cid = link.split(self.url + "/")[-1].split("-")[0]
+        cid = link.split("/")[-1].split("-")[0]
         playlist = self.getPlaylist(response['content'])
         if playlist:
             description = self.strip(response['content'].split("<!--dle_image_end-->")[1].split("<div")[0])
@@ -378,16 +380,16 @@ class Tivix():
         }
 
         headers = {
-            "Host": "tivix.co",
-            "Origin": "http://tivix.co",
-            "Referer": "http://tivix.co/",
+            "Host": self.domain,
+            "Origin": self.url,
+            "Referer": self.url +  "/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.3"
         }
 
-        request = urllib2.Request(url, urllib.urlencode(values), headers)
+        request = urllib2.Request(self.url, urllib.urlencode(values), headers)
         response = urllib2.urlopen(request).read()
 
-        self.parse(response, filter = keyword.decode('utf-8'))
+        self.parse(response, filter = keyword.decode("utf-8"))
 
 
     def strip(self, string):
