@@ -55,7 +55,10 @@ class HdrezkaTV:
             return False
         proxy_protocol = self.addon.getSetting('protocol')
         proxy_url = self.addon.getSetting('proxy_url')
-        return {'http': proxy_protocol + '://' + proxy_url}
+        return {
+            'http': proxy_protocol + '://' + proxy_url,
+            'https': proxy_protocol + '://' + proxy_url
+        }
 
     def get_response(self, url, data=None, headers=None, referer='http://www.random.org'):
         if not headers:
