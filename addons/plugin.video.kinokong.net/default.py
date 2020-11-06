@@ -46,7 +46,7 @@ class Kinokong():
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.debug = False
         
-        self.news = '/filmy/novinki-2020-gods'
+        self.news = '/filmy/novinki-2020-godes'
 
     def main(self):
         self.log("Addon: %s"  % self.id)
