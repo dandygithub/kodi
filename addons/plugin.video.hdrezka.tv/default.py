@@ -363,6 +363,10 @@ class HdrezkaTV:
             "translator_id": idt,
             "action": action
         }
+        is_director = common.parseDOM(div, 'li', attrs={'data-translator_id': idt}, ret='data-director')
+        if is_director:
+            data['is_director'] = is_director[0]
+
         headers = {
             "Host": self.domain,
             "Origin": "http://" + self.domain,
@@ -370,11 +374,11 @@ class HdrezkaTV:
             "User-Agent": USER_AGENT,
             "X-Requested-With": "XMLHttpRequest"
         }
-        
+
         #{"success":true,"message":"","url":"[360p]https:\/\/stream.voidboost.cc\/8\/8\/1\/3\/3\/ddddfc45662e813d93128d783cb46e7f:2020101118\/3dxox.mp4:hls:manifest.m3u8 or https:\/\/stream.voidboost.cc\/61e68929526165ffb2e5483777a4bd94:2020101118\/8\/8\/1\/3\/3\/3dxox.mp4,[480p]https:\/\/stream.voidboost.cc\/8\/8\/1\/3\/3\/ddddfc45662e813d93128d783cb46e7f:2020101118\/ppjm0.mp4:hls:manifest.m3u8 or https:\/\/stream.voidboost.cc\/6498b090482768d1433d456b2e35c46a:2020101118\/8\/8\/1\/3\/3\/ppjm0.mp4,[720p]https:\/\/stream.voidboost.cc\/8\/8\/1\/3\/3\/ddddfc45662e813d93128d783cb46e7f:2020101118\/0w0az.mp4:hls:manifest.m3u8 or https:\/\/stream.voidboost.cc\/b10164963f454ad391b2a13460568561:2020101118\/8\/8\/1\/3\/3\/0w0az.mp4,[1080p]https:\/\/stream.voidboost.cc\/8\/8\/1\/3\/3\/ddddfc45662e813d93128d783cb46e7f:2020101118\/n9qju.mp4:hls:manifest.m3u8 or https:\/\/stream.voidboost.cc\/b8a860d0938b593ed4b64723944b9a12:2020101118\/8\/8\/1\/3\/3\/n9qju.mp4,[1080p Ultra]https:\/\/stream.voidboost.cc\/8\/8\/1\/3\/3\/ddddfc45662e813d93128d783cb46e7f:2020101118\/4l9xx.mp4:hls:manifest.m3u8 or https:\/\/stream.voidboost.cc\/13c067a1dcd54be75007a74bde421b17:2020101118\/8\/8\/1\/3\/3\/4l9xx.mp4","quality":"480p","subtitle":"[\u0420\u0443\u0441\u0441\u043a\u0438\u0439]https:\/\/static.voidboost.com\/view\/BmdZqxHeI9zXhhEWUUP70g\/1602429855\/8\/8\/1\/3\/3\/c1lz5sebdx.vtt,[\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430]https:\/\/static.voidboost.com\/view\/F8mGgsIZee6XMjvtXSojhQ\/1602429855\/8\/8\/1\/3\/3\/f0zfov3en4.vtt,[English]https:\/\/static.voidboost.com\/view\/enBDXHLd9y6OByIGY8AiZQ\/1602429855\/8\/8\/1\/3\/3\/ut8ik78tq5.vtt","subtitle_lns":{"off":"","\u0420\u0443\u0441\u0441\u043a\u0438\u0439":"ru","\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430":"ua","English":"en"},"subtitle_def":"ru","thumbnails":"\/ajax\/get_cdn_tiles\/0\/32362\/?t=1602170655"}
-        
+
         response = self.post_response(self.url + "/ajax/get_cdn_series/", data, headers).json()
-        
+
         subtitles = None
         if (action == "get_movie"):
             playlist = [response["url"] ]
@@ -412,15 +416,15 @@ class HdrezkaTV:
         title = common.parseDOM(content, "h1")[0]
         post_id = common.parseDOM(content, "input", attrs={"id": "post_id"}, ret="value")[0]
         idt = "0"
-        try:  
+        try:
            idt = common.parseDOM(content, "li", attrs={"class": "b-translator__item active"}, ret="data-translator_id")[0]
         except:
-           try: 
+           try:
                idt = response.text.split("sof.tv.initCDNSeriesEvents")[-1].split("{")[0]
                idt = idt.split(",")[1].strip()
            except:
                pass
-        subtitles = None       
+        subtitles = None
         tvshow = common.parseDOM(response.text, "div", attrs={"id": "simple-episodes-tabs"})
         if tvshow:
             if self.translator == "select":
@@ -447,10 +451,10 @@ class HdrezkaTV:
             if (self.translator == "select"):
                 content, idt, subtitles = self.selectTranslator3(content[0], content, post_id, url, idt, "get_movie")
             data = content[0].split('"streams":"')[-1].split('",')[0]
-                
+
             links = self.get_links(data)
             self.selectQuality(links, title, image, subtitles)
-            
+
         xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
 
@@ -598,7 +602,7 @@ class HdrezkaTV:
                 keyword = kbd.getText()
 
             history.add_to_history(keyword)
-             
+
         return keyword
 
     def search(self, keyword, external):
@@ -677,7 +681,7 @@ class HdrezkaTV:
                 "X-Requested-With": "XMLHttpRequest"
             }
             response = self.post_response(self.url + "/ajax/get_cdn_series/", data, headers).json()
-            data = response["url"] 
+            data = response["url"]
         links = self.get_links(data)
         self.selectQuality(links, title, image, None)
         xbmcplugin.setContent(self.handle, 'episodes')
