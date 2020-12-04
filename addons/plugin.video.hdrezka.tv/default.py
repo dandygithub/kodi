@@ -363,6 +363,10 @@ class HdrezkaTV:
             "translator_id": idt,
             "action": action
         }
+        is_director = common.parseDOM(div, 'li', attrs={'data-translator_id': idt}, ret='data-director')
+        if is_director:
+            data['is_director'] = is_director[0]
+
         headers = {
             "Host": self.domain,
             "Origin": "http://" + self.domain,
