@@ -60,23 +60,23 @@ class HdrezkaTV:
             'https': proxy_protocol + '://' + proxy_url
         }
 
-    def get_response(self, url, data=None, headers=None, referer='http://www.random.org'):
+    def get_response(self, url, data=None, headers=None, cookies=None, referer='http://www.random.org'):
         if not headers:
             headers = {
                 "Host": self.domain,
                 "Referer": referer,
                 "User-Agent": USER_AGENT,
             }
-        return requests.get(url, params=data, headers=headers, proxies=self.proxies)
+        return requests.get(url, params=data, headers=headers, cookies=cookies, proxies=self.proxies)
 
-    def post_response(self, url, data=None, headers=None, referer='http://www.random.org'):
+    def post_response(self, url, data=None, headers=None, cookies=None, referer='http://www.random.org'):
         if not headers:
             headers = {
                 "Host": self.domain,
                 "Referer": referer,
                 "User-Agent": USER_AGENT,
             }
-        return requests.post(url, data=data, headers=headers, proxies=self.proxies)
+        return requests.post(url, data=data, headers=headers, cookies=cookies, proxies=self.proxies)
 
     def main(self):
         params = common.getParameters(sys.argv[2])
@@ -615,7 +615,7 @@ class HdrezkaTV:
                 "subaction": "search",
                 "q": unicode(keyword)
             }
-            response = self.get_response(self.url, data)
+            response = self.get_response(self.url, data, cookies={"dle_user_taken": "1", "__cf_bm": "5581f001521b8d54a0de2990e3630b9ff7cad864-1610820053-1800-AX4tqp2NOBNLAztaM0AWzFdfNHsxAjCK+AEiD/pESaARTMmxO/JPImRd/LWIO3eG9/9OnVoRrS70kmGBjGAjSNM="})
 
             content = common.parseDOM(response.text, "div", attrs={"class": "b-content__inline_items"})
             items = common.parseDOM(content, "div", attrs={"class": "b-content__inline_item"})
