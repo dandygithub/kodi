@@ -23,6 +23,7 @@ try:
     sys.path.append(os.path.dirname(__file__)+ '/../script.module.youtube.dl/lib')
     sys.path.append(os.path.dirname(__file__)+ '/../script.module.autocompletion/lib')
     sys.path.append(os.path.dirname(__file__)+ '/../script.module.addon.signals/lib')
+    sys.path.append(os.path.dirname(__file__)+ '/../script.module.kodi-six/libs')
 except:
     pass
 import TheMovieDB as tmdb
