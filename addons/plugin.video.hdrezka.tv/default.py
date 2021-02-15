@@ -615,7 +615,7 @@ class HdrezkaTV:
                 "subaction": "search",
                 "q": unicode(keyword)
             }
-            response = self.get_response(self.url, data, cookies={"dle_user_taken": "1", "__cf_bm": "5581f001521b8d54a0de2990e3630b9ff7cad864-1610820053-1800-AX4tqp2NOBNLAztaM0AWzFdfNHsxAjCK+AEiD/pESaARTMmxO/JPImRd/LWIO3eG9/9OnVoRrS70kmGBjGAjSNM="})
+            response = self.get_response(self.url + "/search/", data, cookies={"dle_user_taken": "1"})
 
             content = common.parseDOM(response.text, "div", attrs={"class": "b-content__inline_items"})
             items = common.parseDOM(content, "div", attrs={"class": "b-content__inline_item"})
