@@ -5,9 +5,10 @@
 
 import os, sys, json
 import xbmc, xbmcaddon
+import importlib
 
-reload(sys)
-sys.setdefaultencoding("UTF8")
+#importlib.reload(sys)
+#sys.setdefaultencoding("UTF8")
 
 class Translit():
     def __init__(self, encoding='utf-8'):
@@ -18,11 +19,11 @@ class Translit():
         self.addon = xbmcaddon.Addon(self.id)
         self.icon = self.addon.getAddonInfo('icon')
         self.path = xbmc.translatePath(self.addon.getAddonInfo('path'))
-        self.resource = xbmc.translatePath(os.path.join(self.path, 'lib')).decode("utf-8")
-        
+        self.resource = xbmc.translatePath(os.path.join(self.path, 'lib'))
+
         self.encoding = encoding
         self.transtable = self.getTranstable()
-        
+
         sys.path.append(self.path)
 
 
@@ -34,22 +35,22 @@ class Translit():
             try:
               transtable = json.loads(json_tuple)
               return transtable
-            except Exception, e:
-              print e
+            except Exception as e:
+              print(e)
               return ()
 
-        except IOError, e:
-            print e
+        except IOError as e:
+            print(e)
             return ()
 
     def rus(self, in_string):
-        russian = unicode(in_string)
+        russian = str(in_string)
         for symb_out, symb_in in self.transtable:
           russian = russian.replace(symb_in, symb_out)
         return russian.encode(self.encoding)
 
     def eng(self, in_string):
-        translit = unicode(in_string)
+        translit = str(in_string)
         for symb_out, symb_in in self.transtable:
           translit = translit.replace(symb_out, symb_in)
         return translit.encode(self.encoding)

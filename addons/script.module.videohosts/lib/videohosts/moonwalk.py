@@ -6,7 +6,7 @@
 #<setting id="vurl" type="text" label="Values URL" default="http://wonky.lostcut.net/moonwalk_key.php" />
 #<setting id="vurl2" type="text" label="Values URL 2" default="http://www.u2csp01.ml/hdrez/hdr_key.php" />
 
-import urllib, urllib2
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import xbmc
 import xbmcaddon
 import xbmcgui
@@ -18,9 +18,9 @@ import re
 import json
 import base64
 import binascii
-import pyaes
+from . import pyaes
 
-import tools
+from . import tools
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0"
 
@@ -104,11 +104,11 @@ def get_access_attrs(content, url, check=True):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
     }
     if "://" in js_path:
-        request = urllib2.Request(js_path, "", headers)
+        request = urllib.request.Request(js_path, "", headers)
     else:
-        request = urllib2.Request("http://" + url.split('/')[2] + js_path, "", headers)
+        request = urllib.request.Request("http://" + url.split('/')[2] + js_path, "", headers)
     request.get_method = lambda: 'GET'
-    js_page = urllib2.urlopen(request).read()
+    js_page = urllib.request.urlopen(request).read()
 
     t = EncryptedData()
     t.a = mw_pid
@@ -141,9 +141,9 @@ def get_access_attrs(content, url, check=True):
     if (check == True) and vurl:
         response = ''
         try: 
-            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
+            opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
             opener.addheaders = [("User-Agent", USER_AGENT)]
-            request = urllib2.Request(attrs["purl"], urllib.urlencode(values), {})
+            request = urllib.request.Request(attrs["purl"], urllib.parse.urlencode(values), {})
             connection = opener.open(request)
             response = connection.read()
         except:
@@ -174,9 +174,9 @@ def get_access_attrs_old(content):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
     }
-    request = urllib2.Request(script, "", headers)
+    request = urllib.request.Request(script, "", headers)
     request.get_method = lambda: 'GET'
-    response = urllib2.urlopen(request).read()
+    response = urllib.request.urlopen(request).read()
 
     attrs['purl'] = '/manifests/video/' + content.split("video_token: '")[-1].split("',")[0]  + "/all"
 
@@ -237,9 +237,9 @@ def select_translator(content, url):
     }
 
     url_ =  url.replace(url.split("serial/")[-1].split("/iframe")[0], tr_value)
-    request = urllib2.Request(url_, "", headers)
+    request = urllib.request.Request(url_, "", headers)
     request.get_method = lambda: 'GET'
-    response = urllib2.urlopen(request).read()
+    response = urllib.request.urlopen(request).read()
     return response, url_
 
 def select_season(data):
@@ -315,15 +315,15 @@ def get_playlist(url):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
     }
     try: 
-        request = urllib2.Request(url, "", headers)
+        request = urllib.request.Request(url, "", headers)
         request.get_method = lambda: 'GET'
-        response = urllib2.urlopen(request).read()
-    except urllib2.HTTPError, error:
+        response = urllib.request.urlopen(request).read()
+    except urllib.error.HTTPError as error:
         try:
             url_ = dict(error.info())['location']
-            request = urllib2.Request(url_, "", headers)
+            request = urllib.request.Request(url_, "", headers)
             request.get_method = lambda: 'GET'
-            response = urllib2.urlopen(request).read()
+            response = urllib.request.urlopen(request).read()
         except:
             return manifest_links, subtitles, season, episode 
 
@@ -340,9 +340,9 @@ def get_playlist(url):
     values, attrs = get_access_attrs(response, url)
 
     headers = {}
-    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
+    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
     opener.addheaders = [("User-Agent", USER_AGENT)]
-    request = urllib2.Request(attrs["purl"], urllib.urlencode(values), headers)
+    request = urllib.request.Request(attrs["purl"], urllib.parse.urlencode(values), headers)
     connection = opener.open(request)
     response = connection.read()
     data = json.loads(response.decode('unicode-escape'))
@@ -353,9 +353,9 @@ def get_playlist(url):
         "Origin": "http://" + PLAYLIST_DOMAIN,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
     }
-    request = urllib2.Request(playlisturl, "", headers)
+    request = urllib.request.Request(playlisturl, "", headers)
     request.get_method = lambda: 'GET'
-    response = urllib2.urlopen(request).read()
+    response = urllib.request.urlopen(request).read()
 
     urls = re.compile("http:\/\/.*?\n").findall(response)
     for i, url in enumerate(urls):

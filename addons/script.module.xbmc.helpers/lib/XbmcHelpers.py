@@ -17,18 +17,18 @@
 '''
 
 import sys
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import re
 import io
 import inspect
 import time
-import HTMLParser
+import html.parser
 import json
 
-version = u"2.1.0"
-plugin = u"XbmcHelpers-" + version
-USERAGENT = u"Mozilla/5.0 (Windows NT 6.2; Win64; x64; rv:16.0.1) Gecko/20121011 Firefox/16.0.1"
+version = "2.1.0"
+plugin = "XbmcHelpers-" + version
+USERAGENT = "Mozilla/5.0 (Windows NT 6.2; Win64; x64; rv:16.0.1) Gecko/20121011 Firefox/16.0.1"
 
 if hasattr(sys.modules["__main__"], "xbmc"):
     xbmc = sys.modules["__main__"].xbmc
@@ -51,17 +51,17 @@ else:
     dbglevel = 3
 
 if hasattr(sys.modules["__main__"], "opener"):
-    urllib2.install_opener(sys.modules["__main__"].opener)
+    urllib.request.install_opener(sys.modules["__main__"].opener)
 
 
 # This function raises a keyboard for user input
-def getUserInput(title=u"Input", default=u"", hidden=False):
+def getUserInput(title="Input", default="", hidden=False):
     log("", 5)
     result = None
 
     # Fix for when this functions is called with default=None
     if not default:
-        default = u""
+        default = ""
 
     keyboard = xbmc.Keyboard(default, title)
     keyboard.setHiddenInput(hidden)
@@ -75,13 +75,13 @@ def getUserInput(title=u"Input", default=u"", hidden=False):
 
 
 # This function raises a keyboard numpad for user input
-def getUserInputNumbers(title=u"Input", default=u""):
+def getUserInputNumbers(title="Input", default=""):
     log("", 5)
     result = None
 
     # Fix for when this functions is called with default=None
     if not default:
-        default = u""
+        default = ""
 
     keyboard = xbmcgui.Dialog()
     result = keyboard.numeric(0, title, default)
@@ -114,7 +114,7 @@ def replaceHTMLCodes(txt):
     # Fix missing ; in &#<number>;
     txt = re.sub("(&#[0-9]+)([^;^0-9]+)", "\\1;\\2", makeUTF8(txt))
 
-    txt = HTMLParser.HTMLParser().unescape(txt)
+    txt = html.parser.HTMLParser().unescape(txt)
     txt = txt.replace("&amp;", "&")
     log(repr(txt), 5)
     return txt
@@ -153,7 +153,7 @@ def _getDOMContent(html, name, match, ret):  # Cleanup
 
     log("start: %s, len: %s, end: %s" % (start, len(match), end), 3)
     if start == -1 and end == -1:
-        result = u""
+        result = ""
     elif start > -1 and end > -1:
         result = html[start + len(match):end]
     elif end > -1:
@@ -212,7 +212,7 @@ def _getDOMElements(item, name, attrs):
             lst2 = []
         else:
             log("Setting new list " + repr(lst2), 5)
-            test = range(len(lst))
+            test = list(range(len(lst)))
             test.reverse()
             for i in test:  # Delete anything missing from the next list.
                 if not lst[i] in lst2:
@@ -228,7 +228,7 @@ def _getDOMElements(item, name, attrs):
     log("Done: " + str(type(lst)), 3)
     return lst
 
-def parseDOM(html, name=u"", attrs={}, ret=False):
+def parseDOM(html, name="", attrs={}, ret=False):
     log("Name: " + repr(name) + " - Attrs:" + repr(attrs) + " - Ret: " + repr(ret) + " - HTML: " + str(type(html)), 3)
     #log("BLA: " + repr(type(html)) + " - " + repr(type(name)))
 
@@ -244,15 +244,15 @@ def parseDOM(html, name=u"", attrs={}, ret=False):
         except:
             log("Couldn't decode html binary string. Data length: " + repr(len(html)))
             html = [html]
-    elif isinstance(html, unicode):
+    elif isinstance(html, str):
         html = [html]
     elif not isinstance(html, list):
         log("Input isn't list or string/unicode.")
-        return u""
+        return ""
 
     if not name.strip():
         log("Missing tag name")
-        return u""
+        return ""
 
     ret_lst = []
     for item in html:
@@ -306,7 +306,7 @@ def extractJS(data, function=False, variable=False, match=False, evaluate=False,
         else:
             log("Found nothing on: " + script, 4)
 
-    test = range(0, len(lst))
+    test = list(range(0, len(lst)))
     test.reverse()
     for i in test:
         if match and lst[i].find(match) == -1:
@@ -314,9 +314,9 @@ def extractJS(data, function=False, variable=False, match=False, evaluate=False,
             del lst[i]
         else:
             log("Cleaning item: " + repr(lst[i]), 4)
-            if lst[i][0] == u"\n":
+            if lst[i][0] == "\n":
                 lst[i] == lst[i][1:]
-            if lst[i][len(lst) -1] == u"\n":
+            if lst[i][len(lst) -1] == "\n":
                 lst[i] == lst[i][:len(lst)- 2]
             lst[i] = lst[i].strip()
 
@@ -386,13 +386,13 @@ def fetchPage(params={}):
         if get("hide_post_data"):
             log("Posting data", 2)
         else:
-            log("Posting data: " + urllib.urlencode(get("post_data")), 2)
+            log("Posting data: " + urllib.parse.urlencode(get("post_data")), 2)
 
-        request = urllib2.Request(link, urllib.urlencode(get("post_data")))
+        request = urllib.request.Request(link, urllib.parse.urlencode(get("post_data")))
         request.add_header('Content-Type', 'application/x-www-form-urlencoded')
     else:
         log("Got request", 2)
-        request = urllib2.Request(link)
+        request = urllib.request.Request(link)
 
     if get("headers"):
         for head in get("headers"):
@@ -409,10 +409,10 @@ def fetchPage(params={}):
     try:
         log("connecting to server...", 1)
 
-        con = urllib2.urlopen(request)
+        con = urllib.request.urlopen(request)
         ret_obj["header"] = con.info()
         ret_obj["new_url"] = con.geturl()
-        if get("no-content", "false") == u"false" or get("no-content", "false") == "false":
+        if get("no-content", "false") == "false" or get("no-content", "false") == "false":
             inputdata = con.read()
             #data_type = chardet.detect(inputdata)
             #inputdata = inputdata.decode(data_type["encoding"])
@@ -424,7 +424,7 @@ def fetchPage(params={}):
         ret_obj["status"] = 200
         return ret_obj
 
-    except urllib2.HTTPError, e:
+    except urllib.error.HTTPError as e:
         err = str(e)
         log("HTTPError : " + err)
         log("HTTPError - Headers: " + str(e.headers) + " - Content: " + e.fp.read())
@@ -439,7 +439,7 @@ def fetchPage(params={}):
         ret_obj["status"] = 500
         return ret_obj
 
-    except urllib2.URLError, e:
+    except urllib.error.URLError as e:
         err = str(e)
         log("URLError : " + err)
 
@@ -477,7 +477,7 @@ def makeAscii(data):
         return data.encode('ascii', "ignore")
     except:
         log("Hit except on : " + repr(data))
-        s = u""
+        s = ""
         for i in data:
             try:
                 i.encode("ascii", "ignore")
@@ -499,7 +499,7 @@ def makeUTF8(data):
         return data.decode('utf8', 'xmlcharrefreplace') # was 'ignore'
     except:
         log("Hit except on : " + repr(data))
-        s = u""
+        s = ""
         for i in data:
             try:
                 i.decode("utf8", "xmlcharrefreplace")
@@ -512,12 +512,12 @@ def makeUTF8(data):
         return s
 
 
-def openFile(filepath, options=u"r"):
+def openFile(filepath, options="r"):
     log(repr(filepath) + " - " + repr(options))
     if options.find("b") == -1:  # Toggle binary mode on failure
-        alternate = options + u"b"
+        alternate = options + "b"
     else:
-        alternate = options.replace(u"b", u"")
+        alternate = options.replace("b", "")
 
     try:
         log("Trying normal: %s" % options)
@@ -530,6 +530,6 @@ def openFile(filepath, options=u"r"):
 def log(description, level=0):
     if dbg and dbglevel > level:
         try:
-            xbmc.log((u"[%s] %s : '%s'" % (plugin, inspect.stack()[1][3], description)).decode("utf-8"), xbmc.LOGNOTICE)
+            xbmc.log(("[%s] %s : '%s'" % (plugin, inspect.stack()[1][3], description)).decode("utf-8"), xbmc.LOGNOTICE)
         except:
-            xbmc.log(u"FALLBACK [%s] %s : '%s'" % (plugin, inspect.stack()[1][3], repr(description)), xbmc.LOGNOTICE)
+            xbmc.log("FALLBACK [%s] %s : '%s'" % (plugin, inspect.stack()[1][3], repr(description)), xbmc.LOGNOTICE)

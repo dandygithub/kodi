@@ -9,8 +9,8 @@ import os
 import re
 import socket
 import sys
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 from operator import itemgetter
 import requests
 
@@ -81,7 +81,7 @@ class HdrezkaTV:
     def main(self):
         params = common.getParameters(sys.argv[2])
         mode = params.get('mode')
-        url = urllib.unquote_plus(params['url']) if 'url' in params else None
+        url = urllib.parse.unquote_plus(params['url']) if 'url' in params else None
         external = 'main' if 'main' in params else None
         if not external:
             external = 'usearch' if 'usearch' in params else None
@@ -91,14 +91,14 @@ class HdrezkaTV:
         if mode == 'play_episode':
             self.play_episode(
                 url,
-                urllib.unquote_plus(params['urlm']),
+                urllib.parse.unquote_plus(params['urlm']),
                 params.get('post_id'),
                 params.get('season_id'),
                 params.get('episode_id'),
-                urllib.unquote_plus(params['title']),
+                urllib.parse.unquote_plus(params['title']),
                 params.get('image'),
                 params.get('idt'),
-                urllib.unquote_plus(params['data'])
+                urllib.parse.unquote_plus(params['data'])
             )
         if mode == 'show':
             self.show(url)
@@ -119,15 +119,18 @@ class HdrezkaTV:
 
     def menu(self):
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", self.url)
-        item = xbmcgui.ListItem("[COLOR=FF00FF00][%s][/COLOR]" % self.language(1000), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=FF00FF00][%s][/COLOR]" % self.language(1000))
+        item.setArt({'thumb': self.icon})
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("history", self.url)
-        item = xbmcgui.ListItem("[COLOR=FF00FF00][%s][/COLOR]" % self.language(1008), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=FF00FF00][%s][/COLOR]" % self.language(1008))
+        item.setArt({'thumb': self.icon})
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("categories", self.url)
-        item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1003), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1003))
+        item.setArt({'thumb': self.icon})
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         self.index(self.url + '/films', 1)
@@ -142,11 +145,13 @@ class HdrezkaTV:
             title = common.stripTags(title)
             link = self.url + links[i]
             uri = sys.argv[0] + '?mode=%s&url=%s' % ("sub_categories", link)
-            item = xbmcgui.ListItem(title, thumbnailImage=self.icon)
+            item = xbmcgui.ListItem(title)
+            item.setArt({'thumb': self.icon})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=%s&page=%d' % ("collections", 1)
-        item = xbmcgui.ListItem('Подборки', thumbnailImage=self.icon)
+        item = xbmcgui.ListItem('Подборки')
+        item.setArt({'thumb': self.icon})
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'files')
@@ -162,7 +167,8 @@ class HdrezkaTV:
         clean_url = url.replace(self.url, '')
 
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("index", url)
-        item = xbmcgui.ListItem('[COLOR=FF00FFF0][%s][/COLOR]' % self.language(1007), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem('[COLOR=FF00FFF0][%s][/COLOR]' % self.language(1007))
+        item.setArt({'thumb': self.icon})
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         for i, title in enumerate(titles):
@@ -170,7 +176,8 @@ class HdrezkaTV:
                 continue
             link = self.url + links[i]
             uri = sys.argv[0] + '?mode=%s&url=%s' % ("index", link)
-            item = xbmcgui.ListItem(title, thumbnailImage=self.icon)
+            item = xbmcgui.ListItem(title)
+            item.setArt({'thumb': self.icon})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'files')
@@ -191,12 +198,14 @@ class HdrezkaTV:
         for i, name in enumerate(titles):
             link = self.url + links[i].replace(self.url, '')
             uri = sys.argv[0] + '?mode=%s&url=%s' % ("index", link)
-            item = xbmcgui.ListItem('%s [COLOR=55FFFFFF](%s)[/COLOR]' % (name, counts[i]), thumbnailImage=icons[i])
+            item = xbmcgui.ListItem('%s [COLOR=55FFFFFF](%s)[/COLOR]' % (name, counts[i]))
+            item.setArt({'thumb': self.icons[i]})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         if not len(titles) < 32:
             uri = sys.argv[0] + '?mode=%s&page=%d' % ("collections", page + 1)
             item = xbmcgui.ListItem(self.language(1004), iconImage=self.inext)
+            item.setArt({'icon': self.inext})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'files')
@@ -224,7 +233,8 @@ class HdrezkaTV:
             link = self.dom_protocol + "://" + links[i].split("://")[-1]
             uri = sys.argv[0] + '?mode=show&url=%s' % link
             year, country, genre = get_media_attributes(country_years[i])
-            item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
+            item = xbmcgui.ListItem(title)
+            item.setArt({'thumb': image, 'icon': image})
             item.setInfo(
                 type='video',
                 infoLabels={
@@ -245,14 +255,15 @@ class HdrezkaTV:
 
         if not len(titles) < 16:
             uri = sys.argv[0] + '?mode=%s&url=%s&page=%d' % ("index", url, page + 1)
-            item = xbmcgui.ListItem("[COLOR=orange]" + self.language(1004) + "[/COLOR]", iconImage=self.inext)
+            item = xbmcgui.ListItem("[COLOR=orange]" + self.language(1004) + "[/COLOR]")
+            item.setArt({'icon': self.inext})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'movies')
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def selectQuality(self, links, title, image, subtitles=None):
-        lst = sorted(links.iteritems(), key=itemgetter(0))
+        lst = sorted(iter(links.items()), key=itemgetter(0))
         i = 0
         quality_prev = 360
         for quality, link in lst:
@@ -265,8 +276,9 @@ class HdrezkaTV:
                     self.play(links[quality], subtitles)
             else:
                 film_title = "%s (%s)" % (title, str(quality) + 'p')
-                uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote(link)
-                item = xbmcgui.ListItem(film_title, iconImage=image)
+                uri = sys.argv[0] + '?mode=play&url=%s' % urllib.parse.quote(link)
+                item = xbmcgui.ListItem(film_title)
+                item.setArt({'icon': image})
                 item.setInfo(
                     type='Video',
                     infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0}
@@ -441,7 +453,8 @@ class HdrezkaTV:
                 uri = sys.argv[0] + '?mode=play_episode&url=%s&urlm=%s&post_id=%s&season_id=%s&episode_id=%s&title=%s' \
                                     '&image=%s&idt=%s&data=%s' % (
                           url_episode, url, ids[i], seasons[i], episodes[i], title_, image, idt, data[i])
-                item = xbmcgui.ListItem(title_, iconImage=image, thumbnailImage=image)
+                item = xbmcgui.ListItem(title_)
+                item.setArt({'thumb': image, 'icon': image})
                 item.setInfo(type='Video', infoLabels={'title': title_})
                 if self.quality != 'select':
                     item.setProperty('IsPlayable', 'true')
@@ -483,7 +496,9 @@ class HdrezkaTV:
                 uri = sys.argv[0] + '?mode=play_episode&url=%s&urlm=%s&post_id=%s&season_id=%s&episode_id=%s&title=%s' \
                                     '&image=%s' % (
                           url_episode, url, ids[i], seasons[i], episodes[i], title, image)
-                item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
+                item = xbmcgui.ListItem(title)
+                item.setArt({'icon': image})
+                item.setArt({'thumb': image})
                 item.setInfo(type='Video', infoLabels={'title': title})
                 if self.quality != 'select':
                     item.setProperty('IsPlayable', 'true')
@@ -524,15 +539,15 @@ class HdrezkaTV:
             "User-Agent": USER_AGENT,
             "Referer": "http://www.random.org"
         }
-        request = urllib2.Request(url, "", headers)
+        request = urllib.request.Request(url, "", headers)
         request.get_method = lambda: 'GET'
-        response = urllib2.urlopen(request).read()
+        response = urllib.request.urlopen(request).read()
 
         if "var embed_player =" in response:
             url = response.split("var embed_player = '<iframe src=\"")[-1].split('"')[0]
-            request = urllib2.Request(url, "", headers)
+            request = urllib.request.Request(url, "", headers)
             request.get_method = lambda: 'GET'
-            response = urllib2.urlopen(request).read()
+            response = urllib.request.urlopen(request).read()
 
         subtitles = None
         if 'subtitles: {"master_vtt":"' in response:
@@ -543,9 +558,9 @@ class HdrezkaTV:
         ###################################################
 
         headers = {}
-        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
+        opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
         opener.addheaders = [("User-Agent", USER_AGENT)]
-        request = urllib2.Request(attrs["purl"], urllib.urlencode(values), headers)
+        request = urllib.request.Request(attrs["purl"], urllib.parse.urlencode(values), headers)
         connection = opener.open(request)
         response = connection.read()
         data = json.loads(response.decode('unicode-escape'))
@@ -559,9 +574,9 @@ class HdrezkaTV:
             "X-Requested-With": "XMLHttpRequest"
         }
 
-        request = urllib2.Request(playlisturl, "", headers)
+        request = urllib.request.Request(playlisturl, "", headers)
         request.get_method = lambda: 'GET'
-        response = urllib2.urlopen(request).read()
+        response = urllib.request.urlopen(request).read()
 
         urls = re.compile(r"http:\/\/.*?\n").findall(response)
         manifest_links = {}
@@ -584,7 +599,8 @@ class HdrezkaTV:
         words = history.get_history()
         for word in reversed(words):
             uri = sys.argv[0] + '?mode=%s&keyword=%s&main=1' % ("search", word)
-            item = xbmcgui.ListItem(word, iconImage=self.icon, thumbnailImage=self.icon)
+            item = xbmcgui.ListItem(word)
+            item.setArt({'thumb': self.icon, 'icon': self.icon})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
         xbmcplugin.endOfDirectory(self.handle, True)
 
@@ -607,13 +623,13 @@ class HdrezkaTV:
 
     def search(self, keyword, external):
         log("*** search")
-        keyword = urllib.unquote_plus(keyword) if (external is not None) else self.getUserInput()
+        keyword = urllib.parse.unquote_plus(keyword) if (external is not None) else self.getUserInput()
 
         if keyword:
             data = {
                 "do": "search",
                 "subaction": "search",
-                "q": unicode(keyword)
+                "q": str(keyword)
             }
             response = self.get_response(self.url + "/search/", data, cookies={"dle_user_taken": "1"})
 
@@ -632,7 +648,8 @@ class HdrezkaTV:
                 link = self.dom_protocol + "://" + links[i].split("://")[-1]
                 uri = sys.argv[0] + '?mode=show&url=%s' % link
                 year, country, genre = get_media_attributes(country_years[i])
-                item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
+                item = xbmcgui.ListItem(title)
+                item.setArt({'thumb': image, 'icon': image})
                 item.setInfo(
                     type='video',
                     infoLabels={
@@ -738,9 +755,9 @@ def color_rating(rating):
         return '[COLOR=green][%s][/COLOR]' % rating
 
 
-def log(msg, level=xbmc.LOGNOTICE):
-    log_message = u'{0}: {1}'.format('hdrezka', msg)
-    xbmc.log(log_message.encode("utf-8"), level)
+def log(msg, level=xbmc.LOGINFO):
+    log_message = '{0}: {1}'.format('hdrezka', msg)
+    xbmc.log(log_message, level)
 
 
 plugin = HdrezkaTV()
