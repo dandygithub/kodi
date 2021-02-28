@@ -15,5 +15,10 @@
         <description>HDREZKA.TV - Фильмы, мультфильмы и сериалы в высоком качестве</description>
         <description>For personal use only</description>
         <platform>all</platform>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
     </extension>
 </addon>
+

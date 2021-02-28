@@ -4,7 +4,7 @@
 # License: GPLv3
 
 import os, sys, json
-import xbmc, xbmcaddon
+import xbmc, xbmcaddon, xbmcvfs
 import importlib
 
 #importlib.reload(sys)
@@ -18,8 +18,8 @@ class Translit():
         self.id = 'script.module.translit'
         self.addon = xbmcaddon.Addon(self.id)
         self.icon = self.addon.getAddonInfo('icon')
-        self.path = xbmc.translatePath(self.addon.getAddonInfo('path'))
-        self.resource = xbmc.translatePath(os.path.join(self.path, 'lib'))
+        self.path = xbmcvfs.translatePath(self.addon.getAddonInfo('path'))
+        self.resource = xbmcvfs.translatePath(os.path.join(self.path, 'lib'))
 
         self.encoding = encoding
         self.transtable = self.getTranstable()
