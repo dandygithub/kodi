@@ -13,6 +13,7 @@ import urllib.request, urllib.parse, urllib.error
 import urllib.request, urllib.error, urllib.parse
 from operator import itemgetter
 import requests
+from enum import auto, Enum, unique
 
 from Translit import Translit
 import XbmcHelpers
@@ -31,6 +32,14 @@ socket.setdefaulttimeout(120)
 USER_AGENT = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0"
 PLAYLIST_DOMAIN = 's9.cdnapponline.com'
 QUALITY_TYPES = (360, 480, 720, 1080, 2160)
+
+
+@unique
+class IndexFilter(Enum):
+    Last = 'last'
+    Popular = 'popular'
+    Soon = 'soon'
+    Watching = 'watching'
 
 
 class HdrezkaTV:
@@ -88,7 +97,7 @@ class HdrezkaTV:
 
         if mode == 'play':
             self.play(url)
-        if mode == 'play_episode':
+        elif mode == 'play_episode':
             self.play_episode(
                 url,
                 urllib.parse.unquote_plus(params['urlm']),
@@ -100,40 +109,48 @@ class HdrezkaTV:
                 params.get('idt'),
                 urllib.parse.unquote_plus(params['data'])
             )
-        if mode == 'show':
+        elif mode == 'show':
             self.show(url)
-        if mode == 'index':
+        elif mode == 'index':
             self.index(url, int(params.get('page', 1)))
-        if mode == 'categories':
+        elif mode == 'index_popular':
+            self.index(url, int(params.get('page', 1)), IndexFilter.Popular)
+        elif mode == 'index_soon':
+            self.index(url, int(params.get('page', 1)), IndexFilter.Soon)
+        elif mode == 'index_watching':
+            self.index(url, int(params.get('page', 1)), IndexFilter.Watching)
+        elif mode == 'categories':
             self.categories()
-        if mode == 'sub_categories':
+        elif mode == 'sub_categories':
             self.sub_categories(url)
-        if mode == 'search':
+        elif mode == 'search':
             self.search(params.get('keyword'), external)
-        if mode == 'history':
+        elif mode == 'history':
             self.history()
-        if mode == 'collections':
+        elif mode == 'collections':
             self.collections(int(params.get('page', 1)))
         elif mode is None:
             self.menu()
 
     def menu(self):
-        uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", self.url)
-        item = xbmcgui.ListItem("[COLOR=FF00FF00][%s][/COLOR]" % self.language(1000))
-        item.setArt({'thumb': self.icon})
-        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
+        # menu: mode, translation id, color
+        menu_items = (
+            ('search', 'FF00FF00', 30000),
+            ('history', 'FF00FF00', 30008),
+            ('categories', 'FF00FF00', 30003),
+            ('index', 'FFDDD2CC', 30009),
+            ('index_popular', 'FFDDD2CC', 30010),
+            ('index_soon', 'FFDDD2CC', 30011),
+            ('index_watching', 'FFDDD2CC', 30012),
+        )
+        for mode, color, translation_id in menu_items:
+            uri = sys.argv[0] + '?mode=%s&url=%s' % (mode, self.url)
+            item = xbmcgui.ListItem("[COLOR=%s][%s][/COLOR]" % (color, self.language(translation_id)))
+            item.setArt({'thumb': self.icon})
+            xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        uri = sys.argv[0] + '?mode=%s&url=%s' % ("history", self.url)
-        item = xbmcgui.ListItem("[COLOR=FF00FF00][%s][/COLOR]" % self.language(1008))
-        item.setArt({'thumb': self.icon})
-        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-
-        uri = sys.argv[0] + '?mode=%s&url=%s' % ("categories", self.url)
-        item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1003))
-        item.setArt({'thumb': self.icon})
-        xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-
-        self.index(self.url + '/films', 1)
+        xbmcplugin.setContent(self.handle, 'movies')
+        xbmcplugin.endOfDirectory(self.handle, True)
 
     def categories(self):
         response = self.get_response(self.url)
@@ -167,7 +184,7 @@ class HdrezkaTV:
         clean_url = url.replace(self.url, '')
 
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("index", url)
-        item = xbmcgui.ListItem('[COLOR=FF00FFF0][%s][/COLOR]' % self.language(1007))
+        item = xbmcgui.ListItem('[COLOR=FF00FFF0][%s][/COLOR]' % self.language(30007))
         item.setArt({'thumb': self.icon})
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
@@ -199,20 +216,20 @@ class HdrezkaTV:
             link = self.url + links[i].replace(self.url, '')
             uri = sys.argv[0] + '?mode=%s&url=%s' % ("index", link)
             item = xbmcgui.ListItem('%s [COLOR=55FFFFFF](%s)[/COLOR]' % (name, counts[i]))
-            item.setArt({'thumb': self.icons[i]})
+            item.setArt({'thumb': icons[i]})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         if not len(titles) < 32:
             uri = sys.argv[0] + '?mode=%s&page=%d' % ("collections", page + 1)
-            item = xbmcgui.ListItem(self.language(1004), iconImage=self.inext)
+            item = xbmcgui.ListItem(self.language(30004), iconImage=self.inext)
             item.setArt({'icon': self.inext})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def index(self, url, page):
-        response = self.get_response("%s/page/%s/" % (url, page))
+    def index(self, url, page, index_filter: IndexFilter = IndexFilter.Last):
+        response = self.get_response("%s/page/%s/?filter=%s" % (url, page, index_filter.value))
         content = common.parseDOM(response.text, "div", attrs={"class": "b-content__inline_items"})
 
         items = common.parseDOM(content, "div", attrs={"class": "b-content__inline_item"})
@@ -231,6 +248,7 @@ class HdrezkaTV:
             title = "%s %s [COLOR=55FFFFFF](%s)[/COLOR]" % (name, color_rating(info['rating']), country_years[i])
             image = self._normalize_url(common.parseDOM(div_covers[i], "img", ret='src')[0])
             link = self.dom_protocol + "://" + links[i].split("://")[-1]
+            log('link-1: {}'.format(link))
             uri = sys.argv[0] + '?mode=show&url=%s' % link
             year, country, genre = get_media_attributes(country_years[i])
             item = xbmcgui.ListItem(title)
@@ -255,7 +273,7 @@ class HdrezkaTV:
 
         if not len(titles) < 16:
             uri = sys.argv[0] + '?mode=%s&url=%s&page=%d' % ("index", url, page + 1)
-            item = xbmcgui.ListItem("[COLOR=orange]" + self.language(1004) + "[/COLOR]")
+            item = xbmcgui.ListItem("[COLOR=orange]" + self.language(30004) + "[/COLOR]")
             item.setArt({'icon': self.inext})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
@@ -303,7 +321,7 @@ class HdrezkaTV:
         ids = common.parseDOM(div, 'li', ret="data-translator_id")
         if len(titles) > 1:
             dialog = xbmcgui.Dialog()
-            index_ = dialog.select(self.language(1006), titles)
+            index_ = dialog.select(self.language(30006), titles)
             if int(index_) < 0:
                 index_ = 0
         else:
@@ -345,7 +363,7 @@ class HdrezkaTV:
 
         if len(titles) > 1:
             dialog = xbmcgui.Dialog()
-            index_ = dialog.select(self.language(1006), titles)
+            index_ = dialog.select(self.language(30006), titles)
             if int(index_) < 0:
                 index_ = 0
         else:
@@ -355,15 +373,24 @@ class HdrezkaTV:
         return iframe
 
     def selectTranslator3(self, content, tvshow, post_id, url, idt, action):
+        log('selectTranslator - 3')
         try:
             div = common.parseDOM(content, 'ul', attrs={'id': 'translators-list'})[0]
         except:
             return tvshow, idt, None
         titles = common.parseDOM(div, 'li', ret='title')
         ids = common.parseDOM(div, 'li', ret="data-translator_id")
+
+        # transform flag image into title suffix
+        title_items = common.parseDOM(div, 'li')
+        for index, title in enumerate(title_items):
+            images = common.parseDOM(title, 'img', ret='title')
+            for img in images:
+                titles[index] += ' ({})'.format(img)
+
         if len(titles) > 1:
             dialog = xbmcgui.Dialog()
-            index_ = dialog.select(self.language(1006), titles)
+            index_ = dialog.select(self.language(30006), titles)
             if int(index_) < 0:
                 index_ = 0
         else:
@@ -392,8 +419,8 @@ class HdrezkaTV:
         response = self.post_response(self.url + "/ajax/get_cdn_series/", data, headers).json()
 
         subtitles = None
-        if (action == "get_movie"):
-            playlist = [response["url"] ]
+        if action == "get_movie":
+            playlist = [response["url"]]
             try:
                 subtitles = response["subtitle"].split(']')[1].split(',')[0].replace("\/", "/")
             except:
@@ -424,18 +451,19 @@ class HdrezkaTV:
         response = self.get_response(url)
 
         content = common.parseDOM(response.text, "div", attrs={"class": "b-content__main"})[0]
-        image = self.url + common.parseDOM(content, "img", attrs={"itemprop": "image"}, ret="src")[0]
+        image = common.parseDOM(content, "img", attrs={"itemprop": "image"}, ret="src")[0]
+        log('image-1: {}'.format(image))
         title = common.parseDOM(content, "h1")[0]
         post_id = common.parseDOM(content, "input", attrs={"id": "post_id"}, ret="value")[0]
         idt = "0"
         try:
-           idt = common.parseDOM(content, "li", attrs={"class": "b-translator__item active"}, ret="data-translator_id")[0]
+            idt = common.parseDOM(content, "li", attrs={"class": "b-translator__item active"}, ret="data-translator_id")[0]
         except:
-           try:
-               idt = response.text.split("sof.tv.initCDNSeriesEvents")[-1].split("{")[0]
-               idt = idt.split(",")[1].strip()
-           except:
-               pass
+            try:
+                idt = response.text.split("sof.tv.initCDNSeriesEvents")[-1].split("{")[0]
+                idt = idt.split(",")[1].strip()
+            except:
+                pass
         subtitles = None
         tvshow = common.parseDOM(response.text, "div", attrs={"id": "simple-episodes-tabs"})
         if tvshow:
@@ -448,7 +476,7 @@ class HdrezkaTV:
             data = common.parseDOM(tvshow, "li", ret='data-cdn_url')
 
             for i, title_ in enumerate(titles):
-                title_ = "%s (%s %s)" % (title_, self.language(1005), seasons[i])
+                title_ = "%s (%s %s)" % (title_, self.language(30005), seasons[i])
                 url_episode = url
                 uri = sys.argv[0] + '?mode=play_episode&url=%s&urlm=%s&post_id=%s&season_id=%s&episode_id=%s&title=%s' \
                                     '&image=%s&idt=%s&data=%s' % (
@@ -461,51 +489,11 @@ class HdrezkaTV:
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True if self.quality == 'select' else False)
         else:
             content = [ response.text ]
-            if (self.translator == "select"):
+            if self.translator == "select":
                 content, idt, subtitles = self.selectTranslator3(content[0], content, post_id, url, idt, "get_movie")
             data = content[0].split('"streams":"')[-1].split('",')[0]
 
             links = self.get_links(data)
-            self.selectQuality(links, title, image, subtitles)
-
-        xbmcplugin.setContent(self.handle, 'episodes')
-        xbmcplugin.endOfDirectory(self.handle, True)
-
-    def show_(self, url):
-        log("*** Show video %s" % url)
-        response = self.get_response(url)
-
-        content = common.parseDOM(response.text, "div", attrs={"id": "wrapper"})
-        image_container = common.parseDOM(content, "div", attrs={"class": "b-sidecover"})
-        title = common.parseDOM(content, "h1")[0]
-        image = common.parseDOM(image_container, "img", ret='src')[0]
-        post_id = common.parseDOM(content, "input", attrs={"id": "post_id"}, ret="value")[0]
-
-        playlist = common.parseDOM(content, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
-        iframe = self.getIFrame(content)
-        if playlist:
-            if self.translator == "select":
-                iframe, playlist = self.selectTranslator(content, post_id, url)
-            titles = common.parseDOM(playlist, "li")
-            ids = common.parseDOM(playlist, "li", ret='data-id')
-            seasons = common.parseDOM(playlist, "li", ret='data-season_id')
-            episodes = common.parseDOM(playlist, "li", ret='data-episode_id')
-            for i, title in enumerate(titles):
-                title = "%s (%s %s)" % (title, self.language(1005), seasons[i])
-                url_episode = iframe.split("?")[0]
-                uri = sys.argv[0] + '?mode=play_episode&url=%s&urlm=%s&post_id=%s&season_id=%s&episode_id=%s&title=%s' \
-                                    '&image=%s' % (
-                          url_episode, url, ids[i], seasons[i], episodes[i], title, image)
-                item = xbmcgui.ListItem(title)
-                item.setArt({'icon': image})
-                item.setArt({'thumb': image})
-                item.setInfo(type='Video', infoLabels={'title': title})
-                if self.quality != 'select':
-                    item.setProperty('IsPlayable', 'true')
-                xbmcplugin.addDirectoryItem(self.handle, uri, item, True if self.quality == 'select' else False)
-        else:
-            iframe = common.parseDOM(content, 'iframe', ret='src')[0]
-            links, subtitles = self.get_video_link_from_iframe(iframe)
             self.selectQuality(links, title, image, subtitles)
 
         xbmcplugin.setContent(self.handle, 'episodes')
@@ -607,7 +595,7 @@ class HdrezkaTV:
     def getUserInput(self):
         kbd = xbmc.Keyboard()
         kbd.setDefault('')
-        kbd.setHeading(self.language(1000))
+        kbd.setHeading(self.language(30000))
         kbd.doModal()
         keyword = None
 
@@ -646,6 +634,7 @@ class HdrezkaTV:
                 title = "%s %s [COLOR=55FFFFFF](%s)[/COLOR]" % (name, color_rating(info['rating']), country_years[i])
                 image = self._normalize_url(common.parseDOM(items[i], "img", ret='src')[0])
                 link = self.dom_protocol + "://" + links[i].split("://")[-1]
+                log('link-2: {}'.format(link))
                 uri = sys.argv[0] + '?mode=show&url=%s' % link
                 year, country, genre = get_media_attributes(country_years[i])
                 item = xbmcgui.ListItem(title)
@@ -720,8 +709,10 @@ class HdrezkaTV:
             xbmcplugin.endOfDirectory(self.handle, True)
 
     def _normalize_url(self, item):
+        log('normalizing url: {}'.format(item))
         if not item.startswith("http"):
             item = self.url + item
+        log('normalized url: {}'.format(item))
         return item
 
     def showMessage(self, msg):

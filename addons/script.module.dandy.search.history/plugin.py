@@ -23,9 +23,9 @@ def exist_us():
     result = False
     try:
         addon_us = xbmcaddon.Addon("plugin.video.united.search")
-        result = True 
+        result = True
     except:
-        pass 
+        pass
     return result
 
 def list_items():
@@ -34,16 +34,18 @@ def list_items():
 
     for word in reversed(words):
         if (exist == True):
-	    uri = "plugin://plugin.video.united.search/?action=search&keyword=%s" % word
-            item = xbmcgui.ListItem(word, iconImage=ICON, thumbnailImage=ICON)
+            uri = "plugin://plugin.video.united.search/?action=search&keyword=%s" % word
+            item = xbmcgui.ListItem(word)
+            item.setArt({'thumb': ICON, 'icon': ICON})
 
             commands = []
             uricmd = sys.argv[0] + '?mode=delete&keyword=%s' % word
             commands.append(("[COLOR=orange]Delete[/COLOR] item", "Container.Update(%s)" % (uricmd), ))
             item.addContextMenuItems(commands)
         else:
-	    uri = sys.argv[0] + '?mode=delete&keyword=%s' % word
-            item = xbmcgui.ListItem(word, iconImage=ICON, thumbnailImage=ICON)
+            uri = sys.argv[0] + '?mode=delete&keyword=%s' % word
+            item = xbmcgui.ListItem(word)
+            item.setArt({'thumb': ICON, 'icon': ICON})
 
         xbmcplugin.addDirectoryItem(HANDLE, uri, item, False)
     xbmcplugin.endOfDirectory(HANDLE, True)
@@ -63,11 +65,11 @@ def main():
     mode = params['mode'] if 'mode' in params else None
     keyword = params['keyword'] if 'keyword' in params else None
     if (mode == "search"):
-       search_by_us(keyword)
+        search_by_us(keyword)
     if (mode == "delete"):
-       delete_item(keyword)
+        delete_item(keyword)
     elif (mode is None):
-       list_items()
+        list_items()
 
 if __name__ == '__main__':
     main()

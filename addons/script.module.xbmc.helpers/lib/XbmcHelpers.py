@@ -232,12 +232,6 @@ def parseDOM(html, name="", attrs={}, ret=False):
     log("Name: " + repr(name) + " - Attrs:" + repr(attrs) + " - Ret: " + repr(ret) + " - HTML: " + str(type(html)), 3)
     #log("BLA: " + repr(type(html)) + " - " + repr(type(name)))
 
-    if isinstance(name, str): # Should be handled
-        try:
-            name = name #.decode("utf-8")
-        except:
-            log("Couldn't decode name binary string: " + repr(name))
-
     if isinstance(html, str):
         try:
             html = [html.decode("utf-8")] # Replace with chardet thingy
