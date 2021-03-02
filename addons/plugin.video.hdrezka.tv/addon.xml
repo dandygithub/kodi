@@ -2,10 +2,10 @@
 <addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="3.0.0" provider-name="MrStealth, dandy, DesSolo">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
-        <import addon="script.module.xbmc.helpers" version="2.1.0"/>
-        <import addon="script.module.translit" version="2.1.0"/>
-        <import addon="script.module.videohosts" version="1.0.0"/>
-        <import addon="script.module.dandy.search.history" version="1.0.0"/>
+        <import addon="script.module.xbmc.helpers" version="3.0.0"/>
+        <import addon="script.module.translit" version="3.0.0"/>
+        <import addon="script.module.videohosts" version="3.0.0"/>
+        <import addon="script.module.dandy.search.history" version="3.0.0"/>
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">>
         <provides>video</provides>
