@@ -13,5 +13,9 @@
 		<description>Download and install add-ons from dandy</description>
 		<disclaimer>Add-ons for home usage in Kodi</disclaimer>
 		<platform>all</platform>
+                <assets>
+                    <icon>icon.png</icon>
+                    <fanart>fanart.jpg</fanart>
+                </assets>
 	</extension>
 </addon>
