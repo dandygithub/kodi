@@ -185,13 +185,13 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="2.5.5" provider-name="MrStealth, dandy, DesSolo">
+<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="3.0.0" provider-name="MrStealth, dandy, DesSolo">
     <requires>
-        <import addon="xbmc.python" version="2.1.0"/>
-        <import addon="script.module.xbmc.helpers" version="2.1.0"/>
-        <import addon="script.module.translit" version="2.1.0"/>
-        <import addon="script.module.videohosts" version="1.0.0"/>
-        <import addon="script.module.dandy.search.history" version="1.0.0"/>
+        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="script.module.xbmc.helpers" version="3.0.0"/>
+        <import addon="script.module.translit" version="3.0.0"/>
+        <import addon="script.module.videohosts" version="3.0.0"/>
+        <import addon="script.module.dandy.search.history" version="3.0.0"/>
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">>
         <provides>video</provides>
@@ -201,6 +201,10 @@
         <description>HDREZKA.TV - Фильмы, мультфильмы и сериалы в высоком качестве</description>
         <description>For personal use only</description>
         <platform>all</platform>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
     </extension>
 </addon>
 
@@ -336,10 +340,10 @@
   </extension>
 </addon>
 
-<addon id="script.module.dandy.search.history" name="Search History" version="1.0.4" provider-name="dandy">
+<addon id="script.module.dandy.search.history" name="Search History" version="3.0.0" provider-name="dandy">
   <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.xbmc.helpers" version="2.1.0"/>
+    <import addon="xbmc.python" version="3.0.0"/>
+    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
   </requires>
   <extension point="xbmc.python.script" library="default.py">
     <provides>executable</provides>
@@ -380,9 +384,9 @@
   <extension point="xbmc.python.module" library="lib"/>
 </addon>
 
-<addon id='script.module.translit' version='2.1.0' name='Translit for xbmc plugins' provider-name='mrstealth, dandy'>
+<addon id='script.module.translit' version='3.0.0' name='Translit for xbmc plugins' provider-name='mrstealth, dandy'>
   <requires>
-    <import addon="xbmc.python" version="2.1.0" />
+    <import addon="xbmc.python" version="3.0.0" />
   </requires>
   <extension point='xbmc.service' library="default.py" />
   <extension point='xbmc.addon.metadata'>
@@ -392,10 +396,10 @@
   <extension point='xbmc.python.module' library='lib' />
 </addon>
 
-<addon id="script.module.videohosts" name="VideoHosts" version="1.6.2" provider-name="dandy">
+<addon id="script.module.videohosts" name="VideoHosts" version="3.0.0" provider-name="dandy">
   <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.xbmc.helpers" version="2.1.0"/>
+    <import addon="xbmc.python" version="3.0.0"/>
+    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
   </requires>
   <extension point='xbmc.service' library="default.py" />
   <extension point="xbmc.python.module" library="lib" />
@@ -409,9 +413,9 @@
   </extension>
 </addon>
 
-<addon id='script.module.xbmc.helpers' version='2.1.1' name='Xbmc helpers module based on Parsedom module' provider-name='mrstealth, dandy'>
+<addon id='script.module.xbmc.helpers' version='3.0.0' name='Xbmc helpers module based on Parsedom module' provider-name='mrstealth, dandy'>
   <requires>
-    <import addon="xbmc.python" version="2.1.0" />
+    <import addon="xbmc.python" version="3.0.0" />
   </requires>
   <extension point='xbmc.service' library="default.py" />
   <extension point='xbmc.addon.metadata'>
