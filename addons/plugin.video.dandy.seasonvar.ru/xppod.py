@@ -1,9 +1,9 @@
-﻿import re, os, urllib, urllib2, sys, urlparse
+﻿import re, os, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, sys, urllib.parse
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon, xbmcvfs
 import shutil
 import subprocess
-import HTMLParser
-hpar = HTMLParser.HTMLParser()
+import html.parser
+hpar = html.parser.HTMLParser()
 
 
 class XPpod():
@@ -19,9 +19,9 @@ class XPpod():
 
     #---------- get web page -------------------------------------------------------
     def get_HTML(self, url, post = None, ref = None):
-        request = urllib2.Request(url, post)
+        request = urllib.request.Request(url, post)
 
-        host = urlparse.urlsplit(url).hostname
+        host = urllib.parse.urlsplit(url).hostname
         if ref==None:
             ref='http://'+host
 
@@ -32,8 +32,8 @@ class XPpod():
         request.add_header('Referer', ref)
 
         try:
-            f = urllib2.urlopen(request, timeout=360)
-        except IOError, e:
+            f = urllib.request.urlopen(request, timeout=360)
+        except IOError as e:
             if hasattr(e, 'reason'):
                xbmc.log('We failed to reach a server.'+str(e.reason))
             elif hasattr(e, 'code'):
@@ -49,9 +49,9 @@ class XPpod():
     def Decode(self, param, swf_player = None, page_url = None, cj = None):
         #-- load cookies
         if cj:
-            hr  = urllib2.HTTPCookieProcessor(cj)
-            opener = urllib2.build_opener(hr)
-            urllib2.install_opener(opener)
+            hr  = urllib.request.HTTPCookieProcessor(cj)
+            opener = urllib.request.build_opener(hr)
+            urllib.request.install_opener(opener)
 
         is_OK = True
         #-- get hash keys
@@ -66,7 +66,7 @@ class XPpod():
             if self.Addon.getSetting('External_PhantomJS') == 'true':
                 url = 'http://'+self.Addon.getSetting('PhantomJS_IP')+':'+self.Addon.getSetting('PhantomJS_Port')
                 values = {'swf_url' :	page_url}
-                post = urllib.urlencode(values)
+                post = urllib.parse.urlencode(values)
                 try:
                     hash_key = self.get_HTML(url, post)
                 except:
@@ -83,7 +83,7 @@ class XPpod():
                     is_OK = True
 
             elif os.path.isdir(self.path) == True:
-                print '** Decompile SWF to get hash'
+                print('** Decompile SWF to get hash')
                 hash_list = self.Get_SWF_Hash(swf_player, page_url)
                 #-- assemble hash key
                 hash_key = hash_list[0]+'\n'+hash_list[1]
@@ -144,7 +144,7 @@ class XPpod():
                     if loc_3[j + 1] == 64:
                         break
 
-                    loc_2 += unichr(loc_4[j])
+                    loc_2 += chr(loc_4[j])
 
                     j = j + 1
 
@@ -158,12 +158,12 @@ class XPpod():
     def Get_SWF_Hash(self, swf_player, page_url):
         #---- clean up SWF folder ----------------------------------------------
         try:
-            print '** Clean up SWF folder'
+            print('** Clean up SWF folder')
             shutil.rmtree(os.path.join(self.path,'player-0'))
             xbmcvfs.delete(os.path.join(self.path,'player-0.abc'))
             xbmcvfs.delete(os.path.join(self.path,'player.swf'))
         except:
-            print '** Failed to clean up SWF folder'
+            print('** Failed to clean up SWF folder')
             pass
 
         #---- get SWF ----------------------------------------------------------
@@ -232,9 +232,9 @@ class XPpod():
         for rec in re.compile('findpropstrict      QName\(PackageNamespace\(""\), "Array"\)(.+?)constructprop', re.MULTILINE|re.DOTALL).findall(code):
             hash = ''
             for l in rec.replace(' ','').replace('\n','').split('pushstring'):
-                if l <> '':
+                if l != '':
                     hash += l.replace('"','')
-            if hash <> '':
+            if hash != '':
                 hash_list.append(hash)
 
         return hash_list
