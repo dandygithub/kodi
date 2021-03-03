@@ -344,7 +344,7 @@
   </extension>
 </addon>
 
-<addon id="script.module.dandy.search.history" name="Search History" version="3.0.0" provider-name="dandy">
+<addon id="script.module.dandy.search.history" name="Search History" version="3.0.1" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>
     <import addon="script.module.xbmc.helpers" version="3.0.0"/>
@@ -369,6 +369,9 @@
     <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
     <forum></forum>
     <source></source>
+    <assets>
+        <icon>icon.png</icon>
+    </assets>
   </extension>
 </addon>
 
