@@ -367,8 +367,8 @@ class Seasonvar():
             "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0"
         }
 
-        request = urllib.request.Request(url_, urllib.parse.urlencode(values), headers)
-        content = urllib.request.urlopen(request).read()            
+        request = urllib.request.Request(url_, urllib.parse.urlencode(values).encode("utf-8"), headers)
+        content = urllib.request.urlopen(request).read().decode("utf-8")
 
         if itemsSourse == 'paused':
             items = self.parsePaused(content, "marks-new")
