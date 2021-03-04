@@ -933,26 +933,24 @@ class Seasonvar():
             if self.new_search_method and (self.new_search_method == "true"):
                 self.newSearchMethod(keyword_, external, unified_search_results, strong)
             else:
-
                 url = self.url + '/autocomplete.php?' + urllib.parse.urlencode({"query" : keyword_})
                 response = common.fetchPage({"link": url})
                 count = 1
                 s = json.loads(response["content"].decode("utf-8"))
-                count = len(s['suggestions'])
+                count = len(s['suggestions']['valu'])
                 if count < 1: return False
-                
+
                 for i in range(0, count):
-                    title = s['suggestions'][i].encode('utf-8')
+                    title = s['suggestions']['valu'][i]
                     surl = s['data'][i]
                     if surl.find('.html') > -1:
                         url = self.url + '/' + s['data'][i]
                         if (external == 'unified'):
-                            self.log("Perform unified search and return results")
                             unified_search_results.append({'title': title, 'url': url, 'image': self.icon, 'plugin': self.id})
                         else:
                             uri = sys.argv[0] + '?mode=show&url=%s&wm=1' % url
-                            item = xbmcgui.ListItem(title, thumbnailImage=self.icon)
-                            item.setArt({ 'icon' : self.icon })
+                            item = xbmcgui.ListItem(title)
+                            item.setArt({'tumb' : self.icon, 'icon' : self.icon })
 
                             commands = []
 
@@ -1011,8 +1009,8 @@ class Seasonvar():
     def getFilterValueList(self, filterType, filterValue, alphaBeta = 0):
         values = self.getFilterToValues(filterType, filterValue)
         
-        request = urllib.request.Request(self.url + "/index.php", urllib.parse.urlencode(values), self.headers)
-        content = urllib.request.urlopen(request).read()
+        request = urllib.request.Request(self.url + "/index.php", urllib.parse.urlencode(values).encode("utf-8"), self.headers)
+        content = urllib.request.urlopen(request).read().decode("utf-8")
 
         abheaders = common.parseDOM(content, "div", attrs={"class": "letter"})
         abitems = common.parseDOM(content, "div", attrs={"data-tabgr": "letter"})
@@ -1065,7 +1063,7 @@ class Seasonvar():
     def getFilter(self, filterType, filterValue, alphaBeta):
         if filterValue:
             self.getFilterValueList(filterType, filterValue, alphaBeta)
-        elif filterType >= 0:
+        elif (filterType != None) and (filterType >= 0):
             self.getFilterTypeList(filterType)
         else:
             self.getFilterList()
