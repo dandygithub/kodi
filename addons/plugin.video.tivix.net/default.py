@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import urllib, urllib2, sys, socket
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, sys, socket
 import xbmc, xbmcgui, xbmcaddon, xbmcplugin
 import XbmcHelpers
 import json
@@ -37,11 +37,11 @@ class Tivix():
         params = common.getParameters(sys.argv[2])
         mode = url = None
         mode = params['mode'] if 'mode' in params else None
-        url = urllib.unquote_plus(params['url']) if 'url' in params else None
-        url2 = urllib.unquote_plus(params['url2']) if 'url2' in params else None
+        url = urllib.parse.unquote_plus(params['url']) if 'url' in params else None
+        url2 = urllib.parse.unquote_plus(params['url2']) if 'url2' in params else None
         page = params['page'] if 'page' in params else 1
-        image = urllib.unquote_plus(params['image']) if 'image' in params else self.icon
-        name = urllib.unquote_plus(params['name']) if 'name' in params else None
+        image = urllib.parse.unquote_plus(params['image']) if 'image' in params else self.icon
+        name = urllib.parse.unquote_plus(params['name']) if 'name' in params else None
         cid = params['cid'] if 'cid' in params else None
 
         if mode == 'play':
@@ -59,11 +59,13 @@ class Tivix():
 
     def menu(self):
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", self.url)
-        item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(1000))
+        item.setArt({ 'thumb': self.icon, 'icon' : self.icon })
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
         if (self.use_epg == "true"):
             uri = sys.argv[0] + '?mode=%s' % ("epg")
-            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(1005), thumbnailImage=self.icon)
+            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(1005))
+            item.setArt({ 'thumb': self.icon, 'icon' : self.icon })
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         self.genres()
@@ -90,14 +92,16 @@ class Tivix():
                 image = self.url + images[i]
 
                 uri = sys.argv[0] + '?mode=show&url=%s&name=%s&image=%s' % (links[i], title, image)
-                item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
+                item = xbmcgui.ListItem(title )
+                item.setArt({ 'thumb': image, 'icon' : image })
                 item.setInfo(type='Video', infoLabels={'title': title, 'plot': title})
                 #item.setProperty('IsPlayable', 'true')
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         if pagenav and (not (items < 119)):
             uri = sys.argv[0] + '?mode=%s&url=%s&page=%s' % ("index", url, str(int(page) + 1))
-            item = xbmcgui.ListItem('%s' % self.language(1003), iconImage=self.icon, thumbnailImage=self.icon)
+            item = xbmcgui.ListItem('%s' % self.language(1003))
+            item.setArt({ 'thumb': self.icon, 'icon' : self.icon })
             item.setInfo(type='Video', infoLabels={'title': 'ЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯ'})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
@@ -111,7 +115,7 @@ class Tivix():
 
         response = common.fetchPage({"link": page_url})
 
-        self.parse(response["content"], url, page)
+        self.parse(response["content"].decode("utf-8"), url, page)
 
     def loadEPG(self):
         url = self.url +  "/engine/api/getChannelList.php"
@@ -122,9 +126,9 @@ class Tivix():
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.62 Safari/537.36",
             "X-Requested-With": "XMLHttpRequest"
         }
-        request = urllib2.Request(url, "", headers)
+        request = urllib.request.Request(url, dict(""), headers)
         request.get_method = lambda: 'GET'
-        response = urllib2.urlopen(request).read()
+        response = urllib.request.urlopen(request).read().decode("utf-8")
         channels = json.loads(response)
 #{"11":{"title":"\u0421\u0422\u0421","image_url":"http:\/\/tivix.co\/uploads\/posts\/2016-04\/1461317169_sts.png","id":"11","alt_name":"sts","cat":"29,27,24,16,17","tv_link":"https:\/\/tv.mail.ru\/channel\/1112\/73\/"},        
 
@@ -137,9 +141,9 @@ class Tivix():
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.62 Safari/537.36"
         }
         try:
-            request = urllib2.Request(url, "", headers)
+            request = urllib.request.Request(url, dict(""), headers)
             request.get_method = lambda: 'GET'
-            response = urllib2.urlopen(request).read()
+            response = urllib.request.urlopen(request).read().decode("utf-8")
             data = json.loads(response)
         except:
             data = json.loads("{}")
@@ -156,7 +160,7 @@ class Tivix():
     def getLocalTime(self, epgstart, epgend):
         current = False
         duration = 0
-        epgformat = u'%Y-%m-%d %H:%M:%S'
+        epgformat = '%Y-%m-%d %H:%M:%S'
         time_ = datetime.datetime(*(time.strptime(epgstart, epgformat)[:6])) + datetime.timedelta(hours = self.time_zone)
         timeend = datetime.datetime(*(time.strptime(epgend, epgformat)[:6])) + datetime.timedelta(hours = self.time_zone)
         epgtoday = datetime.datetime.today()
@@ -180,7 +184,8 @@ class Tivix():
             if current == True:
                 currname = epg['name']           
                 currduration = duration
-            item = xbmcgui.ListItem("[I][COLOR=%s]%s %s[/COLOR][/I]" % (color, time, epg['name']),  iconImage=image, thumbnailImage=image)
+            item = xbmcgui.ListItem("[I][COLOR=%s]%s %s[/COLOR][/I]" % (color, time, epg['name']))
+            item.setArt({ 'thumb': image, 'icon' : image })
             listItems.append((uri, item, False)) 
         return currname, currduration, listItems
 
@@ -201,7 +206,8 @@ class Tivix():
                 for channelid in self.epg:
                     channelbody = self.epg[channelid]
                     uri = sys.argv[0] + '?mode=epg&cid=%s&image=%s' % (channelid, channelbody['image_url'])
-                    item = xbmcgui.ListItem("%s" % channelbody['title'],  iconImage=channelbody['image_url'], thumbnailImage=channelbody['image_url'])
+                    item = xbmcgui.ListItem("%s" % channelbody['title'])
+                    item.setArt({ 'thumb': channelbody['image_url'], 'icon' : channelbody['image_url'] })
                     item.setInfo(type='Video', infoLabels={'title': channelbody['title']})
     
                     commands = []
@@ -253,8 +259,9 @@ class Tivix():
         # for k in reversed(bk):
         #     a = a.replace(file3_separator + base64.standard_b64encode(urllib.quote(k, safe='~()*!.\'')), '')
         a = self.tivixClearUrl(x)
+        
         try:
-            template = base64.standard_b64decode(a)
+            template = base64.standard_b64decode(a).decode("utf-8")
         except:
             template = ''
         return template
@@ -264,8 +271,9 @@ class Tivix():
         v2 = re.search(re.compile(r"secondIpProtect.+\'(.+?)\'"), html).group(1)
         v3 = re.search(re.compile(r"portProtect.+\'(.+?)\'"), html).group(1)
 
-        uri = re.search(re.compile(r'Playerjs\(.+file:"(.+?)"}'), html)
+        uri = re.search(re.compile(r'Playerjs\(.+file: "(.+?)"}'), html)
         url = None
+        
         if uri:
             uri = uri.group(1)
             if uri[:2] == '#2':
@@ -278,16 +286,18 @@ class Tivix():
     def show(self, link, image, name):
         response = common.fetchPage({"link": link})
         cid = link.split("/")[-1].split("-")[0]
-        playlist = self.getPlaylist(response['content'])
+        playlist = self.getPlaylist(response['content'].decode("utf-8"))
+        
         if playlist:
-            description = self.strip(response['content'].split("<!--dle_image_end-->")[1].split("<div")[0])
+            description = self.strip(response['content'].decode("utf-8").split("<!--dle_image_end-->")[1].split("<div")[0])
             currname = '' 
             duration = ''
             #description = common.parseDOM(response['content'], "meta", attrs={"name": "description"}, ret = "content")[0]
             if (self.use_epg == "true"):
                 currname, duration, listItems = self.getEPG(cid = cid, cname=name, image=image)
-            uri = sys.argv[0] + '?mode=play&url=%s&url2=%s' % (urllib.quote_plus(playlist), link)
-            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(1004),  iconImage=image, thumbnailImage=image)
+            uri = sys.argv[0] + '?mode=play&url=%s&url2=%s' % (urllib.parse.quote_plus(playlist), link)
+            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(1004))
+            item.setArt({ 'thumb': image, 'icon' : image })
             item.setInfo(type='Video', infoLabels={'title': currname if currname != '' else name, 'plot': description, 'duration': duration})
             item.setProperty('IsPlayable', 'true')
             xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
@@ -300,15 +310,16 @@ class Tivix():
 
     def genres(self):
         response = common.fetchPage({"link": self.url})
-        menus = common.parseDOM(response["content"], "div", attrs={"class": "menuuuuuu"})
+        menus = common.parseDOM(response["content"].decode("utf-8"), "div", attrs={"class": "menuuuuuu"})
 
         for menu in menus:
             titles = common.parseDOM(menu, "a")
             links = common.parseDOM(menu, "a", ret="href")
 
             for i, link in enumerate(links):
-                uri = sys.argv[0] + '?mode=index&url=%s' % urllib.quote_plus(self.url+link)
-                item = xbmcgui.ListItem(titles[i], iconImage=self.icon, thumbnailImage=self.icon)
+                uri = sys.argv[0] + '?mode=index&url=%s' % urllib.parse.quote_plus(self.url+link)
+                item = xbmcgui.ListItem(titles[i])
+                item.setArt({ 'thumb': self.icon, 'icon' : self.icon })
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'files')
@@ -343,10 +354,10 @@ class Tivix():
 
     def play(self, stream, url_main):
         if 'm3u8' in stream:
-            print "M3U8"
+            print("M3U8")
             url = stream
         else:
-            print "RTMP"
+            print("RTMP")
             url = stream
             url += " swfUrl=http://tivix.co/templates/Default/style/uppod.swf"
             url += " pageURL=http://tivix.co"
@@ -386,10 +397,10 @@ class Tivix():
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.3"
         }
 
-        request = urllib2.Request(self.url, urllib.urlencode(values), headers)
-        response = urllib2.urlopen(request).read()
+        request = urllib.request.Request(self.url, urllib.parse.urlencode(values).encode("utf-8"), headers)
+        response = urllib.request.urlopen(request).read().decode("utf-8")
 
-        self.parse(response, filter = keyword.decode("utf-8"))
+        self.parse(response, filter = keyword)
 
 
     def strip(self, string):

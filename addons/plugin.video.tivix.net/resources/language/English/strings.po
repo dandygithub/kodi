@@ -1,0 +1,43 @@
+# Kodi Media Center language file
+# Addon Name: Tivix
+# Addon id: plugin.video.tivix.net
+# Addon Provider: dandy
+
+msgid ""
+msgstr ""
+
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+msgctxt "#1000"
+msgid "Search"
+msgstr ""
+
+msgctxt "#1001"
+msgid "Unfortunately, site search haven't return any results."
+msgstr ""
+
+msgctxt "#1002"
+msgid "Use transliteration for search"
+msgstr ""
+
+msgctxt "#1003"
+msgid "Next page ..."
+msgstr ""
+
+msgctxt "#1004"
+msgid "Watch"
+msgstr ""
+
+msgctxt "#1005"
+msgid "TV schedule"
+msgstr ""
+
+msgctxt "#1006"
+msgid "Start"
+msgstr ""
+
+msgctxt "#2000"
+msgid "Time zone"
+msgstr ""

@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.tivix.net" name="Tivix.net" version="2.4.3" provider-name="mrstealth, dandy">
+<addon id="plugin.video.tivix.net" name="Tivix.net" version="3.0.0" provider-name="mrstealth, dandy">
     <requires>
-        <import addon="xbmc.python" version="2.1.0"/>
-        <import addon="script.module.xbmc.helpers" version="2.1.0"/>
+        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="script.module.xbmc.helpers" version="3.0.0"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">>
         <provides>video</provides>
@@ -12,5 +12,9 @@
         <description>Tivix.net</description>
         <description>For personal use only</description>
         <platform>all</platform>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
     </extension>
 </addon>
