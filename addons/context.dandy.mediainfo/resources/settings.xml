@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
+    <setting label="Look originaltitle" type="bool" id="is_originaltitle" default="true"/>
     <setting label="Edit title" type="bool" id="is_edit" default="true"/>
     <setting label="Edit condition patterns" type="text" id="patterns_edit" default=".*"/>
-    <setting label="Delete patterns" type="text" id="patterns_delete" default="[(].+?[)],[[].+?[]]"/>
+    <setting label="Delete patterns" type="text" id="patterns_delete" default="[(].+?[)],[[][^\[\]]+?[]],[[].+?[]]"/>
     <setting label="Always get id from TMDB" type="bool" id="always_from_tmdb" default="true"/>
     <setting label="Add YouTube videos mode" type="bool" id="youtube_mode" default="false"/>
     <setting label="Add MetalliQ mode" type="bool" id="metalliq_mode" default="false"/>
+    <setting label="TMDB Api key" type="text" id="tmdb_apikey" default="34142515d9d23817496eeb4ff1d223d0"/>
 </settings>

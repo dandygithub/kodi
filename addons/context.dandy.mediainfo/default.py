@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # Writer (c) 2017, dandy
-# Rev. 1.1.0
 # Licence: GPL v.3: http://www.gnu.org/copyleft/gpl.html
 
 import xbmc
@@ -8,11 +7,11 @@ import xbmcaddon
 import xbmcgui
 import re
 import sys, os
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import simplejson as json
 
 sys.path.append(os.path.dirname(__file__)+ '/../script.extendedinfo')
-sys.path.append(os.path.dirname(__file__)+ '/../script.extendedinfo/resources/lib')
+sys.path.append(os.path.dirname(__file__)+ '/../script.extendedinfo/lib')
 try:
     sys.path.append(os.path.dirname(__file__)+ '/../script.module.urllib3/lib')
     sys.path.append(os.path.dirname(__file__)+ '/../script.module.chardet/lib')
@@ -31,6 +30,7 @@ import TheMovieDB as tmdb
 ID = "context.dandy.mediainfo"
 ADDON = xbmcaddon.Addon(ID)
 
+IS_ORIGINALTITLE = ADDON.getSetting('is_originaltitle') if ADDON.getSetting('is_originaltitle') else "true"
 IS_EDIT = ADDON.getSetting('is_edit') if ADDON.getSetting('is_edit') else "true"
 PATTERNS_FOR_EDIT = ADDON.getSetting('patterns_edit') if ADDON.getSetting('patterns_edit') else ".*"
 PATTERNS_FOR_DELETE = ADDON.getSetting('patterns_delete') if ADDON.getSetting('patterns_delete') else "[(].+?[)],[[].+?[]]"
@@ -47,7 +47,9 @@ _media_type_ = "none"
 _iddb_ = ""
 
 def get_title():
-    title = xbmc.getInfoLabel("ListItem.Title") if xbmc.getInfoLabel("ListItem.Title") else xbmc.getInfoLabel("ListItem.Label")
+    title = xbmc.getInfoLabel("ListItem.OriginalTitle") if xbmc.getInfoLabel("ListItem.OriginalTitle") and IS_ORIGINALTITLE == "true" else None
+    if title is None:
+       title = xbmc.getInfoLabel("ListItem.Title") if xbmc.getInfoLabel("ListItem.Title") else xbmc.getInfoLabel("ListItem.Label")
     return decode_(title)
 
 def check_is_edit(title):
@@ -183,14 +185,20 @@ def get_media_meta_movie_id():
                                  cache_days=1)
     except:
         try:
-            params = {k: encode_(v) for k, v in params.iteritems() if v}
-            xbmc.log("url=" + ("search/%s?%s&" % (get_media_category(), urllib.urlencode(params))))
-            response = tmdb.get_tmdb_data(url="search/%s?%s&" % (get_media_category(), urllib.urlencode(params)),
+            params = {k: encode_(v) for k, v in params.items() if v}
+            xbmc.log("url=" + ("search/%s?%s&" % (get_media_category(), urllib.parse.urlencode(params))))
+            response = tmdb.get_tmdb_data(url="search/%s?%s&" % (get_media_category(), urllib.parse.urlencode(params)),
                                           cache_days=1)
+            xbmc.log("Response from TMDB = " + repr(response))
         except:
             return None
+    
     if response and (not (response == "Empty")):
-        if len(response['results']) > 0:
+        if (('status_code'  in response) and (response['status_code'] > 0)):
+    	    show_message(response['status_message'])
+    	    xbmc.log("status_message=" + repr(response['status_message']))
+    	    return None
+        elif (('results'  in response) and  len(response['results']) > 0):
             return select_media(response["results"])
         else:
             return None
@@ -229,14 +237,11 @@ def check_params():
     return check
 
 def decode_(param):
-    try:
-        return param.decode('utf-8')
-    except:
         return param
 
 def encode_(param):
     try:
-        return unicode(param).encode('utf-8')
+        return str(param)
     except:
         return param
 

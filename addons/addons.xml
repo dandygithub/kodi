@@ -49,11 +49,11 @@
   </extension>
 </addon>
 
-<addon id="context.dandy.mediainfo" name="Media Info" version="1.4.2" provider-name="dandy">
+<addon id="context.dandy.mediainfo" name="Media Info" version="2.0.0" provider-name="dandy">
   <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.simplejson" version="2.0.10"/>
-    <import addon="script.extendedinfo" version="2.0.6"/>
+    <import addon="xbmc.python" version="3.0.0"/>
+    <import addon="script.module.simplejson" version="3.0.0"/>
+    <import addon="script.extendedinfo" version="5.6.0"/>
   </requires>
   <extension point="kodi.context.item" library="default.py">
     <item>
@@ -68,6 +68,9 @@
     <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
     <forum></forum>
     <source></source>
+    <assets>
+        <icon>icon.png</icon>
+    </assets>
   </extension>
 </addon>
 
