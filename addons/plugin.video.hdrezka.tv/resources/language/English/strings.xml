@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+    <string id="1000">Search</string>
+    <string id="1001">Unfortunately, search did not return any results.</string>
+    <string id="1002">Use transliteration for search</string>
+    <string id="1003">Categories</string>
+    <string id="1004">Next page ...</string>
+    <string id="1005">Season</string>
+    <string id="1006">Select audio track</string>
+    <string id="1007">List</string>
+    <string id="1008">Search history</string>
+</strings>
