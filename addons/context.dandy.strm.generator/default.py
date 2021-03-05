@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 # Writer (c) 2017, dandy
-# Rev. 1.0.0
 # Licence: GPL v.3: http://www.gnu.org/copyleft/gpl.html
 
 import sys, os
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import xbmc
 import xbmcaddon
 import xbmcplugin
@@ -44,7 +43,7 @@ def get_addon_id():
 
 def get_title():
     title = xbmc.getInfoLabel("ListItem.Title") if xbmc.getInfoLabel("ListItem.Title") else xbmc.getInfoLabel("ListItem.Label")
-    return decode_(title)
+    return title
 
 def check_is_edit(title):
     isedit = False
@@ -113,14 +112,14 @@ def generate_strm(category, media_title):
 
     path = xbmc.getInfoLabel('ListItem.FileNameAndPath')
 
-    dirlib = os.path.join(DIRECTORY.decode("utf-8"), category.replace("(ts)", "").strip())
+    dirlib = os.path.join(DIRECTORY, category.replace("(ts)", "").strip())
     xbmc.log("dir=" + dirlib)
     xbmc.log("dir2=" + DIRECTORY)    
     if not os.path.exists(dirlib):
         os.makedirs(dirlib)
 
     playable = ''
-    if  (PLAYABLE == "true") and ((xbmc.getCondVisibility("ListItem.IsFolder") == False) or (xbmcgui.Dialog().yesno(".strm", "", "Is it playable content?") == True)):
+    if  (PLAYABLE == "true") and ((xbmc.getCondVisibility("ListItem.IsFolder") == False) or (xbmcgui.Dialog().yesno(".strm", "Is it playable content?" ) == True)):
         playable = '#'
     uri = playable + path
 
@@ -132,21 +131,21 @@ def generate_strm(category, media_title):
         if not os.path.exists(namedir):
             os.makedirs(namedir)
         else:
-            if (xbmcgui.Dialog().yesno(".strm", "", "Exist .strm file. Continue?") == False):
+            if (xbmcgui.Dialog().yesno(".strm", "Exist .strm file. Continue?") == False):
                 return
             f = open(namefile, "r+")
-            content = urllib.unquote_plus(f.read())
+            content = urllib.parse.unquote_plus(f.read())
             f.close()
             if (ID in content):
-                if (xbmcgui.Dialog().yesno(".strm", "", "Update existing .strm file?") == True):
+                if (xbmcgui.Dialog().yesno(".strm", "Update existing .strm file?") == True):
                     uri = update_uri(content, uri)
                     action = "Updated "                    
         try:
             f = open(namefile, "w+")
-            uri = "plugin://{0}?mode=run&uri={1}&title={2}".format(ID, urllib.quote_plus(uri), encode_(media_title_orig.split('[')[0].split('(')[0].split('/')[0].strip()))
+            uri = "plugin://{0}?mode=run&uri={1}&title={2}".format(ID, urllib.parse.quote_plus(uri), encode_(media_title_orig.split('[')[0].split('(')[0].split('/')[0].strip()))
             f.write(uri + "\n")
             f.close()
-        except Exception, e:
+        except Exception as e:
             xbmc.log( '[%s]: WRITE EXCEPT [%s]' % (ID, e), 4 )
             show_message(e)
             return
@@ -154,25 +153,25 @@ def generate_strm(category, media_title):
     else:
         name = dirlib + "/" + encode_(media_title) + ".strm"    
         if os.path.exists(name): 
-            if (xbmcgui.Dialog().yesno(".strm", "", "Exist .strm file. Continue?") == False):
+            if (xbmcgui.Dialog().yesno(".strm", "Exist .strm file. Continue?") == False):
                 return
             f = open(name, "r+")
-            content = urllib.unquote_plus(f.read())
+            content = urllib.parse.unquote_plus(f.read())
             f.close()
             if (ID in content) and (path not in content):
-                if (xbmcgui.Dialog().yesno(".strm", "", "Update existing .strm file?") == True):
+                if (xbmcgui.Dialog().yesno(".strm", "Update existing .strm file?") == True):
                     uri = update_uri(content, uri)
                     action = "Updated "
         try:
             f = open(name, "w+")
-            uri = "plugin://{0}?mode=run&uri={1}&title={2}".format(ID, urllib.quote_plus(uri), encode_(media_title_orig.split('[')[0].split('(')[0].split('/')[0].strip()))
+            uri = "plugin://{0}?mode=run&uri={1}&title={2}".format(ID, urllib.parse.quote_plus(uri), encode_(media_title_orig.split('[')[0].split('(')[0].split('/')[0].strip()))
             f.write(uri + "\n")
             f.close()
-        except Exception, e:
+        except Exception as e:
             xbmc.log( '[%s]: WRITE EXCEPT [%s]' % (ID, e), 4 )
             show_message(e)
             return
-    xbmcgui.Dialog().ok(".strm", "", action + name)
+    xbmcgui.Dialog().ok(".strm", action + name)
 
 def generate_nfo(category, media_title):
     if "(ts)" in category:
@@ -189,17 +188,17 @@ def generate_nfo(category, media_title):
         nfo += "    <year>" + year + "</year>\n"
     nfo += "</movie>\n"
 
-    dirlib = os.path.join(DIRECTORY.decode("utf-8"), category)
+    dirlib = os.path.join(DIRECTORY, category)
     if not os.path.exists(dirlib):
         os.makedirs(dirlib)
     name = dirlib + "/" + encode_(media_title) + ".nfo"
-    if os.path.exists(name) and (xbmcgui.Dialog().yesno(".strm", "", "Exist .nfo file. Continue?") == False):
+    if os.path.exists(name) and (xbmcgui.Dialog().yesno(".strm", "Exist .nfo file. Continue?") == False):
         return
     try:
         f = open(name, "w+")
         f.write(nfo + "\n")
         f.close()
-    except Exception, e:
+    except Exception as e:
         xbmc.log( '[%s]: WRITE EXCEPT [%s]' % (ID, e), 4 )
         show_message(e)
         return
@@ -271,17 +270,14 @@ def run(uris, title):
             xbmc.executebuiltin("ActivateWindow({0}, {1})".format("videos", uri))
         else:
             xbmc.executebuiltin("Container.Update({0})".format(uri))
-    time.sleep(0.1)
+    time.sleep(0.5)
 
 def decode_(param):
-    try:
-        return param.decode('utf-8')
-    except:
         return param
 
 def encode_(param):
     try:
-        return unicode(param).encode('utf-8')
+        return str(param)
     except:
         return param
 
@@ -293,8 +289,8 @@ def main():
     if len(sys.argv) > 1:
         PARAMS = common.getParameters(sys.argv[2])
         mode = PARAMS['mode'] if 'mode' in PARAMS else None
-        uris = urllib.unquote_plus(PARAMS['uri']) if 'uri' in PARAMS else None
-        title = urllib.unquote_plus(PARAMS['title']) if 'title' in PARAMS else None
+        uris = urllib.parse.unquote_plus(PARAMS['uri']) if 'uri' in PARAMS else None
+        title = urllib.parse.unquote_plus(PARAMS['title']) if 'title' in PARAMS else None
 
     if (not mode):
         generate()
