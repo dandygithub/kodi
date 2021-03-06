@@ -272,8 +272,7 @@ class HdrezkaTV:
                     infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0}
                 )
                 item.setProperty('IsPlayable', 'true')
-                if subtitles:
-                    item.setSubtitles([subtitles])
+                self.set_item_subtitles(item, subtitles)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
             quality_prev = quality
 
@@ -382,10 +381,7 @@ class HdrezkaTV:
         subtitles = None
         if (action == "get_movie"):
             playlist = [response["url"] ]
-            try:
-                subtitles = response["subtitle"].split(']')[1].split(',')[0].replace("\/", "/")
-            except:
-                pass
+            subtitles = self.get_subtitles(response)
         else:
             seasons = response["seasons"]
             episodes = response["episodes"]
@@ -406,7 +402,27 @@ class HdrezkaTV:
             else:
                 manifest_links[2160] = link.split("]")[1]
         return manifest_links
+        
+    @staticmethod
+    def get_subtitles(response):
+        subtitles = None
+        try:
+            subtitles = response["subtitle"].split(',')
+            for si in range(len(subtitles)):
+                subtitles[si] = subtitles[si].split(']')[1].replace("\/", "/")
+        except:
+            pass
 
+        return subtitles
+    
+    @staticmethod    
+    def set_item_subtitles(item, subtitles):
+        if subtitles:
+            if not isinstance(subtitles, list):
+                subtitles = [ subtitles ]
+                
+            item.setSubtitles(subtitles)
+        
     def show(self, url):
         log("*** Show video %s" % url)
         response = self.get_response(url)
@@ -659,12 +675,12 @@ class HdrezkaTV:
     def play(self, url, subtitles=None):
         log('*** play')
         item = xbmcgui.ListItem(path=url)
-        if subtitles:
-            item.setSubtitles([subtitles])
+        self.set_item_subtitles(item, subtitles)
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
     def play_episode(self, url, referer, post_id, season_id, episode_id, title, image, idt, data):
         log("*** play_episode")
+        subtitles = None
         if (data == "null"):
             data = {
                 "id": post_id,
@@ -682,8 +698,9 @@ class HdrezkaTV:
             }
             response = self.post_response(self.url + "/ajax/get_cdn_series/", data, headers).json()
             data = response["url"]
+            subtitles = self.get_subtitles(response)
         links = self.get_links(data)
-        self.selectQuality(links, title, image, None)
+        self.selectQuality(links, title, image, subtitles)
         xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
 
