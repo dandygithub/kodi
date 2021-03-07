@@ -1,0 +1,19 @@
+# Kodi Media Center language file
+# Addon Name: Kinopoisk Search Content
+# Addon id: context.dandy.kinopoisk.sc
+# Addon Provider: dandy
+
+msgid ""
+msgstr ""
+
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+msgctxt "#32000"
+msgid "[COLOR orange]Search[/COLOR] Content"
+msgstr ""
+
+msgctxt "#31999"
+msgid "plugin.video.KinoPoisk.ru"
+msgstr ""

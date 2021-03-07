@@ -1,5 +1,5 @@
 import os
-import urllib, urllib2
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import re
 import socket
 import xbmc
@@ -16,8 +16,6 @@ import resources.lib.hdgo as hdgo
 import resources.lib.videoframe as videoframe
 import resources.lib.hdbaza as hdbaza
 
-from videohosts import moonwalk
-from videohosts import kodik
 from videohosts import iframe
 from videohosts import videocdn
 from videohosts import hdvb
@@ -47,7 +45,7 @@ def get_media_title(kp_id, media_title):
     response = common.fetchPage({"link": "https://www.kinopoisk.ru/film/" + kp_id + "/"})
 
     if response["status"] == 200:
-        content = response["content"]
+        content = response["content"].decode("utf-8")
         try:
             div = common.parseDOM(content, "div", attrs={"id": "headerFilm"})[0]
             media_title_ = strip_(encode_('utf-8', common.parseDOM(div, "h1")[0]))
@@ -63,10 +61,10 @@ def search_kp_id(media_title, mode):
     media = []
     media_titles = []
 
-    response = common.fetchPage({"link": "http://www.kinopoisk.ru/index.php?first=no&what=&kp_query=" + urllib.quote_plus(media_title)})
+    response = common.fetchPage({"link": "http://www.kinopoisk.ru/index.php?first=no&what=&kp_query=" + urllib.parse.quote_plus(media_title)})
 
     if response["status"] == 200:
-        content = response["content"]
+        content = response["content"].decode("utf-8")
 
         try:
             div = common.parseDOM(content, "div", attrs={"class": "search_results"})[0]
@@ -133,18 +131,12 @@ def get_kp_id(media_title, mode):
         return get_user_input()
 
 def get_engine(data):
-    if 'moonwalk' in data:
-        return 'moonwalk'
-    elif 'hdgo' in data:
+    if 'hdgo' in data:
         return 'hdgo'
-    elif 'kodik' in data:
-        return 'kodik'
     elif 'videoframe' in data:
         return 'videoframe'
     elif 'hdnow' in data:
         return 'hdnow'
-    elif 'czx' in data:
-        return 'czx'
     elif 'iframe' in data:
         return 'iframe'
     elif 'hdbaza' in data:
@@ -181,8 +173,9 @@ def main_(mode, kp_id, orig_title, media_title, image):
     #    process(kp_id, media_title, image)
     #else:    
     film_title = " %s" % (orig_title)
-    uri = sys.argv[0] + '?mode=process&kp_id=%s&media_title=%s&image=%s' % (kp_id, urllib.quote_plus(media_title), urllib.quote_plus(image))
-    item = xbmcgui.ListItem(film_title, iconImage=image, thumbnailImage=image)
+    uri = sys.argv[0] + '?mode=process&kp_id=%s&media_title=%s&image=%s' % (kp_id, urllib.parse.quote_plus(media_title), urllib.parse.quote_plus(image))
+    item = xbmcgui.ListItem(film_title)
+    item.setArt({ 'thumb': image, 'icon' : image })
     item.setInfo(type='Video', infoLabels={'title': film_title, 'label': film_title, 'plot': film_title})
     xbmcplugin.addDirectoryItem(HANDLE, uri, item, True)
     xbmcplugin.setContent(HANDLE, 'movies')
@@ -199,27 +192,20 @@ def process(kp_id, media_title, image):
     for li in list_li:
         engine = get_engine(li[1].getLabel())
         
-        li[0] = li[0] + ("&media_title=%s&image=%s&engine=%s" % ((urllib.quote_plus(encode_("utf-8", media_title))) if (media_title != "") else "", image, engine))
-        li[1].setIconImage(image)
-        li[1].setThumbnailImage(image)
+        li[0] = li[0] + ("&media_title=%s&image=%s&engine=%s" % ((urllib.parse.quote_plus(encode_("utf-8", media_title))) if (media_title != "") else "", image, engine))
+        li[1].setArt({ 'thumb': image, 'icon' : image })
         if ("*T*" in li[1].getLabel()):
             title = li[1].getLabel().replace("*T*", media_title)
             li[1].setLabel(title)
-            li[0] = li[0] + ("&title=%s" % (urllib.quote_plus(title)))
+            li[0] = li[0] + ("&title=%s" % (urllib.parse.quote_plus(title)))
                 
         li[1].setInfo(type='Video', infoLabels={'title': li[1].getLabel(), 'label': media_title, 'plot': media_title})
         xbmcplugin.addDirectoryItem(HANDLE, li[0], li[1], li[2])
     xbmcplugin.setContent(HANDLE, 'movies')
     xbmcplugin.endOfDirectory(HANDLE, True)
 
-def show_moonwalk(url, title):
-    return moonwalk.get_playlist(url)
-
 def show_hdgo(url, title):
     return hdgo.get_playlist(url)
-
-def show_kodik(url, title):
-    return kodik.get_playlist(url)
 
 def show_videoframe(url, title):
     return videoframe.get_playlist(url)
@@ -245,13 +231,8 @@ def show(url, title, media_title, image, engine):
     if (not media_title):
         media_title = title
     direct = 0
-    if ('moonwalk' in engine) or ('hdnow' in engine) or ('czx' in engine):
-        manifest_links, subtitles, season, episode = show_moonwalk(url, title)
-        direct = 1
-    elif 'hdgo' in engine:
+    if 'hdgo' in engine:
         manifest_links, subtitles, season, episode = show_hdgo(url, title)
-    elif 'kodik' in engine:
-        manifest_links, subtitles, season, episode, direct = show_kodik(url, title)
     elif ('videoframe' in engine):
         manifest_links, subtitles, season, episode = show_videoframe(url, title)
     elif ('iframe' in engine):
@@ -267,16 +248,17 @@ def show(url, title, media_title, image, engine):
         direct = 1
 
     if manifest_links:
-        list = sorted(manifest_links.iteritems(), key=itemgetter(0))
+        list = sorted(iter(manifest_links.items()), key=itemgetter(0))
         if season:
             title += " - s%se%s" % (season.zfill(2), episode.zfill(2))
         for quality, link in list:
             film_title = "[COLOR=lightgreen][%s][/COLOR] %s" % (str(quality), title)
             try:
-                uri = sys.argv[0] + '?mode=play&url=%s&title=%s&media_title=%s&direct=%d' % (urllib.quote_plus(link), urllib.quote_plus(title), urllib.quote_plus(media_title), direct)
+                uri = sys.argv[0] + '?mode=play&url=%s&title=%s&media_title=%s&direct=%d' % (urllib.parse.quote_plus(link), urllib.parse.quote_plus(title), urllib.parse.quote_plus(media_title), direct)
             except:    
                 uri = sys.argv[0] + '?mode=play&url=%s&title=%s&media_title=%s&direct=%d' % (link, title, media_title, direct)            
-            item = xbmcgui.ListItem(film_title, iconImage=image, thumbnailImage=image)
+            item = xbmcgui.ListItem(film_title)
+            item.setArt({ 'thumb': image, 'icon' : image })
             item.setInfo(type='Video', infoLabels={'title': film_title, 'label': film_title, 'plot': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
             item.setProperty('IsPlayable', 'true')
             if subtitles: 
@@ -291,9 +273,9 @@ def play(url, direct):
     if (direct != 1) and ("m3u8" in url):
         url = ("http:" if (not (("http://" in url) or ("https://" in url))) else "") + url
         response = common.fetchPage({"link": url})
-        if (not (("http://" in response["content"]) or ("https://" in response["content"]))):
-            content = response["content"].split("\n")
-            name = os.path.join(PATH.decode("utf-8"), 'resources/playlists/') + "temp.m3u8"
+        if (not (("http://" in response["content"].decode("utf-8")) or ("https://" in response["content"].decode("utf-8")))):
+            content = response["content"].decode("utf-8").split("\n")
+            name = os.path.join(PATH, 'resources/playlists/') + "temp.m3u8"
             block = url.split("mp4")[0]
             f = open(name, "w+")
             for line in content:
@@ -316,7 +298,7 @@ def decode_(code, param):
 
 def encode_(code, param):
     try:
-        return unicode(param).encode(code)
+        return param.encode(code)
     except:
         return param
 
@@ -330,13 +312,13 @@ def main():
     PARAMS = common.getParameters(sys.argv[2])
     kp_id = PARAMS['kp_id'] if ('kp_id' in PARAMS) else None
     mode = PARAMS['mode'] if 'mode' in PARAMS else None
-    url = urllib.unquote_plus(PARAMS['url']) if 'url' in PARAMS else None
-    title = urllib.unquote_plus(PARAMS['title']) if 'title' in PARAMS else None
-    orig_title = urllib.unquote_plus(PARAMS['orig_title']) if 'orig_title' in PARAMS else None    
-    media_title = urllib.unquote_plus(PARAMS['media_title']) if 'media_title' in PARAMS else None
+    url = urllib.parse.unquote_plus(PARAMS['url']) if 'url' in PARAMS else None
+    title = urllib.parse.unquote_plus(PARAMS['title']) if 'title' in PARAMS else None
+    orig_title = urllib.parse.unquote_plus(PARAMS['orig_title']) if 'orig_title' in PARAMS else None    
+    media_title = urllib.parse.unquote_plus(PARAMS['media_title']) if 'media_title' in PARAMS else None
     if orig_title == None:
         orig_title = media_title
-    image = urllib.unquote_plus(PARAMS['image']) if 'image' in PARAMS else None
+    image = urllib.parse.unquote_plus(PARAMS['image']) if 'image' in PARAMS else None
     direct = int(PARAMS['direct']) if 'direct' in PARAMS else None
     engine = PARAMS['engine'] if 'engine' in PARAMS else None
 

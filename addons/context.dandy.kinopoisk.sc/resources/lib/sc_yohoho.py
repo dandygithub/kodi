@@ -1,6 +1,6 @@
 ﻿import sys
 import json
-import urllib, urllib2
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import xbmc
 import xbmcgui
 import XbmcHelpers
@@ -84,8 +84,8 @@ def get_content():
                 translate = host_data["translate"]
                 quality = host_data["quality"]
                 title_ = "*T*"
-                title = "[COLOR=orange][{0}][/COLOR] {1} {2}".format(vh_title + host, tools.encode(title_), get_add_info(translate, quality))
-                uri = sys.argv[0] + "?mode=show&url={0}".format(urllib.quote_plus(prepare_url(host, iframe)))
+                title = "[COLOR=orange][{0}][/COLOR] {1} {2}".format(vh_title + host, title_, get_add_info(translate, quality))
+                uri = sys.argv[0] + "?mode=show&url={0}".format(urllib.parse.quote_plus(prepare_url(host, iframe)))
                 item = xbmcgui.ListItem(title)
                 list_li.append([uri, item, True])
     return list_li

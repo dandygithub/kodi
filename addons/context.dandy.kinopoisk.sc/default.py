@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 # Writer (c) 2017, dandy
-# Rev. 1.0.0
 # Licence: GPL v.3: http://www.gnu.org/copyleft/gpl.html
 
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import xbmc
 import xbmcaddon
 import xbmcplugin
@@ -98,7 +97,7 @@ def decode_(param):
 
 def encode_(param):
     try:
-        return unicode(param).encode('utf-8')
+        return param.encode('utf-8')
     except:
         return param
 
@@ -118,9 +117,9 @@ def main():
         _orig_title_ = "{0} [{1}]".format(_media_title_, _year_)
 
     if _kp_id_:
-        uri = "plugin://{0}?mode=context&kp_id={1}&orig_title={2}&media_title={3}&image={4}".format(ID, _kp_id_, urllib.quote_plus(encode_(_orig_title_)), urllib.quote_plus(encode_(_media_title_)), urllib.quote_plus(encode_(_image_)))
+        uri = "plugin://{0}?mode=context&kp_id={1}&orig_title={2}&media_title={3}&image={4}".format(ID, _kp_id_, urllib.parse.quote_plus(encode_(_orig_title_)), urllib.parse.quote_plus(encode_(_media_title_)), urllib.parse.quote_plus(encode_(_image_)))
     else:    
-        uri = "plugin://{0}?mode=context&orig_title={1}&media_title={2}&image={3}".format(ID, urllib.quote_plus(encode_(_orig_title_)), urllib.quote_plus(encode_(_media_title_)), urllib.quote_plus(encode_(_image_)))
+        uri = "plugin://{0}?mode=context&orig_title={1}&media_title={2}&image={3}".format(ID, urllib.parse.quote_plus(encode_(_orig_title_)), urllib.parse.quote_plus(encode_(_media_title_)), urllib.parse.quote_plus(encode_(_image_)))
 
     xbmc.executebuiltin("Container.Update({0})".format(uri))
 

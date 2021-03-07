@@ -1,4 +1,4 @@
-import urllib, urllib2
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import json
 import re
 import socket
@@ -34,9 +34,9 @@ def select_translator(data, url):
 
     url_ =  url.replace(tr_value_curr, tr_value)
 
-    request = urllib2.Request(url_, "", headers)
+    request = urllib.request.Request(url_, "", headers)
     request.get_method = lambda: 'GET'
-    response = urllib2.urlopen(request).read()
+    response = urllib.request.urlopen(request).read()
     return response, url_
 
 def select_season(data):
@@ -73,12 +73,12 @@ def select_episode(data, url):
     values = {
         "season": season
     }  
-    encoded_kwargs = urllib.urlencode(values.items())
+    encoded_kwargs = urllib.parse.urlencode(list(values.items()))
     argStr = "?%s" %(encoded_kwargs)
     try: 
-        request = urllib2.Request(url_ + argStr, "", headers)
+        request = urllib.request.Request(url_ + argStr, "", headers)
         request.get_method = lambda: 'GET'
-        response = urllib2.urlopen(request).read()
+        response = urllib.request.urlopen(request).read()
     except:
         return "", sindex, eindex
 
@@ -111,14 +111,14 @@ def select_episode(data, url):
         "season": season,
         "e": episode
     }  
-    encoded_kwargs = urllib.urlencode(values2.items())
+    encoded_kwargs = urllib.parse.urlencode(list(values2.items()))
     argStr = "?%s" %(encoded_kwargs)
 
     try: 
-        request = urllib2.Request(url + argStr, "", headers)
+        request = urllib.request.Request(url + argStr, "", headers)
         request.get_method = lambda: 'GET'
         #response = urllib2.urlopen(request).read()
-        return urllib2.urlopen(request).read(), sindex, eindex
+        return urllib.request.urlopen(request).read(), sindex, eindex
     except:
         return "", sindex, eindex
     #iframe = "http:" + common.parseDOM(response, "iframe", ret="src")[0]        
@@ -141,9 +141,9 @@ def get_playlist(url):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
     }
     try: 
-        request = urllib2.Request(url, "", headers)
+        request = urllib.request.Request(url, "", headers)
         request.get_method = lambda: 'GET'
-        response = urllib2.urlopen(request).read()
+        response = urllib.request.urlopen(request).read()
     except:
         return manifest_links, subtitles, season, episode 
 

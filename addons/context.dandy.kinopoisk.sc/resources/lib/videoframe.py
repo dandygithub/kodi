@@ -1,4 +1,4 @@
-import urllib, urllib2
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import json
 import re
 import socket
@@ -44,9 +44,9 @@ def select_episode(data, url):
     }
 
     try: 
-        request = urllib2.Request("http://" + PLAYLIST_DOMAIN + surl, "", headers)
+        request = urllib.request.Request("http://" + PLAYLIST_DOMAIN + surl, "", headers)
         request.get_method = lambda: 'GET'
-        response = urllib2.urlopen(request).read()
+        response = urllib.request.urlopen(request).read()
     except:
         return "", sindex, eindex
 
@@ -69,13 +69,13 @@ def select_episode(data, url):
     values = {
         "ep": episode,
     }  
-    encoded_kwargs = urllib.urlencode(values.items())
+    encoded_kwargs = urllib.parse.urlencode(list(values.items()))
     argStr = "&%s" %(encoded_kwargs)
 
     try: 
-        request = urllib2.Request("http://" + PLAYLIST_DOMAIN + surl + argStr, "", headers)
+        request = urllib.request.Request("http://" + PLAYLIST_DOMAIN + surl + argStr, "", headers)
         request.get_method = lambda: 'GET'
-        return urllib2.urlopen(request).read(), sindex, eindex
+        return urllib.request.urlopen(request).read(), sindex, eindex
     except:
         return "", sindex, eindex
 
@@ -92,9 +92,9 @@ def get_playlist(url):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
     }
     try: 
-        request = urllib2.Request(url, "", headers)
+        request = urllib.request.Request(url, "", headers)
         request.get_method = lambda: 'GET'
-        response = urllib2.urlopen(request).read()
+        response = urllib.request.urlopen(request).read()
     except:
         return manifest_links, subtitles, season, episode 
 
@@ -112,11 +112,11 @@ def get_playlist(url):
         "Referer": url,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
     }
-    request = urllib2.Request(url_, "", headers)
+    request = urllib.request.Request(url_, "", headers)
     request.get_method = lambda: 'GET'
     try:
-        response2 = urllib2.urlopen(request)
-    except urllib2.HTTPError, error:
+        response2 = urllib.request.urlopen(request)
+    except urllib.error.HTTPError as error:
         url_ = dict(error.info())['location']
 
     headers = {
@@ -124,10 +124,10 @@ def get_playlist(url):
         "Referer": url,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
     }
-    request = urllib2.Request(url_, "", headers)
+    request = urllib.request.Request(url_, "", headers)
     request.get_method = lambda: 'GET'
     try:
-        response = urllib2.urlopen(request).read()
+        response = urllib.request.urlopen(request).read()
     except:
         return manifest_links, subtitles, season, episode 
 
