@@ -62,11 +62,9 @@ def search_kp_id(media_title, mode):
     media_titles = []
 
     response = common.fetchPage({"link": "http://www.kinopoisk.ru/index.php?first=no&what=&kp_query=" + urllib.parse.quote_plus(media_title)})
-
     if response["status"] == 200:
-        content = response["content"].decode("utf-8")
-
         try:
+            content = response["content"].decode()
             div = common.parseDOM(content, "div", attrs={"class": "search_results"})[0]
             info = common.parseDOM(div, "div", attrs={"class": "info"})[0]
             title = encode_('utf-8', decode_('cp1251', common.parseDOM(info, "a")[0]))
@@ -76,11 +74,11 @@ def search_kp_id(media_title, mode):
                 divmain = common.parseDOM(content, "div", attrs={"class": "search_results search_results_last"})[0]
                 divs = common.parseDOM(divmain, "div", attrs={"class": "element"})
                 for div in divs:
-                    info = common.parseDOM(div, "div", attrs={"class": "info"})[0]
-                    title = encode_('utf-8', decode_('cp1251', common.parseDOM(info, "a")[0]))
-                    if media_title.decode('utf-8').upper() == title.decode('utf-8').upper(): 
-                        media.append(common.parseDOM(info, "a", ret="data-id")[0])
-                        media_titles.append(replace_(title + " (" + common.parseDOM(info, "span")[0] + ")"))
+                   info = common.parseDOM(div, "div", attrs={"class": "info"})[0]
+                   title = encode_('utf-8', decode_('cp1251', common.parseDOM(info, "a")[0]))
+                   if media_title.decode('utf-8').upper() == title.decode('utf-8').upper(): 
+                       media.append(common.parseDOM(info, "a", ret="data-id")[0])
+                       media_titles.append(replace_(title + " (" + common.parseDOM(info, "span")[0] + ")"))
         except:
             pass
 
@@ -93,6 +91,7 @@ def search_kp_id(media_title, mode):
         else:
             return None
     else:
+        show_message("Not found media")
         return None
 
 def get_user_input_id():
@@ -307,6 +306,9 @@ def strip_(string):
 
 def replace_(string):
     return string.replace("&ndash;", "/").replace("&nbsp;", " ")
+
+def show_message(msg):
+    xbmc.executebuiltin("XBMC.Notification(%s, %s, %s)" % ("ERROR", msg, str(5 * 1000)))
 
 def main():
     PARAMS = common.getParameters(sys.argv[2])
