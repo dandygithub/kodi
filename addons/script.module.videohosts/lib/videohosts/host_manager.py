@@ -1,4 +1,4 @@
-import urllib, urllib2
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import json
 import re
 import socket
@@ -8,10 +8,10 @@ import xbmcaddon
 import XbmcHelpers
 common = XbmcHelpers
 
-import collaps
-import iframe
-import videocdn
-import hdvb
+from . import collaps
+from . import iframe
+from . import videocdn
+from . import hdvb
 
 socket.setdefaulttimeout(120)
 
@@ -78,7 +78,7 @@ def get_playlist(data):
             mode = "auto"
 
     if mode == "auto":
-        for k, v in iframes_hm.items():
+        for k, v in list(iframes_hm.items()):
             if (len(manifest_links) > 0):
                break 
             manifest_links, subtitles, season, episode = get_playlist_by_vhost(k, v)

@@ -1,4 +1,4 @@
-import urllib, urllib2
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import json
 import re
 import socket
@@ -7,7 +7,7 @@ import xbmc
 import xbmcgui
 import XbmcHelpers
 common = XbmcHelpers
-import tools
+from . import tools
 
 socket.setdefaulttimeout(120)
 
@@ -174,7 +174,7 @@ def get_playlist(url):
 
     try:
         response = tools.get_response(url_, HEADERS3, {}, "GET")
-    except urllib2.HTTPError, error:
+    except urllib.error.HTTPError as error:
         url_ = dict(error.info())['location']
         headers = {
             "Host": url_.split("//")[-1].split("/")[0],

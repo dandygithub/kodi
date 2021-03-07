@@ -1,4 +1,4 @@
-import urllib, urllib2
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import json
 import re
 import socket
@@ -6,7 +6,7 @@ import xbmc
 import xbmcgui
 import XbmcHelpers
 common = XbmcHelpers
-import tools
+from . import tools
 
 socket.setdefaulttimeout(120)
 
@@ -118,18 +118,27 @@ def get_playlist(url):
 
 #{u'720': u'https://hls-t001-l001-c008-s001.videobalancer.net:15000/06_19_18/06/19/04/L2QPEz3U/1080_eRZe0ykM.mp4/tracks/v1-a/master.m3u8', u'480': u'https://hls-t001-l001-c008-s001.videobalancer.net:15000/06_19_18/06/19/04/L2QPEz3U/1080_eRZe0ykM.mp4/tracks/v2-a/master.m3u8'}
 
-    if "episode:" in response:
-        franchise = response.split("franchise:")[-1].split(",")[0].replace(" ", "")
-        data, season, episode = select_episode(franchise, url)
-        if episode:
-            hlsList = data.replace("{", "").replace("}", "").replace("u'", "").replace("':", '":"').split(",")
-    else:
-        hlsList =  response.split("hlsList: {")[-1].split("}")[0].split(",")
+    try: 
+        if "episode:" in response:
+            franchise = response.split("franchise:")[-1].split(",")[0].replace(" ", "")
+            data, season, episode = select_episode(franchise, url)
+            if episode:
+                hlsList = data.replace("{", "").replace("}", "").replace("u'", "").replace("':", '":"').split(",")
+        else:
+            hlsList =  response.split("hlsList: {")[-1].split("}")[0].split(",")
 
-    for item in hlsList:
-        quality = int(item.split('":"')[0].replace('"', ""))
-        url_ = item.split('":"')[1].replace('"', "").replace("'", "").replace(" ", "")
-        manifest_links[quality] = url_
+        for item in hlsList:
+            quality = int(item.split('":"')[0].replace('"', ""))
+            url_ = item.split('":"')[1].replace('"', "").replace("'", "").replace(" ", "")
+            manifest_links[quality] = url_
+    except:
+        if "seasons:" in response:
+            seasons = response.split("seasons:")[-1].split("qualityByWidth")[0]
+            data, season, episode = select_episode(seasons, url)
+            return manifest_links, subtitles, season, episode 
+        else:
+            url_ = response.split('hls: "')[-1].split('",')[0]
+            manifest_links[0] = url_
         
     return manifest_links, subtitles, season, episode 
    

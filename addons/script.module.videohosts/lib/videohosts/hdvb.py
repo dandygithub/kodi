@@ -1,4 +1,4 @@
-import urllib, urllib2
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import json
 import re
 import socket
@@ -6,7 +6,7 @@ import xbmc
 import xbmcgui
 import XbmcHelpers
 common = XbmcHelpers
-import tools
+from . import tools
 
 socket.setdefaulttimeout(120)
 

@@ -14,15 +14,15 @@ def get_response(url, headers, values, method):
                 argStr = "&%s" %(encoded_kwargs)            
             else:
                 argStr = "?%s" %(encoded_kwargs)
-        request = urllib.request.Request(url + argStr, "", headers)
+        request = urllib.request.Request(url + argStr, dict(""), headers)
     else:
-        request = urllib.request.Request(url, urllib.parse.urlencode(list(values.items())), headers)
+        request = urllib.request.Request(url, encode(urllib.parse.urlencode(list(values.items()))), headers)
     request.get_method = lambda: method
-    return urllib.request.urlopen(request).read()
+    return decode(urllib.request.urlopen(request).read())
 
 def encode(param):
     try:
-        return str(param).encode('utf-8')
+        return param.encode('utf-8')
     except:
         return param
 
