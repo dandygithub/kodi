@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 #
 # Writer (c) 2012-2019, MrStealth, dandy
-# Rev. 2.3.0
 
 import json
 import os
@@ -21,7 +20,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
-from videohosts import moonwalk
+#from videohosts import moonwalk
 import SearchHistory as history
 
 common = XbmcHelpers
@@ -542,7 +541,7 @@ class HdrezkaTV:
             subtitles = response.split('subtitles: {"master_vtt":"')[-1].split('"')[0]
 
         ###################################################
-        values, attrs = moonwalk.get_access_attrs(response, url)
+        #values, attrs = moonwalk.get_access_attrs(response, url)
         ###################################################
 
         headers = {}

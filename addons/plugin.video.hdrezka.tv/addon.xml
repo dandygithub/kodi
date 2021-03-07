@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="3.0.0" provider-name="MrStealth, dandy, DesSolo">
+<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="3.0.1" provider-name="MrStealth, dandy, DesSolo">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.xbmc.helpers" version="3.0.0"/>
