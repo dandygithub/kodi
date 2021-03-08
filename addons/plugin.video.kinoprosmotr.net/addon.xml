@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.kinoprosmotr.net" name="Kinoprosmotr.net" version="2.5.5" provider-name="MrStealth, dandy">
+<addon id="plugin.video.kinoprosmotr.net" name="Kinoprosmotr.net" version="3.0.0" provider-name="MrStealth, dandy">
   <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.xbmc.helpers" version="2.1.0"/>
-    <import addon="script.module.translit" version="2.1.0"/>
-    <import addon="script.module.videohosts" version="1.0.0"/>
-    <import addon="script.module.dandy.search.history" version="1.0.0"/>
+    <import addon="xbmc.python" version="3.0.0"/>
+    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
+    <import addon="script.module.translit" version="3.0.0"/>
+    <import addon="script.module.videohosts" version="3.0.0"/>
+    <import addon="script.module.dandy.search.history" version="3.0.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
     <provides>video</provides>
@@ -14,5 +14,9 @@
     <summary>Kinoprosmotr.net</summary>
     <description>For personal use only</description>
     <platform>all</platform>
+    <assets>
+        <icon>icon.png</icon>
+        <fanart>fanart.jpg</fanart>
+    </assets>
   </extension>
 </addon>

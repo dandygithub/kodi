@@ -1,11 +1,10 @@
 #!/usr/bin/python
-# Writer (c) 2012-2016, MrStealth
-# Rev. 2.1.0
+# Writer (c) 2012-2016, MrStealth, dandy
 # -*- coding: utf-8 -*-
 
 import os
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import sys
 import json
 import re
@@ -51,8 +50,8 @@ class Kinoprosmotr():
         params = common.getParameters(self.params)
 
         mode = params['mode'] if 'mode' in params else None
-        url = urllib.unquote_plus(params['url']) if 'url' in params else None
-        url2 = urllib.unquote_plus(params['url2']) if 'url2' in params else None
+        url = urllib.parse.unquote_plus(params['url']) if 'url' in params else None
+        url2 = urllib.parse.unquote_plus(params['url2']) if 'url2' in params else None
         page = params['page'] if 'page' in params else 1
 
         keyword = params['keyword'] if 'keyword' in params else None
@@ -77,35 +76,40 @@ class Kinoprosmotr():
 
     def menu(self):
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", self.url)
-        item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(2000), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(2000))
+        item.setArt({ 'thumb': self.icon, 'icon' : self.icon })
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("history", self.url)
-        item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(2002), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(2002))
+        item.setArt({ 'thumb': self.icon, 'icon' : self.icon })        
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("genres", self.url)
-        item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000))
+        item.setArt({ 'thumb': self.icon, 'icon' : self.icon })        
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("category",  self.url + "/serial/")
-        item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1001), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1001))
+        item.setArt({ 'thumb': self.icon, 'icon' : self.icon })        
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("category", self.url + "/mult/")
-        item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1002), thumbnailImage=self.icon)
+        item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1002))
+        item.setArt({ 'thumb': self.icon, 'icon' : self.icon })        
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         self.getCategoryItems(self.url, 1)
 
     def getCategoryItems(self, url, page):
-        print "*** Get category items %s" % url
+        print("*** Get category items %s" % url)
         page_url = "%s/page/%s/" % (url, str(int(page)))
         response = common.fetchPage({"link": page_url})
         items = 0
 
         if response["status"] == 200:
-            content = common.parseDOM(response["content"], "div", attrs={"id": "page_content"})
+            content = common.parseDOM(response["content"].decode("cp1251"), "div", attrs={"id": "page_content"})
             movie = common.parseDOM(content, "div", attrs={"class": "movie_teaser clearfix"})
 
             header = common.parseDOM(movie, "h2")
@@ -122,7 +126,7 @@ class Kinoprosmotr():
             details = common.parseDOM(teaser, "ul", attrs={"class": "teaser_file_details"})
 
             ratings = common.parseDOM(movie, "li", attrs={"class": "current-rating"})
-            pagenav = common.parseDOM(response["content"], "div", attrs={"id": "pagenav"})
+            pagenav = common.parseDOM(response["content"].decode("cp1251"), "div", attrs={"id": "pagenav"})
 
             for i, title in enumerate(titles):
                 items += 1
@@ -130,22 +134,25 @@ class Kinoprosmotr():
                 detail = common.parseDOM(details[i], "li")
 
                 image = images[i]
-                genre = self.encode(', '.join(common.parseDOM(info[2], "a")))
+                genre = ', '.join(common.parseDOM(info[2], "a"))
                 year = info[1].split('</span>')[-1]
-                desc = common.stripTags(self.encode(descs[i]))
-
-                rating = float(ratings[i]) if ratings[i] > 0 else None
+                desc = common.stripTags(descs[i])
+                try:
+                    rating = float(ratings[i])
+                except:
+                    rating = 0    
 
                 try:
                     tmp = year.split(' ')
                     year = tmp[0]
                     season = tmp[1]+tmp[2]
-                    title = "%s %s %s [COLOR=lightgreen][%s][/COLOR]" % (self.encode(title), self.encode(season), year, detail[2].split('</span>')[-1])
+                    title = "%s %s %s [COLOR=lightgreen][%s][/COLOR]" % (title, season, year, detail[2].split('</span>')[-1])
                 except IndexError:
-                    title = "%s (%s) [COLOR=lightgreen][%s][/COLOR]" % (self.encode(title), year, detail[2].split('</span>')[-1])
+                    title = "%s (%s) [COLOR=lightgreen][%s][/COLOR]" % (title, year, detail[2].split('</span>')[-1])
 
                 uri = sys.argv[0] + '?mode=show&url=%s' % (links[i])
-                item = xbmcgui.ListItem(title, iconImage=self.icon, thumbnailImage=self.url+image)
+                item = xbmcgui.ListItem(title)
+                item.setArt({ 'thumb': self.url + image, 'icon' : self.url + image })        
                 item.setInfo(type='Video', infoLabels={'title': title, 'genre': genre, 'plot': desc, 'rating': rating})
 
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
@@ -155,7 +162,8 @@ class Kinoprosmotr():
 
         if pagenav and not items < 10:
             uri = sys.argv[0] + '?mode=%s&url=%s&page=%s' % ("category", url, str(int(page) + 1))
-            item = xbmcgui.ListItem("[COLOR=orange]" + self.language(2003) + "[/COLOR]", thumbnailImage=self.inext)
+            item = xbmcgui.ListItem("[COLOR=orange]" + self.language(2003) + "[/COLOR]")
+            item.setArt({ 'thumb': self.inext, 'icon' : self.inext })        
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'movies')
@@ -189,12 +197,12 @@ class Kinoprosmotr():
             "season": sindex,
             "ref": self.domain
         }  
-        encoded_kwargs = urllib.urlencode(values.items())
+        encoded_kwargs = urllib.parse.urlencode(list(values.items()))
         argStr = "?%s" %(encoded_kwargs)
         try: 
-            request = urllib2.Request(url.split('?')[0] + argStr, "", headers)
+            request = urllib.request.Request(url.split('?')[0] + argStr, dict(""), headers)
             request.get_method = lambda: 'GET'
-            data = urllib2.urlopen(request).read()
+            data = urllib.request.urlopen(request).read().decode("utf-8")
         except:
             return ""
 
@@ -219,42 +227,44 @@ class Kinoprosmotr():
             "e": episode,
             "ref": self.domain
         }  
-        encoded_kwargs = urllib.urlencode(values.items())
+        encoded_kwargs = urllib.parse.urlencode(list(values.items()))
         argStr = "?%s" %(encoded_kwargs)
 
         try: 
-            request = urllib2.Request(url + argStr, "", headers)
+            request = urllib.request.Request(url + argStr, dict(""), headers)
             request.get_method = lambda: 'GET'
-            return urllib2.urlopen(request).read()
+            return urllib.request.urlopen(request).read().decode("utf-8")
         except:
             return ""
 
     def getFilmInfo(self, url):
-        print "*** getFilmInfo"
+        print("*** getFilmInfo")
 
         response = common.fetchPage({"link": url})
         response_ = response
         url2 = url
 
         if response["status"] == 200:
-            movie = common.parseDOM(response["content"], "div", attrs={"class": "full_movie"})
+            content = response["content"].decode("cp1251")
+            movie = common.parseDOM(content, "div", attrs={"class": "full_movie"})
             values = common.parseDOM(movie, "param", ret="value")
             values = None
             links = []
+            list_links = {}
 
-            scripts = common.parseDOM(response['content'], 'script')
+            scripts = common.parseDOM(content, 'script')
 
             for script in scripts:
                 if('.mp4' in script):
                     link2 = script.split('file:"')[-1].split('",')[0]
                     content2 = common.fetchPage({"link": link2})
-                    links = links.append(content2["content"].split('"file":"')[-1].split('"}')[0])
+                    links = links.append(content2["content"].decode("cp1251").split('"file":"')[-1].split('"}')[0])
                 if('"pl":"' in script):
                     link2 = script.split('"pl":"')[-1].split('",')[0]
                     values = common.fetchPage({"link": link2})
 
             if not values and not links:
-                vp = common.parseDOM(response['content'], 'object', attrs={"id": "videoplayer1257"})
+                vp = common.parseDOM(response['content'].decode("cp1251"), 'object', attrs={"id": "videoplayer1257"})
                 if vp:
                     link2 = vp[0].split(';pl=')[-1].split('&')[0]
                     values = common.fetchPage({"link": link2})
@@ -267,14 +277,18 @@ class Kinoprosmotr():
                     try:
                         iframe = common.parseDOM(movie, "script", ret="src")[0]                    
                         response = common.fetchPage({"link": iframe})
-                        iframe = response['content'].split('"src", "')[-1].split('");')[0]
+                        iframe = response['content'].decode("cp1251").split('"src", "')[-1].split('");')[0]
                     except: 
                         pass
                 if iframe:
+                    
+                    ############################################################
                     manifest_links, subtitles, season, episode = host_manager.get_playlist(movie)
+                    ############################################################
+                    
                     if manifest_links:
-                        list = sorted(manifest_links.iteritems(), key=itemgetter(0))
-                        for quality, link in list:
+                        list_links = sorted(iter(manifest_links.items()), key=itemgetter(0))
+                        for quality, link in list_links:
                             links.append(link)
                     else:
 	                    link=iframe
@@ -283,17 +297,17 @@ class Kinoprosmotr():
 	                    host = "km396z9t3.xyz"
 	                    #iframe = urlparse.urlunsplit((linkparse.scheme, host, linkparse.path, '', ''))
 	                    #link = iframe + '?ref=' + self.domain
-	                    url2 = urllib.quote_plus(link)
+	                    url2 = urllib.parse.quote_plus(link)
 	                    headers = {
 	                       'Host': host,
 	                       'Referer': iframe,
 	                       'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
 	                    }
 	                    #try:  
-	                    request = urllib2.Request(link, "", headers)
+	                    request = urllib.request.Request(link, dict(""), headers)
 	                    request.get_method = lambda: 'GET'
-	                    response = urllib2.urlopen(request)
-	                    data = response.read()
+	                    response = urllib.request.urlopen(request)
+	                    data = response.read().decode("cp1251")
 	
 	                    #iframe = common.parseDOM(data, "iframe", ret="src")[0]
 	                    #request = urllib2.Request(iframe, "", headers)
@@ -327,39 +341,43 @@ class Kinoprosmotr():
 
             year = infos[2].split('</span>')[-1].split("(")[0].strip()
 
-            title = "%s (%s)" % (self.encode(common.parseDOM(infos[0], "h1")[0]), year)
-            genres = self.encode((', ').join(common.parseDOM(infos[4], "a")))
-            desc = common.stripTags(self.encode(description[0].split('<br>')[-1]))
+            title = "%s (%s)" % (common.parseDOM(infos[0], "h1")[0], year)
+            genres = (', ').join(common.parseDOM(infos[4], "a"))
+            desc = common.stripTags(description[0].split('<br>')[-1])
 
             if links:
                 self.log("This is a film")
                 for i, link in enumerate(links):   
                     uri = sys.argv[0] + '?mode=play&url=%s&url2=%s' % (link,url2)
-                    item = xbmcgui.ListItem("#%d. " % (i+1) + title,  iconImage=image)
-                    item.setInfo(type='Video', infoLabels={'title': "#%d. " % (i+1) + title, 'genre': genres, 'plot': desc, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
+                    quality = i+1
+                    if list_links:
+                        quality, link = list_links[i]
+                    title_ = "[COLOR=orange][#%d][/COLOR]  %s" % (quality, title)
+                    item = xbmcgui.ListItem(title_)
+                    item.setArt({ 'thumb': image, 'icon' : image })
+                    item.setInfo(type='Video', infoLabels={'title': title_, 'genre': genres, 'plot': desc, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0})
                     item.setProperty('IsPlayable', 'true')
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
                 xbmcplugin.setContent(self.handle, 'movies')
-
             else:
-                print "This is a season"
+                print("This is a season")
 
                 response = response_
 
                 if response["status"] == 200:
                     player = ""
                     try:
-                        player = common.parseDOM(response["content"], "object", attrs={"type": "application/x-shockwave-flash"})[0]
+                        player = common.parseDOM(response["content"].decode("utf-8"), "object", attrs={"type": "application/x-shockwave-flash"})[0]
                     except:
                         pass
                     pl_url = player.split("pl=")[-1].split("&")[0]
                     response = common.fetchPage({"link": pl_url})
 
-                    response = eval(response["content"])
+                    response = eval(response["content"].decode("utf-8"))
 
                     if 'playlist' in response['playlist'][0]:
-                        print "This is a season multiple seasons"
+                        print("This is a season multiple seasons")
 
                         for season in response['playlist']:
                             episods = season['playlist']
@@ -367,7 +385,8 @@ class Kinoprosmotr():
                             for episode in episods:
                                 etitle = "%s (%s)" % (episode['comment'], common.stripTags(season['comment']))
                                 uri = sys.argv[0] + '?mode=play&url=%s&url2=%s' % (episode['file'], url2)
-                                item = xbmcgui.ListItem(etitle, iconImage=image)
+                                item = xbmcgui.ListItem(etitle)
+                                item.setArt({ 'thumb': image, 'icon' : image })
                                 info = {
                                     'title': title,
                                     'genre': genres,
@@ -380,13 +399,14 @@ class Kinoprosmotr():
                                 item.setProperty('IsPlayable', 'true')
                                 xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
                     else:
-                        print "This is one season"
+                        print("This is one season")
                         for episode in response['playlist']:
                             etitle = episode['comment']
                             url_ = episode['file']
 
                             uri = sys.argv[0] + '?mode=play&url=%s&url2=%s' % (url_,url2)
-                            item = xbmcgui.ListItem(etitle, iconImage=image)
+                            item = xbmcgui.ListItem(etitle)
+                            item.setArt({ 'thumb': image, 'icon' : image })
                             info = {
                                 'title': title,
                                 'genre': genres,
@@ -409,23 +429,24 @@ class Kinoprosmotr():
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def listGenres(self, url):
-        print "list genres"
+        print("list genres")
         response = common.fetchPage({"link": url})
-        genres = common.parseDOM(response["content"], "div", attrs={"class": "genres"})
+        genres = common.parseDOM(response["content"].decode("cp1251"), "div", attrs={"class": "genres"})
 
         titles = common.parseDOM(genres, "a")
         links = common.parseDOM(genres, "a", ret="href")
 
         for i, title in enumerate(titles):
             uri = sys.argv[0] + '?mode=category&url=%s' % self.url + links[i]
-            item = xbmcgui.ListItem(self.encode(title), iconImage=self.icon)
+            item = xbmcgui.ListItem(title)
+            item.setArt({ 'thumb': self.icon, 'icon' : self.icon })
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def playItem(self, url, url2):
-        print "*** play url %s" % url
+        print("*** play url %s" % url)
         item = xbmcgui.ListItem(path=url + "|Referer="+url2)
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
@@ -433,7 +454,8 @@ class Kinoprosmotr():
         words = history.get_history()
         for word in reversed(words):
             uri = sys.argv[0] + '?mode=%s&keyword=%s&main=1' % ("search", word)
-            item = xbmcgui.ListItem(word, iconImage=self.icon, thumbnailImage=self.icon)
+            item = xbmcgui.ListItem(word)
+            item.setArt({ 'thumb': self.icon, 'icon' : self.icon })
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.endOfDirectory(self.handle, True)
@@ -456,7 +478,7 @@ class Kinoprosmotr():
         return keyword
 
     def search(self, keyword, external):
-        keyword = urllib.unquote_plus(keyword) if (external != None) else self.getUserInput()
+        keyword = urllib.parse.unquote_plus(keyword) if (external != None) else self.getUserInput()
 
         if keyword:
             #url =  self.url + '/index.php?do=search'
@@ -478,7 +500,7 @@ class Kinoprosmotr():
                 "searchuser": "",
                 "showposts": "0",
                 "sortby": "date",
-                "story": self.decode(keyword),
+                "story": keyword.encode("cp1251"),
                 "subaction": "search",
                 "titleonly": "3"
             }
@@ -488,11 +510,11 @@ class Kinoprosmotr():
                 "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64; rv:25.0) Gecko/20100101 Firefox/25.0"
             }
 
-            data = urllib.urlencode(values)
-            request = urllib2.Request(url, data, headers)
-            response = urllib2.urlopen(request)
+            data = urllib.parse.urlencode(values).encode("utf-8")
+            request = urllib.request.Request(url, data, headers)
+            response = urllib.request.urlopen(request)
 
-            containers = common.parseDOM(response.read(), "div", attrs={"class": "search_item clearfix"})
+            containers = common.parseDOM(response.read().decode("cp1251"), "div", attrs={"class": "search_item clearfix"})
             search_item_prev = common.parseDOM(containers, "div", attrs={"class": "search_item_prev"})
             search_item_inner = common.parseDOM(containers, "div", attrs={"class": "search_item_inner"})
 
@@ -507,11 +529,12 @@ class Kinoprosmotr():
 
             for i, title in enumerate(titles):
                 image = self.url + images[i]
-                genres = self.encode(', '.join(common.parseDOM(gcont[i], "a")))
-                desc = self.encode(common.stripTags(descriptions[i]))
+                genres = ', '.join(common.parseDOM(gcont[i], "a"))
+                desc = common.stripTags(descriptions[i])
                 uri = sys.argv[0] + '?mode=show&url=%s' % links[i]
-                item = xbmcgui.ListItem(self.encode(title), iconImage=self.icon, thumbnailImage=image)
-                item.setInfo(type='Video', infoLabels={'title': self.encode(title), 'genre': genres, 'plot': desc})
+                item = xbmcgui.ListItem(title)
+                item.setArt({ 'thumb': image, 'icon' : image })
+                item.setInfo(type='Video', infoLabels={'title': title, 'genre': genres, 'plot': desc})
 
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
@@ -523,20 +546,20 @@ class Kinoprosmotr():
     # *** Add-on helpers
     def log(self, message):
         if self.debug:
-            print "### %s: %s" % (self.id, message)
+            print("### %s: %s" % (self.id, message))
 
     def error(self, message):
-        print "%s ERROR: %s" % (self.id, message)
+        print("%s ERROR: %s" % (self.id, message))
 
     def showErrorMessage(self, msg):
-        print msg
+        print(msg)
         xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("ERROR", msg, str(10 * 1000)))
 
     def encode(self, string):
-        return string.decode('cp1251').encode('utf-8')
+        return string.encode('utf-8')
 
     def decode(self, string):
-        return string.decode('utf-8').encode('cp1251')
+        return string.decode('utf-8')
 
 class URLParser():
     def parse(self, string):

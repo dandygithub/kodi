@@ -1,0 +1,59 @@
+# Kodi Media Center language file
+# Addon Name: Kinokong
+# Addon id: plugin.video.kinokong.net
+# Addon Provider: dandy
+
+msgid ""
+msgstr ""
+
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ru\n"
+
+msgctxt "#1000"
+msgid "Genres"
+msgstr "Жанры кино"
+
+msgctxt "#1001"
+msgid "TV Shows"
+msgstr "Сериалы"
+
+msgctxt "#1002"
+msgid "Animations"
+msgstr "Мультфильмы"
+
+msgctxt "#2000"
+msgid "Search"
+msgstr "Поиск"
+
+msgctxt "#2001"
+msgid "Unfortunately, site search haven't return any results."
+msgstr "К сожалению, поиск по сайту не дал никаких результатов."
+
+msgctxt "#2002"
+msgid "Search history"
+msgstr "История поиска"
+
+msgctxt "#2003"
+msgid "Next page ..."
+msgstr "Следующая страница ..."
+
+msgctxt "#5000"
+msgid "Season"
+msgstr "Сезон"
+
+msgctxt "#5001"
+msgid "Episode"
+msgstr "Серия"
+
+msgctxt "#5002"
+msgid "Watch online"
+msgstr "Смотреть онлайн"
+
+msgctxt "#5003"
+msgid "Online"
+msgstr "Онлайн"
+
+msgctxt "#5004"
+msgid "TV Show"
+msgstr "Сериал"
