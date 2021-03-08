@@ -16,7 +16,7 @@ def main():
     if title:
         title = title.split('[')[0].split('(')[0].split('/')[0].strip()
         history.add_to_history(title) 
-        xbmcgui.Dialog().ok("", "", "Item [" + title + "] add to history")
+        xbmcgui.Dialog().ok("",  "Item [" + title + "] add to history")
 
 if __name__ == '__main__':
     main()

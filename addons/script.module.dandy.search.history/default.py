@@ -14,7 +14,7 @@ ID = 'script.module.dandy.search.history'
 ADDON = xbmcaddon.Addon(ID)
 
 def main():
-    if (xbmcgui.Dialog().yesno("", "", "Clean search history?") == True):
+    if (xbmcgui.Dialog().yesno("", "Clean search history?") == True):
         history.clean()
 
 if __name__ == '__main__':

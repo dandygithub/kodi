@@ -56,7 +56,7 @@ def search_by_us(keyword):
     #xbmc.executebuiltin("Container.Update(%s)" % uricmd)
 
 def delete_item(keyword):
-    if (xbmcgui.Dialog().yesno("", "", "Delete item from history?") == True):
+    if (xbmcgui.Dialog().yesno("", "Delete item from history?") == True):
         words = history.delete_from_history(keyword)
         xbmc.executebuiltin("Container.Update(%s)" % sys.argv[0])
 

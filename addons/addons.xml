@@ -364,7 +364,7 @@
   </extension>
 </addon>
 
-<addon id="script.module.dandy.search.history" name="Search History" version="3.0.1" provider-name="dandy">
+<addon id="script.module.dandy.search.history" name="Search History" version="3.0.2" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>
     <import addon="script.module.xbmc.helpers" version="3.0.0"/>
