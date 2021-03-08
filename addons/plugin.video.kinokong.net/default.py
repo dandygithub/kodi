@@ -417,7 +417,7 @@ class Kinokong():
 
             # Send request to server
             request = urllib.request.Request(url, urllib.parse.urlencode(values).encode("utf-8"), headers)
-            response = urllib.request.urlopen(request).read().decode("utf-8")
+            response = urllib.request.urlopen(request).read().decode("cp1251")
 
             content = common.parseDOM(response, "div", attrs={"id": "container"})
             items = common.parseDOM(content, "div", attrs={"class": "item"})
