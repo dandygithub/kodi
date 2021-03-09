@@ -5,3 +5,6 @@ build-xml:
 
 build-zip:
 	python scripts/release.py -a ${ADDONS_PATH} -z ${ADDONS_PATH}/zip
+
+update-readme:
+	sh scripts/update_readme.sh ${ADDONS_PATH}/zip/ > README.md
