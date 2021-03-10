@@ -382,7 +382,7 @@ def fetchPage(params={}):
         else:
             log("Posting data: " + urllib.parse.urlencode(get("post_data")), 2)
 
-        request = urllib.request.Request(link, urllib.parse.urlencode(get("post_data")))
+        request = urllib.request.Request(link, urllib.parse.urlencode(get("post_data")).encode("utf-8"))
         request.add_header('Content-Type', 'application/x-www-form-urlencoded')
     else:
         log("Got request", 2)

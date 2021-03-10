@@ -1,0 +1,47 @@
+# Kodi Media Center language file
+# Addon Name: Kinokong
+# Addon id: plugin.video.kinokong.net
+# Addon Provider: dandy
+
+msgid ""
+msgstr ""
+
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ru\n"
+
+msgctxt "#1000"
+msgid "Search"
+msgstr "Поиск"
+
+msgctxt "#1001"
+msgid "Alphabetical"
+msgstr "Исполнители по алфавиту"
+
+msgctxt "#2000"
+msgid "Next page (%s) >>>"
+msgstr "Следующая страница (%s) >>>"
+
+msgctxt "#2001"
+msgid "To begin >>>"
+msgstr "В начало >>>"
+
+msgctxt "#3000"
+msgid "Akkords"
+msgstr "Аккорды"
+
+msgctxt "#3001"
+msgid "Video"
+msgstr "Видео"
+
+msgctxt "#3002"
+msgid "Akkords applications"
+msgstr "Аппликатуры аккордов"
+
+msgctxt "#3003"
+msgid "Tone"
+msgstr "Тональность"
+
+msgctxt "#4000"
+msgid "Not found"
+msgstr "Не найдено видеоматериалов или ошибка при воспроизведении"

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes'?>
-<addon id='script.module.xbmc.helpers' version='3.0.0' name='Xbmc helpers module based on Parsedom module' provider-name='mrstealth, dandy'>
+<addon id='script.module.xbmc.helpers' version='3.0.1' name='Xbmc helpers module based on Parsedom module' provider-name='mrstealth, dandy'>
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
   </requires>
@@ -7,6 +7,9 @@
   <extension point='xbmc.addon.metadata'>
     <platform>all</platform>
     <summary lang='en'>XbmcHelpers based on Parsedom module.</summary>
+    <assets>
+        <icon>icon.png</icon>
+    </assets>
   </extension>
   <extension point='xbmc.python.module' library='lib' />
 </addon>
