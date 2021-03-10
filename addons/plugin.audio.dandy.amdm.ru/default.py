@@ -163,7 +163,7 @@ class AmDm():
                 sub = tds[i]
                 numbers = common.parseDOM(items[i], "td", attrs={"class": "number"})
                 item_ = xbmcgui.ListItem(self.strip("[COLOR=lightgreen]%s[/COLOR]%s [COLOR=lightblue][%s][/COLOR]" % (labels[i], " - [I]" + sub.split("<br>")[-1] + "[/I]" if "<br>" in sub else "", numbers[0])))
-                item.setArt({ 'thumb': photo, 'icon' : photo })
+                item_.setArt({ 'thumb': photo, 'icon' : photo })
                 xbmcplugin.addDirectoryItem(self.handle, uri, item_, True)
 
         xbmcplugin.setContent(self.handle, 'files')
