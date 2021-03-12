@@ -1,4 +1,7 @@
 0.1.2
+[new] Новая версия для Kodi 19 Matrix
+
+0.1.2
 [fix] Пустой раздел "Новые релизы" http://xbmc.ru/forum/showpost.php?p=145045&postcount=17
 
 0.1.1
