@@ -1,7 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <category label="Default">
-        <setting id="login" type="text" label="Login" default="" />
-        <setting id="password" type="text" label="Password" option="hidden" default="" />
+    <category label="Passport">
+        <setting id="login" type="text" label="Логин" default="" />
+        <setting id="password" type="text" label="Пароль" option="hidden" default="" />
+        <setting type="sep"/>
+        <setting label="[B]Войти[/B]" type="action" action="RunPlugin(plugin://$ID?mode=auth&amp;forced=true)" option="close"/>
     </category>
 </settings>
