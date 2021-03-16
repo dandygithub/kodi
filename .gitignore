@@ -4,3 +4,6 @@
 # temp
 .DS_Store
 Thumbs.db
+
+#python
+__pycache__

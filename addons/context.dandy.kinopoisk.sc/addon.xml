@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="context.dandy.kinopoisk.sc" name="Kinopoisk Search Content" version="3.0.1" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>

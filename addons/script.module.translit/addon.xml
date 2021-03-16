@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+﻿<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
 <addon id='script.module.translit' version='3.0.0' name='Translit for xbmc plugins' provider-name='mrstealth, dandy'>
   <requires>
     <import addon="xbmc.python" version="3.0.0" />

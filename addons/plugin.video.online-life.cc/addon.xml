@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.online-life.cc" name="Online-life.cc" version="1.3.2" provider-name="MrStealth, dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>

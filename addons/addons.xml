@@ -150,7 +150,7 @@
   </extension>
   <extension point= "xbmc.addon.metadata">
     <summary>Яндекс Музыка</summary>
-    <description>Яндекс.Музыка — стриминговый сервис компании «Яндекс», позволяющий прослушивать музыкальные композиции, альбомы, подборки музыкальных треков и получать персональные рекомендации. Также существуют приложения для iOS, Android, Windows и Windows Phone. Без подписки сервис доступен пользователям из следующих стран: Азербайджан, Армения, Беларусь, Грузия, Израиль, Казахстан, Кыргызстан, Молдова, Россия, Таджикистан, Туркменистан, Узбекистан.</description>
+    <description>Яндекс.Музыка — стриминговый сервис компании «Яндекс», позволяющий прослушивать музыкальные композиции, альбомы, подборки музыкальных треков и получать персональные рекомендации. Также существуют приложения для iOS, Android, Windows и Windows Phone.</description>
     <description>For personal use only</description>
     <platform>all</platform>
     <assets>
@@ -234,7 +234,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.kinokong.net" name="Kinokong.net" version="2.0.1" provider-name="MrStealth, dandy">
+<addon id="plugin.video.kinokong.net" name="Kinokong.net" version="2.0.2" provider-name="MrStealth, dandy">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>
     <import addon="script.module.xbmc.helpers" version="3.0.0"/>
@@ -357,7 +357,7 @@
     <disclaimer lang="en"></disclaimer>
     <language></language>
     <license>GNU GPL v.3</license>
-  </extension>
+  </extension>  
 </addon>
 
 <addon id="script.dandy.strm.marker" name="STRM Marker" version="1.0.1" provider-name="dandy">
@@ -375,7 +375,7 @@
     <disclaimer lang="en"></disclaimer>
     <language></language>
     <license>GNU GPL v.3</license>
-  </extension>
+  </extension>  
 </addon>
 
 <addon id="script.module.dandy.search.history" name="Search History" version="3.0.2" provider-name="dandy">
