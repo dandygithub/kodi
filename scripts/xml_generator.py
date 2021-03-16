@@ -53,4 +53,4 @@ if __name__ == "__main__":
     save_file(args.xml_file, xml_body)
     logging.info('%s created success', args.xml_file)
     generate_md5(args.xml_file)
-    logging.info('md5 file: %s created success')
+    logging.info('md5 file for %s created success', args.xml_file)

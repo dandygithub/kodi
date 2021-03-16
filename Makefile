@@ -1,12 +1,13 @@
 ADDONS_PATH=addons
 INTERPRETER=python
+WHERE=which
 
-ifeq ($(OS),Windows NT)
-	INTERPRETER += .exe
+ifeq ($(OS),Windows_NT)
+	WHERE=where
 endif
 
 test:
-	echo ${INTERPRETER}
+	@${WHERE} ${INTERPRETER}
 
 ## build-xml: Create addons.xml repo file
 build-xml:
@@ -27,9 +28,11 @@ update-readme:
 release: build-xml build-zip
 
 ## help: Show this message and exit
+ifneq ($(OS),Windows_NT)
 help: Makefile
 	@echo
 	@echo " Choose a command run in kodi addons repo:"
 	@echo
 	@sed -n 's/^##//p' $< | column -t -s ':' |  sed -e 's/^/ /'
 	@echo
+endif		
