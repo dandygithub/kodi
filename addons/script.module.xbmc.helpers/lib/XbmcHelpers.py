@@ -421,7 +421,7 @@ def fetchPage(params={}):
     except urllib.error.HTTPError as e:
         err = str(e)
         log("HTTPError : " + err)
-        log("HTTPError - Headers: " + str(e.headers) + " - Content: " + e.fp.read())
+        log("HTTPError - Headers: " + str(e.headers) + " - Content: " + e.fp.read().decode())
 
         params["error"] = str(int(get("error", "0")) + 1)
         ret = fetchPage(params)

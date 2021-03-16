@@ -1,0 +1,135 @@
+# Kodi Media Center language file
+# Addon Name: iPlayer
+# Addon id: plugin.audio.iplayer.fm
+# Addon Provider: dandy
+
+msgid ""
+msgstr ""
+
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ru\n"
+
+msgctxt "#1000"
+msgid "Search"
+msgstr "Поиск"
+
+msgctxt "#1001"
+msgid "Tune search"
+msgstr "Настройки поиска"
+
+msgctxt "#1002"
+msgid "Unfortunately, site search haven't return any results."
+msgstr "К сожалению, поиск по сайту не дал никаких результатов."
+
+msgctxt "#1003"
+msgid "Use translit"
+msgstr "Использовать транслитерацию при поиске"
+
+msgctxt "#2000"
+msgid "Playlists"
+msgstr "Плейлисты"
+
+msgctxt "#2001"
+msgid "Unfortunately, site search haven't return any results."
+msgstr "К сожалению, поиск по сайту не дал никаких результатов."
+
+msgctxt "#3000"
+msgid "Online"
+msgstr "Онлайн радиостанции"
+
+msgctxt "#3001"
+msgid "Charts (Moscow)"
+msgstr "Чарты радиостанций (Москва)"
+
+msgctxt "#3002"
+msgid "Charts (SP)"
+msgstr "Чарты радиостанций Санкт-Петербург)"
+
+msgctxt "#4000"
+msgid "Charts"
+msgstr "Чарты"
+
+msgctxt "#4001"
+msgid "Russian chart"
+msgstr "Русский чарт"
+
+msgctxt "#4002"
+msgid "Global chart"
+msgstr "Всемирный чарт"
+
+msgctxt "#4003"
+msgid "Genres"
+msgstr "Жанры"
+
+msgctxt "#4004"
+msgid "Random"
+msgstr "Случайный плейлист"
+
+msgctxt "#5000"
+msgid "Artists"
+msgstr "Исполнители"
+
+msgctxt "#5001"
+msgid "Russian artists"
+msgstr "Русские исполнители"
+
+msgctxt "#5002"
+msgid "Forign artists"
+msgstr "Зарубежные исполнители"
+
+msgctxt "#6000"
+msgid "Alphabet"
+msgstr "Алфавит"
+
+msgctxt "#7000"
+msgid "Auth"
+msgstr "Аутентификация"
+
+msgctxt "#7001"
+msgid "Login"
+msgstr "Логин"
+
+msgctxt "#7002"
+msgid "Password"
+msgstr "Пароль"
+
+msgctxt "#7003"
+msgid "Check auth"
+msgstr "Проверьте ваш логин и пароль в настройках дополнения"
+
+msgctxt "#8000"
+msgid "Download"
+msgstr "Скачивание файлов"
+
+msgctxt "#8001"
+msgid "Download MP3"
+msgstr "Скачать MP3"
+
+msgctxt "#8002"
+msgid "Downloading... Wait."
+msgstr "Скачивание файла, пожалуйста подождите ..."
+
+msgctxt "#8003"
+msgid "Downloads folder"
+msgstr "Папка загрузки"
+
+msgctxt "#9000"
+msgid "Other params"
+msgstr "Прочие настройки"
+
+msgctxt "#9001"
+msgid "On check avail"
+msgstr "Включить проверку доступности потоков"
+
+msgctxt "#9002"
+msgid "Interval check avail (hour)"
+msgstr "Интервал проверки доступности потоков (час)"
+
+msgctxt "#10000"
+msgid "Next page ..."
+msgstr "Следующая страница ..."
+
+msgctxt "#11000"
+msgid "General"
+msgstr "Общие"

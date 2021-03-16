@@ -1,11 +1,13 @@
 <settings>
-    <setting id="username" type="text" label="7001" default=""/>
-    <setting id="password" type="text" label="7002" option="hidden"  enable="!eq(-1,)" default=""/>
-    <setting type="sep"/>
-    <setting id="folder" type="folder" label="8003" default="None" />
-    <setting type="sep"/>
-    <setting id="translit" type="bool" label="1003" default="false" />
-    <setting type="sep"/>
-    <setting id="availability_check" type="bool" label="9001" default="false" />
-    <setting id="interval" type="number" label="9002" default="48" />
+    <category label="11000">
+      <setting id="username" type="text" label="7001" default=""/>
+      <setting id="password" type="text" label="7002" option="hidden"  enable="!eq(-1,)" default=""/>
+      <setting type="sep"/>
+      <setting id="folder" type="folder" label="8003" default="None" />
+      <setting type="sep"/>
+      <setting id="translit" type="bool" label="1003" default="false" />
+      <setting type="sep"/>
+      <setting id="availability_check" type="bool" label="9001" default="false" />
+      <setting id="interval" type="number" label="9002" default="48" />
+    </category> 
 </settings>

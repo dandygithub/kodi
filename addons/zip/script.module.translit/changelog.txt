@@ -1,4 +1,4 @@
-[B]Version 2.1.0[/B]
+﻿[B]Version 2.1.0[/B]
 - Update plugin
 
 [B]Version 1.0.3[/B]
