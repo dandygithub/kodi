@@ -8,6 +8,8 @@ endif
 
 test:
 	@${WHERE} ${INTERPRETER}
+	@${INTERPRETER} --version
+	
 
 ## build-xml: Create addons.xml repo file
 build-xml:
@@ -25,6 +27,7 @@ build-zip-spec:
 update-readme:
 	${INTERPRETER} scripts/readme_updater.py -d ${ADDONS_PATH} -z ${ADDONS_PATH}/zip -m README.md
 
+## release: build-xml + build-zip
 release: build-xml build-zip
 
 ## help: Show this message and exit
