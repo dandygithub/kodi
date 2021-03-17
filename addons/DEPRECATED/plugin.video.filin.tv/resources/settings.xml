@@ -1,9 +1,0 @@
-<settings>
-  <setting id="translit" type="bool" label="Translit" default="false"/>
-  <setting type="bool" id="united_search" visible="false" default="true" />
-  <setting type="text" id="us_command" visible="false" default="mode=search&keyword=" />
-  <setting type="sep"/>
-  <setting label=6001 type="labelenum" id="seasonsViewMode" values="List|Big List|Media Info|Media Info 2|Fanart|Fanart 2" default="Media Info"/>
-  <setting label=6002 type="labelenum" id="episodsViewMode" values="List|Big List|Media Info|Media Info 2|Fanart|Fanart 2" default="Big List"/>
-  <setting label=7000 type="bool" id="quality" default="true"/>
-</settings>
