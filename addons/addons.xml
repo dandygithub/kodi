@@ -342,11 +342,11 @@
 	</extension>
 </addon>
 
-<addon id="script.dandy.domain.manager" name="Domain Manager" version="1.0.2" provider-name="dandy">
+<addon id="script.dandy.domain.manager" name="Domain Manager" version="2.0.0" provider-name="dandy">
   <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.simplejson" version="3.3.0"/>
-    <import addon="script.module.xbmc.helpers" version="2.1.0"/>
+    <import addon="xbmc.python" version="3.0.0"/>
+    <import addon="script.module.simplejson" version="3.17.0"/>
+    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
   </requires>
   <extension point="xbmc.python.script" library="default.py">
     <provides>executable</provides>
@@ -361,13 +361,16 @@
     <disclaimer lang="en"></disclaimer>
     <language></language>
     <license>GNU GPL v.3</license>
+    <assets>
+        <icon>icon.png</icon>
+    </assets>
   </extension>  
 </addon>
 
-<addon id="script.dandy.strm.marker" name="STRM Marker" version="1.0.1" provider-name="dandy">
+<addon id="script.dandy.strm.marker" name="STRM Marker" version="2.0.0" provider-name="dandy">
   <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.simplejson" version="3.3.0"/>
+    <import addon="xbmc.python" version="3.0.0"/>
+    <import addon="script.module.simplejson" version="3.17.0"/>
   </requires>
   <extension point="xbmc.python.script" library="default.py">
   	<provides>executable</provides>
@@ -379,6 +382,9 @@
     <disclaimer lang="en"></disclaimer>
     <language></language>
     <license>GNU GPL v.3</license>
+    <assets>
+        <icon>icon.png</icon>
+    </assets>
   </extension>  
 </addon>
 

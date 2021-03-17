@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# Writer (c) 2018, dandy
-# Rev. 1.0.0
+# Writer (c) 2018-2021, dandy
 # Licence: GPL v.3: http://www.gnu.org/copyleft/gpl.html
 
 import xbmc
@@ -34,7 +33,6 @@ def jsonrpc(method, params):
     request = REQUEST
     request['method'] = method
     request['params'] = params
-#    xbmc.log("req=" + json.dumps(request))
     response = xbmc.executeJSONRPC(json.dumps(request))
     j = json.loads(response)
     return j.get('result')
@@ -126,7 +124,7 @@ def mark_movies():
             modify += 1
 
         result_string = "{0}: {1}".format("Mark results", modify)
-        progress.update(100 * i / total, line2=movie.get("title"), line3=result_string)
+        progress.update(int((100 * i )/ total), movie.get("title"))
 
 #        time.sleep(0.1)
     progress.close()

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# Writer (c) 2019, dandy
-# Rev. 1.0.0
+# Writer (c) 2019-2021, dandy
 # Licence: GPL v.3: http://www.gnu.org/licenses/gpl-3.0.html
 
 import xbmc
@@ -69,8 +68,9 @@ def menu():
         setting, domain, protocol, protocol_value = find_domain_setting(addon_object)
         if setting:
             uri = sys.argv[0] + '?mode=%s&addon=%s' % ("edit", addon['addonid'])
-            title = "{0} [COLOR=orange][{1}][/COLOR]".format(addon.get("name").encode("utf8"), addon.get("addonid"))
-            item = xbmcgui.ListItem(title, iconImage=ICON, thumbnailImage=ICON)
+            title = "{0} [COLOR=orange][{1}][/COLOR]".format(addon.get("name"), addon.get("addonid"))
+            item = xbmcgui.ListItem(title)
+            item.setArt({ 'thumb': ICON, 'icon' : ICON })
             item.setInfo(type='Video', infoLabels={'title': title, 'genre': domain, 'plot': domain})
             xbmcplugin.addDirectoryItem(HANDLE, uri, item, False)
     xbmcplugin.setContent(HANDLE, 'addon')
