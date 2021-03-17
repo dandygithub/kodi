@@ -84,7 +84,7 @@ if __name__ == '__main__':
         addon_id, addon_name, addon_version = get_addon_attributes(target)
         release_path = os.path.join(args.zip_path, addon_id)
         prepare_release_folder(target, release_path)
-        addon_zip_path = os.path.join(release_path, f'{addon_id}-{addon_version}.zip')
+        addon_zip_path = os.path.join(release_path, '{}-{}.zip'.format(addon_id, addon_version))
         if not args.force and os.path.exists(addon_zip_path):
             logging.debug('zip file: %s exist, continue', addon_zip_path)
             continue
