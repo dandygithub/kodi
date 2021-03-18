@@ -51,7 +51,7 @@ def generate(addons_mapper, zip_path):
         }
         icon_path = os.path.join(folder_name, 'icon.png')
         if os.path.exists(icon_path):
-            addon['icon'] = icon_path + '?raw=true'
+            addon['icon'] = icon_path.replace('\\', '/') + '?raw=true'
 
         releases = []
         for filename in filenames:
@@ -63,7 +63,7 @@ def generate(addons_mapper, zip_path):
         for release in releases:
             md5_file = release + '.md5'
             if os.path.exists(md5_file):
-                addon['r_zip'] = release + '?raw=true'
+                addon['r_zip'] = release.replace('\\', '/') + '?raw=true'
                 addon['r_name'] = release.split('-')[-1].replace(".zip", '')
                 addon['r_md5'] = read_file(md5_file)
                 break
@@ -86,6 +86,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     storage = get_addons_info(args.addons_path)
-    with open(args.md_file, 'w') as file:
+    with open(args.md_file, 'w', encoding='utf-8') as file:
         for line in generate(storage, args.zip_path):
             file.write(line + '\n')
