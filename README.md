@@ -19,8 +19,11 @@
  4. **Push** your work back up to your fork
  5. Submit a **Pull request** so that we can review your changes
 
-## Makefile commands
+## Makefile commands (*)
 - `make build-xml` Create addons.xml repo file
 - `make build-zip` Create zip files when source version was changed
 - `make build-zip-spec` Create single zip file or overwrite without md5
 - `make update-readme` Update README.md
+
+---
+(*) _for **Matrix** branch only_
