@@ -1,0 +1,35 @@
+# Kodi Media Center language file
+# Addon Name: My favorites
+# Addon id: script.module.favorites
+# Addon Provider: dandy
+
+msgid ""
+msgstr ""
+
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ru\n"
+
+msgctxt "#1000"
+msgid "My favorites"
+msgstr "Мои фавориты"
+
+msgctxt "#1001"
+msgid "Add to"
+msgstr "Добавить в 'Мои фавориты'"
+
+msgctxt "#1002"
+msgid "Delete from"
+msgstr "Удалить из 'Мои фавориты'"
+
+msgctxt "#1003"
+msgid "Add confirm"
+msgstr "Успешно добавлен в список фаворитов"
+
+msgctxt "#1004"
+msgid "Delete confirm"
+msgstr "Успешно удалён из списка фаворитов"
+
+msgctxt "#1005"
+msgid "Empty list"
+msgstr "Список фаворитов пуст"

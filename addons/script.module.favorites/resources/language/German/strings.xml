@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<strings>
-    <string id="1000">[B]Meine Favoriten[/B]</string>
-    <string id="1001">Zu 'Meine Favoriten' hinzufügen</string>
-    <string id="1002">Aus 'Meine Favoriten' löschen</string>
-    <string id="1003">Zu 'Meine Favoriten' hinzugefügt</string>
-    <string id="1004">Aus 'Meine Favoriten' gelöscht</string>
-    <string id="1005">Leer ...</string>
-</strings>
