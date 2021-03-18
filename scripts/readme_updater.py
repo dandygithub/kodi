@@ -1,9 +1,15 @@
 import os
 import argparse
 from release import search_addons, get_addon_attributes
+import logging
+
+logging.basicConfig(
+    level=logging.INFO
+)
 
 HEADER = "# Dandy's KODI Addons Project"
 
+IGNORE_ADDON_IDS=("script.module.dandy.search.history", "script.module.favorites", "script.module.translit", "script.module.videohosts", "script.module.xbmc.helpers")
 
 def get_addons_info(addons_path):
     mapper = {}
@@ -25,12 +31,17 @@ def generate(addons_mapper, zip_path):
     lines = [
         HEADER,
         "### Addons",
-        "|icon|name|id|latest|md5sum|",
+        "|Icon|Name|Id|Latest version|MD5|",
         "|---|---|---|---|---|"
     ]
     for folder_name, sub_folders, filenames in os.walk(zip_path):
         addon_id = os.path.basename(folder_name)
+
+        if addon_id in IGNORE_ADDON_IDS:
+            continue
+
         addon_properties = addons_mapper.get(addon_id)
+
         if not addon_properties:
             continue
 
@@ -53,9 +64,11 @@ def generate(addons_mapper, zip_path):
             md5_file = release + '.md5'
             if os.path.exists(md5_file):
                 addon['r_zip'] = release + '?raw=true'
-                addon['r_name'] = release.split('-')[-1]
+                addon['r_name'] = release.split('-')[-1].replace(".zip", '')
                 addon['r_md5'] = read_file(md5_file)
                 break
+
+        logging.info('add %s, version %s', addon['id'], addon['r_name'])
 
         lines.append(
             f"|![]({addon['icon']})|{addon['name']}|{addon['id']}|[{addon['r_name']}]({addon['r_zip']})|`{addon['r_md5']}`|"
