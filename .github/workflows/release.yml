@@ -17,3 +17,7 @@ jobs:
 
       - name: Get python's version
         run: python3 --version
+
+      - name: Get make's version
+        run: make --version
+        
