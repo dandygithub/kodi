@@ -14,10 +14,11 @@ IGNORE_ADDON_IDS=("script.module.dandy.search.history", "script.module.favorites
 def get_addons_info(addons_path):
     mapper = {}
     for addon_path in search_addons(addons_path):
-        _id, name, version = get_addon_attributes(addon_path)
+        _id, name, version, description = get_addon_attributes(addon_path)
         mapper[_id] = {
             'name': name,
             'version': version,
+            'description': description
         }
     return mapper
 
@@ -31,8 +32,8 @@ def generate(addons_mapper, zip_path):
     lines = [
         HEADER,
         "### Addons",
-        "|Icon|Name|Id|Latest version|MD5|",
-        "|---|---|---|---|---|"
+        "|Icon|Name|Id|Description|Latest version|MD5|",
+        "|---|---|---|---|---|---|"
     ]
     for folder_name, sub_folders, filenames in os.walk(zip_path):
         addon_id = os.path.basename(folder_name)
@@ -48,6 +49,7 @@ def generate(addons_mapper, zip_path):
         addon = {
             'name': addon_properties['name'],
             'id': addon_id,
+            'description': addon_properties['description']
         }
         icon_path = os.path.join(folder_name, 'icon.png')
         if os.path.exists(icon_path):
@@ -71,7 +73,7 @@ def generate(addons_mapper, zip_path):
         logging.info('add %s, version %s', addon['id'], addon['r_name'])
 
         lines.append(
-            f"|![]({addon['icon']})|{addon['name']}|{addon['id']}|[{addon['r_name']}]({addon['r_zip']})|`{addon['r_md5']}`|"
+            f"|![]({addon['icon']})|{addon['name']}|{addon['id']}|{addon['description']}|[{addon['r_name']}]({addon['r_zip']})|`{addon['r_md5']}`|"
         )
     return lines
 

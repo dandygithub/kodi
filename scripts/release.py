@@ -36,7 +36,12 @@ def search_addons(path):
 
 def get_addon_attributes(src_path):
     addon = ElementTree.parse(os.path.join(src_path, 'addon.xml')).getroot()
-    return addon.attrib["id"], addon.attrib["name"], addon.attrib["version"]
+    description = ''
+    for extension in addon.iter('extension'):
+        item = extension.find('summary')
+        if item != None:
+            description = item.text
+    return addon.attrib["id"], addon.attrib["name"], addon.attrib["version"], description
 
 
 def prepare_release_folder(src_addon, dst_path):
@@ -81,7 +86,7 @@ if __name__ == '__main__':
         target_addons.append(args.addon)
 
     for target in target_addons:
-        addon_id, addon_name, addon_version = get_addon_attributes(target)
+        addon_id, addon_name, addon_version, addon_description = get_addon_attributes(target)
         release_path = os.path.join(args.zip_path, addon_id)
         prepare_release_folder(target, release_path)
         addon_zip_path = os.path.join(release_path, '{}-{}.zip'.format(addon_id, addon_version))
