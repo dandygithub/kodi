@@ -1,0 +1,19 @@
+# Run scripts by release
+
+name: Release
+
+on:
+  push:
+    branches: [ matrix ]
+
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get python's version
+        run: python3 --version
