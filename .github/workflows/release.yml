@@ -21,3 +21,6 @@ jobs:
       - name: Get make's version
         run: make --version
         
+      - name: Run make release
+        run: cd refs/remotes/origin/matrix && make release
+        
