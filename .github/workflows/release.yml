@@ -22,5 +22,6 @@ jobs:
         run: make --version
         
       - name: Run make release
-        run: cd refs/remotes/origin/matrix && make release
+#        run: cd refs/remotes/origin/matrix && make release
+        run: ls -R $HOME
         
