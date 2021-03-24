@@ -4,7 +4,7 @@ name: Release
 
 on:
   push:
-    branches: [ matrix ]
+    branches: [ master ]
 
   workflow_dispatch:
 
@@ -22,5 +22,5 @@ jobs:
         run: make --version
         
       - name: Run make release
-        run: cd refs/remotes/origin/matrix && make release
+        run: echo Run!      
         
