@@ -139,7 +139,7 @@ def get_image(image):
 
 
 def get_artists(obj):
-    return ', '.join(artist['name'] for artist in obj['artists'])
+    return ', '.join(artist.get('name', '') for artist in obj['artists'])
 
 
 def get_labels(obj):
