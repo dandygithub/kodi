@@ -21,8 +21,8 @@ jobs:
       - name: Get make's version
         run: make --version
         
-      - name: View environment
-        run: echo "${{toJson(github)}}"
+      #- name: View environment
+      #  run: echo "${{toJson(github)}}"
         
       - name: Run make release
         run: cd $HOME/work/kodi/kodi/ && make release
