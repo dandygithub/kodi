@@ -4,7 +4,7 @@
 |---|---|---|---|---|---|
 |![](addons/zip/plugin.video.tivix.net/icon.png?raw=true)|Tivix.net|plugin.video.tivix.net|Tivix.net|[3.0.0](addons/zip/plugin.video.tivix.net/plugin.video.tivix.net-3.0.0.zip?raw=true)|`e646280b12828e4cc6331f425623dd36`|
 |![](addons/zip/script.dandy.strm.marker/icon.png?raw=true)|STRM Marker|script.dandy.strm.marker|STRM Marker|[2.0.0](addons/zip/script.dandy.strm.marker/script.dandy.strm.marker-2.0.0.zip?raw=true)|`7d560c96ff9b08e2dec0add0db0409d2`|
-|![](addons/zip/plugin.audio.music.yandex/icon.png?raw=true)|Яндекс Музыка|plugin.audio.music.yandex|Яндекс Музыка|[0.1.3](addons/zip/plugin.audio.music.yandex/plugin.audio.music.yandex-0.1.3.zip?raw=true)|`ee231a60079c9588d6e19b01999f86c8`|
+|![](addons/zip/plugin.audio.music.yandex/icon.png?raw=true)|Яндекс Музыка|plugin.audio.music.yandex|Яндекс Музыка|[0.1.4](addons/zip/plugin.audio.music.yandex/plugin.audio.music.yandex-0.1.4.zip?raw=true)|`c724f61fcdc22c14aeb6035b8f224b31`|
 |![](addons/zip/context.dandy.kinopoisk.sc/icon.png?raw=true)|Kinopoisk Search Content|context.dandy.kinopoisk.sc|Kinopoisk Search Content|[3.0.1](addons/zip/context.dandy.kinopoisk.sc/context.dandy.kinopoisk.sc-3.0.1.zip?raw=true)|`2a42144752cbd501d988f7de1afee79f`|
 |![](addons/zip/plugin.audio.dandy.amdm.ru/icon.png?raw=true)|AmDm.ru|plugin.audio.dandy.amdm.ru|Аккорды от AmDm.ru|[2.0.1](addons/zip/plugin.audio.dandy.amdm.ru/plugin.audio.dandy.amdm.ru-2.0.1.zip?raw=true)|`03261b3c530b97f8c16f1dc0400a27a3`|
 |![](addons/zip/context.dandy.strm.generator/icon.png?raw=true)|STRM Generator|context.dandy.strm.generator|STRM Generator|[2.0.0](addons/zip/context.dandy.strm.generator/context.dandy.strm.generator-2.0.0.zip?raw=true)|`4d358fd4d806ec6c64e4fbbaa3396a32`|
