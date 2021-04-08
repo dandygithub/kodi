@@ -71,7 +71,7 @@ def edit_title(title):
         kbd.setHeading('Edit title')
         kbd.doModal()
         if kbd.isConfirmed():
-            title = kbd.getText().decode('utf8')
+            title = kbd.getText()
         else: 
             title = ""
     return title

@@ -1,6 +1,0 @@
-﻿<settings>
-    <setting id="domain" type="text" label="Domain" default="videokvadrat.com"/>
-    <setting id="quality" type="labelenum" label="Quality" values="low|medium|high" default="medium"/>
-    <setting type="bool" id="united_search" visible="false" default="false" />
-    <setting type="text" id="us_command" visible="false" default="mode=search_main&keyword=" />
-</settings>

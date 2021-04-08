@@ -1,6 +1,5 @@
 #!/usr/bin/python
-# Writer (c) 2012-2019, MrStealth, dandy
-# Rev. 2.2.0
+# Writer (c) 2012-2021, MrStealth, dandy
 # -*- coding: utf-8 -*-
 # License: GPLv3
 
