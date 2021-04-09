@@ -24,6 +24,7 @@
 - `make build-zip` Create zip files when source version was changed
 - `make build-zip-spec` Create single zip file or overwrite without md5
 - `make update-readme` Update README.md
+- `make release` build-xml + build-zip + update-readme
 
 ---
-(*) _for **Matrix** branch only_
+(*) _for **Matrix** branch only (optional, use **GitHub Actions** now)_
