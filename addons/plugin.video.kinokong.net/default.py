@@ -46,7 +46,7 @@ class Kinokong():
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.debug = False
         
-        self.news = '/filmy/novinki-2020-godes'
+        self.news = '/filmes/novinki-2021/'
 
     def main(self):
         self.log("Addon: %s"  % self.id)
@@ -83,6 +83,7 @@ class Kinokong():
 
     def menu(self):
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", self.url)
+        self.log("Language_2000=" + self.language(2000))
         item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(2000), thumbnailImage=self.icon)
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
@@ -101,7 +102,7 @@ class Kinokong():
         self.getCategoryItems(self.url + self.news, 1)
 
     def getCategoryItems(self, url, page):
-        #print "*** Get category items %s" % url
+        xbmc.log( "*** Get category items %s" % url)
         page_url = "%s/page/%s/" % (url, str(int(page)))
         response = common.fetchPage({"link": page_url})
         per_page = 0
@@ -114,7 +115,7 @@ class Kinokong():
             link_container = common.parseDOM(items, "h2", attrs={"class": "main-sliders-title"})
             titles = common.parseDOM(link_container, "a")
             links = common.parseDOM(link_container, "a", ret="href")
-            images = common.parseDOM(items, "img", ret="src")
+            images = common.parseDOM(items, "img", ret="data-src")
 
             desc_container = common.parseDOM(items, "span", attrs={"class": "main-sliders-popup"})
             descs = common.parseDOM(desc_container, "i")
@@ -125,7 +126,7 @@ class Kinokong():
                 per_page += 1
                 title = self.strip(self.encode(title))
 
-                image = images[(i+1)*3-1] if 'http' in images[(i+1)*3-1] else self.url+images[(i+1)*3-1]
+                image = images[i] if 'http' in images[i] else self.url+images[i]
 
                 genres_cont = common.parseDOM(items[i], "em")
                 genres = common.parseDOM(genres_cont, "a")
@@ -138,8 +139,8 @@ class Kinokong():
                 title = title + " [COLOR=lightgreen][" + quality  + "][/COLOR]"    
 
                 uri = sys.argv[0] + '?mode=show&url=%s' % (links[i])
-		self.log("image: %s"  % image)
-		self.log("uri: %s"  % uri)
+                self.log("image: %s"  % image)
+                self.log("uri: %s"  % uri)
                 item = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
                 item.setInfo(type='Video', infoLabels={'title': title, 'genre': genre, 'plot': description})
 
@@ -154,7 +155,7 @@ class Kinokong():
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def podborka(self, url):
-        print "*** podborka for url %s " % url
+        xbmc.log("*** podborka for url %s " % url)
         response = common.fetchPage({"link": url})
 
         if response["status"] == 200:
@@ -175,7 +176,7 @@ class Kinokong():
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def getFilmInfo(self, url):
-        print "*** getFilmInfo for url %s " % url
+        xbmc.log("*** getFilmInfo for url %s " % url)
         response = common.fetchPage({"link": url})
 
         container = common.parseDOM(response["content"], "div", attrs={"id": "container"})
@@ -206,7 +207,7 @@ class Kinokong():
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def getFilmInfo_(self, url):
-        print "*** getFilmInfo for url %s " % url
+        xbmc.log("*** getFilmInfo for url %s " % url)
         response = common.fetchPage({"link": url})
 
         container = common.parseDOM(response["content"], "div", attrs={"id": "container"})
@@ -275,7 +276,7 @@ class Kinokong():
             response = eval(urllib2.urlopen(request).read())
 
             if 'playlist' in response['playlist'][0]:
-                print "This is a season multiple seasons"
+                xbmc.log("This is a season multiple seasons")
 
                 for season in response['playlist']:
                     episods = season['playlist']
@@ -290,7 +291,7 @@ class Kinokong():
                         item.setProperty('IsPlayable', 'true')
                         xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
             else:
-                print "This is one season"
+                xbmc.log("This is one season")
                 for episode in response['playlist']:
                     try:
                         etitle = episode['comment']
@@ -311,18 +312,18 @@ class Kinokong():
 
 
     def listGenres(self, url):
-        print "list genres"
+        xbmc.log("list genres")
         response = common.fetchPage({"link": url})
         menu = common.parseDOM(response["content"], "ul", attrs={"class": "reset top-menu"})
         genres = common.parseDOM(menu, "li")
 
         links = [
-          self.url + '/filmy/',
+          self.url + '/filmes/',
           self.url + self.news,
-          self.url + '/series/',
+          self.url + '/seriez/',
           self.url + '/cartoons/',
           self.url + '/animes/',
-          self.url + '/documentary/'
+          self.url + '/doc/'
         ]
 
         for i, genre in enumerate(genres[:-1]):
@@ -337,10 +338,10 @@ class Kinokong():
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def getPlaylist(self, url):
-        print "getPlaylist"
+        xbmc.log("getPlaylist")
 
     def playItem(self, url):
-        #print "*** play url %s" % url
+        #xbmc.log("*** play url %s" % url)
         if ' or ' in url:
             link = url.split(' or ')[-1]
         else:
@@ -435,13 +436,13 @@ class Kinokong():
     # *** Add-on helpers
     def log(self, message):
         if self.debug:
-            print "### %s: %s" % (self.id, message)
+            xbmc.log("### %s: %s" % (self.id, message))
 
     def error(self, message):
-        print "%s ERROR: %s" % (self.id, message)
+        xbmc.log("%s ERROR: %s" % (self.id, message))
 
     def showErrorMessage(self, msg):
-        print msg
+        xbmc.log(msg)
         xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("ERROR", msg, str(10 * 1000)))
 
     def strip(self, string):

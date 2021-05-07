@@ -80,9 +80,11 @@ def select_episode(data, url):
     VALUES["s"] = season
     VALUES["e"] = "1"
     data_ = tools.get_response(url, HEADERS, VALUES, "GET")
+    xbmc.log('foundEpisodesGetValues='+str(VALUES))
     data_ = common.parseDOM(data, "div", attrs={"id": "tabs"})[0]
     select = common.parseDOM(data, "select", attrs={"id": "episodes"})[0]
     episodes = common.parseDOM(select, "option")
+    xbmc.log('foundEpisodes='+str(episodes))
     values = common.parseDOM(select, "option", ret="value")
 
     if len(episodes) > 1:
