@@ -50,9 +50,13 @@ def get_playlist(data):
     season = None
     episode = None
     mode = ADDON.getSetting("mode")
+    xbmc.log('hm_mode='+ str(mode))
     preferred = ADDON.getSetting("preferred")
 
     iframes = common.parseDOM(data, "iframe", ret="src")
+    
+    if (iframes is None or len(iframes)==0):
+        iframes = common.parseDOM(data, "iframe", ret="data-src")
     
     for item in iframes:
         if re.search("vid\d+", item):
@@ -65,6 +69,11 @@ def get_playlist(data):
             iframes_hm["VIDEOFRAME"] = item
 
     xbmc.log("hm=" + repr(iframes_hm))
+    if (len(iframes_hm)==0):
+        err='no supported hoster found'
+        xbmc.log(err)
+        xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("ERROR", err, str(10 * 1000)))
+        return None, None, None, None
 
     if mode == "preferred":
         test = None
