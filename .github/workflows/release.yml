@@ -19,5 +19,27 @@ jobs:
         run: python2 --version
 
       - name: Run release
-        run: echo Run!      
+        run: cd $HOME/work/kodi/kodi/addons/ && rm addons.xml.md5 && python2 postprocess.py && python2 release.py
+        
+      #- uses: stefanzweifel/git-auto-commit-action@v4
+      #  with:
+      #    commit_message: Apply release
+          
+      - name: Send result to email
+        if: always()
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          # user credentials
+          username: ${{secrets.EMAIL_USERNAME}}
+          password: ${{secrets.EMAIL_PASSWORD}}
+          # email subject
+          subject: ${{github.job}} job of ${{github.repository}} has ${{job.status}}
+          # email body as text
+          body: ${{github.job}} job in worflow ${{github.workflow}} of ${{github.repository}} has ${{job.status}}
+          # comma-separated string, send email to
+          to: dandy@tut.by, denis.bolotin.dandy@gmail.com
+          # from email name
+          from: Github Actions
         
