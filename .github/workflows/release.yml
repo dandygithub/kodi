@@ -21,9 +21,9 @@ jobs:
       - name: Run release
         run: cd $HOME/work/kodi/kodi/addons/ && rm addons.xml.md5 && python2 postprocess.py && python2 release.py
         
-      #- uses: stefanzweifel/git-auto-commit-action@v4
-      #  with:
-      #    commit_message: Apply release
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Apply release
           
       - name: Send result to email
         if: always()
@@ -35,9 +35,9 @@ jobs:
           username: ${{secrets.EMAIL_USERNAME}}
           password: ${{secrets.EMAIL_PASSWORD}}
           # email subject
-          subject: ${{github.job}} job of ${{github.repository}} has ${{job.status}}
+          subject: ${{github.job}} job of ${{github.repository}} branch ${{github.branch}} has ${{job.status}}
           # email body as text
-          body: ${{github.job}} job in worflow ${{github.workflow}} of ${{github.repository}} has ${{job.status}}
+          body: ${{github.job}} job in worflow ${{github.workflow}} of ${{github.repository}} branch ${{github.branch}} has ${{job.status}}
           # comma-separated string, send email to
           to: dandy@tut.by, denis.bolotin.dandy@gmail.com
           # from email name
