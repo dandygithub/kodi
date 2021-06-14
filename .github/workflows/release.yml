@@ -16,11 +16,8 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Get python's version
-        run: python3 --version
+        run: python --version
 
-      - name: Get make's version
-        run: make --version
-        
-      - name: Run make release
+      - name: Run release
         run: echo Run!      
         
