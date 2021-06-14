@@ -35,9 +35,9 @@ jobs:
           username: ${{secrets.EMAIL_USERNAME}}
           password: ${{secrets.EMAIL_PASSWORD}}
           # email subject
-          subject: ${{github.job}} job of ${{github.repository}} branch ${{github.branch}} has ${{job.status}}
+          subject: ${{github.job}} job of ${{github.repository}} branch ${{github.ref}} has ${{job.status}}
           # email body as text
-          body: ${{github.job}} job in worflow ${{github.workflow}} of ${{github.repository}} branch ${{github.branch}} has ${{job.status}}
+          body: ${{github.job}} job in worflow ${{github.workflow}} of ${{github.repository}} branch ${{github.ref}} has ${{job.status}}
           # comma-separated string, send email to
           to: dandy@tut.by, denis.bolotin.dandy@gmail.com
           # from email name
