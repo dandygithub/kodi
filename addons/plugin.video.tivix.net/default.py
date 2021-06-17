@@ -264,7 +264,7 @@ class Tivix():
         v2 = re.search(re.compile(r"secondIpProtect.+\'(.+?)\'"), html).group(1)
         v3 = re.search(re.compile(r"portProtect.+\'(.+?)\'"), html).group(1)
 
-        uri = re.search(re.compile(r'Playerjs\(.+file:"(.+?)"}'), html)
+        uri = re.search(re.compile(r'Playerjs\(.+file: "(.+?)"}'), html)
         url = None
         if uri:
             uri = uri.group(1)
