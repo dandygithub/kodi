@@ -45,7 +45,7 @@ class Kinokong():
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.debug = False
         
-        self.news = '/filmes/novinki-2020-godes'
+        self.news = self.addon.getSetting('news')
 
     def main(self):
         self.log("Addon: %s"  % self.id)
@@ -101,7 +101,7 @@ class Kinokong():
         item.setArt({ 'thumb': self.icon, 'icon' : self.icon })        
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        self.getCategoryItems(self.url + self.news, 1)
+        self.getCategoryItems(self.url + '/' + self.news + '/', 1)
 
     def getCategoryItems(self, url, page):
         #print "*** Get category items %s" % url
@@ -326,7 +326,7 @@ class Kinokong():
 
         links = [
           self.url + '/filmy/',
-          self.url + self.news,
+          self.url + '/' + self.news + '/',
           self.url + '/series/',
           self.url + '/cartoons/',
           self.url + '/animes/',

@@ -1,6 +1,7 @@
 <settings>
   <setting id="translit" type="bool" label="Translit" default="false" />
   <setting id="domain" type="text" label="Domain" default="kinokong2.com"/>
+  <setting id="news" type="text" label="News path" default="filmes/1-novinki-2021" />
   <setting type="bool" id="united_search" visible="false" default="true" />
   <setting type="text" id="us_command" visible="false" default="mode=search&keyword=" />
 </settings>
