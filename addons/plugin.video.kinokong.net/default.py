@@ -118,8 +118,8 @@ class Kinokong():
             link_container = common.parseDOM(items, "h2", attrs={"class": "main-sliders-title"})
             titles = common.parseDOM(link_container, "a")
             links = common.parseDOM(link_container, "a", ret="href")
-            images = common.parseDOM(items, "img", ret="src")
-
+            images_container = common.parseDOM(content, "div", attrs={"class": "main-sliders-img"})
+            images = common.parseDOM(images_container, "img", ret="data-src")
             desc_container = common.parseDOM(items, "span", attrs={"class": "main-sliders-popup"})
             descs = common.parseDOM(desc_container, "i")
             qualities = common.parseDOM(desc_container, "b")
@@ -128,8 +128,7 @@ class Kinokong():
             for i, title in enumerate(titles):
                 per_page += 1
 
-                image = images[(i+1)*3-1] if 'http' in images[(i+1)*3-1] else self.url+images[(i+1)*3-1]
-
+                image = images[i] if 'http' in images[i] else self.url + images[i]
                 genres_cont = common.parseDOM(items[i], "em")
                 genres = common.parseDOM(genres_cont, "a")
                 genre = self.encode(', '.join(genres))
@@ -185,10 +184,10 @@ class Kinokong():
         content = response["content"].decode("cp1251")
  
         container = common.parseDOM(content, "div", attrs={"id": "container"})
-        source = common.parseDOM(content, "div", attrs={"id": "players"})[0]
+        #source = common.parseDOM(content, "div", attrs={"class": "box"})[0]
         title = common.parseDOM(container, "h1")[0]
-        image = common.parseDOM(container, "img", attrs={"id": "imgbigp"}, ret="src")[0]
-        quality = common.parseDOM(container, "div", attrs={"class": "full-quality"})
+        image = self.url + common.parseDOM(container, "img", attrs={"id": "imgbigp"}, ret="src")[0]
+        quality = common.parseDOM(container, "div", attrs={"class": "full-quality"})[0]
 
         manifest_links, subtitles, season, episode = host_manager.get_playlist(content)
 
