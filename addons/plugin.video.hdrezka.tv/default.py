@@ -11,6 +11,7 @@ import socket
 import sys
 import urllib
 from operator import itemgetter
+import base64
 
 import XbmcHelpers
 import xbmc
@@ -24,7 +25,7 @@ from common import *
 from search import *
 from qualityAndTranslator import *
 from pluginSettings import *
-
+from itertools import chain, product
 common = XbmcHelpers
 
 socket.setdefaulttimeout(120)
@@ -241,6 +242,58 @@ class HdrezkaTV:
         return {'rating': rating, 'description': description}
 
     @staticmethod
+    def decode_trash(str,removelist):
+        n=4
+        cleanedsubstring = str
+        y=0
+        while y < len(str):
+            chunk = str[y:y+n]
+            if chunk in removelist:
+                cleanedsubstring = cleanedsubstring.replace(chunk,'',1)
+            else:            
+                break
+            y += n
+        return cleanedsubstring
+    
+    def decode_clean_list(self,decList,removelist):
+        i=0
+        list_lenght = len(decList)
+        list_cleaned = []
+        while list_lenght>i:
+            currentsubstring = decList[list_lenght-1]
+            list_cleaned.insert(0,self.decode_trash(currentsubstring,removelist))
+            list_lenght -= 1
+        return list_cleaned
+    
+    def decode_response(self,r):
+        
+        r_decoded = ''
+        #--Generate trash codes-- start#
+        trashCodesSet = set()
+        trashList = ["@","#","!","^","$"]
+        for i in range(2,4):
+            startchar = ''
+            for chars in product(trashList, repeat=i):
+                trashcombo = base64.b64encode(startchar.join(chars))
+                trashCodesSet.add(trashcombo)
+        #--Generate trash codes -- finish#
+        #--Clean 1st step       -- start#
+        templist = self.decode_clean_list( list( re.split(r'_', re.sub(r'(\/|\\)','',r)) )  ,trashCodesSet)
+        #--Clean 1st step       -- finish#
+        #--Result preparing      -- start#
+        start_from_position = len(templist)
+        output = ''
+        while start_from_position !=1 :
+            itemString = templist[start_from_position-2] + templist[start_from_position-1]
+            output = self.decode_trash(itemString,trashCodesSet)
+            del templist[-1]
+            del templist[-1]
+            templist.append(output)
+            start_from_position = len(templist)
+        r_decoded = base64.b64decode(''.join(templist).replace('#h','',1))
+        #--Result preparing      -- finish#
+        return r_decoded
+    @staticmethod
     def get_links(data):
         log("*** get_links")
         links = data.replace("\/", "/").split(",")
@@ -322,7 +375,7 @@ class HdrezkaTV:
                 content, idt, subtitles = selectTranslator3(self, content[0], content, post_id, url, idt, "get_movie")
             data = content[0].split('"streams":"')[-1].split('",')[0]
 
-            links = self.get_links(data)
+            links = self.get_links(self.decode_response(data))
             selectQuality(self, links, mainTitle, image, subtitles)
 
         xbmcplugin.setContent(self.handle, 'episodes')
@@ -363,7 +416,7 @@ class HdrezkaTV:
             response = post_response(self.url + "/ajax/get_cdn_series/", data, headers).json()
             data = response["url"]
             subtitles = self.get_subtitles(response)
-        links = self.get_links(data)
+        links = self.get_links(self.decode_response(data))
         selectQuality(self, links, title, image, subtitles)
         xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
