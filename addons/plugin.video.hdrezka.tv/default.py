@@ -4,8 +4,8 @@
 # Writer (c) 2012-2021, MrStealth, dandy
 
 import os
-import socket
 import sys
+import socket
 import urllib.parse
 from operator import itemgetter
 
@@ -19,6 +19,7 @@ from Translit import Translit
 
 import requests
 import router
+from voidboost import parse_streams
 from helpers import log, get_media_attributes, color_rating
 
 common = XbmcHelpers
@@ -437,9 +438,10 @@ class HdrezkaTV:
             content = [response.text]
             if self.translator == "select":
                 content, idt, subtitles = self.select_translator(content[0], content, post_id, uri, idt, "get_movie")
-            data = content[0].split('"streams":"')[-1].split('",')[0]
 
-            links = self.get_links(data)
+            links = self.get_links(
+                parse_streams(content[0])
+            )
             self.select_quality(links, title, image, subtitles)
 
         xbmcplugin.setContent(self.handle, 'episodes')
@@ -569,7 +571,9 @@ class HdrezkaTV:
             }
             response = self.make_response('POST', "/ajax/get_cdn_series/", data=data, headers=headers).json()
             data = response["url"]
-        links = self.get_links(data)
+        links = self.get_links(
+            parse_streams(data)
+        )
         self.select_quality(links, title, image, None)
         xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
