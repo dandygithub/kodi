@@ -4,10 +4,10 @@
 # Writer (c) 2012-2021, MrStealth, dandy
 
 import os
+import re
 import sys
 import socket
 import urllib.parse
-from operator import itemgetter
 
 import SearchHistory as history
 import XbmcHelpers
@@ -261,21 +261,16 @@ class HdrezkaTV:
         xbmcplugin.setContent(self.handle, 'movies')
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def select_quality(self, links, title, image, subtitles=None):
-        lst = sorted(iter(links.items()), key=itemgetter(0))
-        i = 0
-        quality_prev = 360
-        for quality, link in lst:
-            i += 1
+    def select_quality(self, streams, title, image, subtitles=None):
+        for name, quality, url in streams:
             if self.quality != 'select':
-                if quality > int(self.quality[:-1]):
-                    self.play(links[quality_prev], subtitles)
+                if (name == self.quality) or (int(self.quality.split('p')[0]) >= quality):
+                    log(f'selected quality name: {name}')
+                    self.play(url, subtitles)
                     break
-                elif len(lst) == i:
-                    self.play(links[quality], subtitles)
             else:
-                film_title = f"{title} - [COLOR=orange]{quality}p[/COLOR]"
-                item_uri = router.build_uri('play', url=link)
+                film_title = f"{title} - [COLOR=orange]{name}[/COLOR]"
+                item_uri = router.build_uri('play', url=url)
                 item = xbmcgui.ListItem(film_title)
                 item.setArt({'icon': image})
                 item.setInfo(
@@ -286,7 +281,6 @@ class HdrezkaTV:
                 if subtitles:
                     item.setSubtitles([subtitles])
                 xbmcplugin.addDirectoryItem(self.handle, item_uri, item, False)
-            quality_prev = quality
 
     def select_translator(self, content, tv_show, post_id, url, idt, action):
         try:
@@ -329,30 +323,6 @@ class HdrezkaTV:
             "User-Agent": USER_AGENT,
             "X-Requested-With": "XMLHttpRequest"
         }
-
-        # {"success":true,"message":"","url":"[
-        # 360p]https:\/\/stream.voidboost.cc\/8\/8\/1\/3\/3\/ddddfc45662e813d93128d783cb46e7f:2020101118\/3dxox.mp4
-        # :hls:manifest.m3u8 or https:\/\/stream.voidboost.cc\/61e68929526165ffb2e5483777a4bd94:2020101118\/8\/8\/1
-        # \/3\/3\/3dxox.mp4,[480p]https:\/\/stream.voidboost.cc\/8\/8\/1\/3\/3\/ddddfc45662e813d93128d783cb46e7f
-        # :2020101118\/ppjm0.mp4:hls:manifest.m3u8 or
-        # https:\/\/stream.voidboost.cc\/6498b090482768d1433d456b2e35c46a:2020101118\/8\/8\/1\/3\/3\/ppjm0.mp4,
-        # [720p]https:\/\/stream.voidboost.cc\/8\/8\/1\/3\/3\/ddddfc45662e813d93128d783cb46e7f:2020101118\/0w0az.mp4
-        # :hls:manifest.m3u8 or https:\/\/stream.voidboost.cc\/b10164963f454ad391b2a13460568561:2020101118\/8\/8\/1
-        # \/3\/3\/0w0az.mp4,[1080p]https:\/\/stream.voidboost.cc\/8\/8\/1\/3\/3\/ddddfc45662e813d93128d783cb46e7f
-        # :2020101118\/n9qju.mp4:hls:manifest.m3u8 or
-        # https:\/\/stream.voidboost.cc\/b8a860d0938b593ed4b64723944b9a12:2020101118\/8\/8\/1\/3\/3\/n9qju.mp4,
-        # [1080p Ultra]https:\/\/stream.voidboost.cc\/8\/8\/1\/3\/3\/ddddfc45662e813d93128d783cb46e7f:2020101118
-        # \/4l9xx.mp4:hls:manifest.m3u8 or https:\/\/stream.voidboost.cc\/13c067a1dcd54be75007a74bde421b17:2020101118
-        # \/8\/8\/1\/3\/3\/4l9xx.mp4","quality":"480p","subtitle":"[
-        # \u0420\u0443\u0441\u0441\u043a\u0438\u0439]https:\/\/static.voidboost.com\/view\/BmdZqxHeI9zXhhEWUUP70g
-        # \/1602429855\/8\/8\/1\/3\/3\/c1lz5sebdx.vtt,
-        # [\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430]https:\/\/static.voidboost.com\/view
-        # \/F8mGgsIZee6XMjvtXSojhQ\/1602429855\/8\/8\/1\/3\/3\/f0zfov3en4.vtt,
-        # [English]https:\/\/static.voidboost.com\/view\/enBDXHLd9y6OByIGY8AiZQ\/1602429855\/8\/8\/1\/3\/3
-        # \/ut8ik78tq5.vtt","subtitle_lns":{"off":"","\u0420\u0443\u0441\u0441\u043a\u0438\u0439":"ru",
-        # "\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430":"ua","English":"en"},"subtitle_def":"ru",
-        # "thumbnails":"\/ajax\/get_cdn_tiles\/0\/32362\/?t=1602170655"}
-
         response = self.make_response('POST', "/ajax/get_cdn_series/", data=data, headers=headers).json()
 
         subtitles = None
@@ -363,22 +333,9 @@ class HdrezkaTV:
             except Exception as ex:
                 log(f'fault decode subtitles ex: {ex}')
         else:
-            # seasons = response["seasons"] not used ?
             episodes = response["episodes"]
             playlist = common.parseDOM(episodes, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
         return playlist, idt, subtitles
-
-    @staticmethod
-    def get_links(data):
-        log(f'*** get_links data: {data}')
-        links = data.replace(r"\/", "/").split(",")
-        manifest_links = {}
-        for link in links:
-            if "Ultra" not in link:
-                manifest_links[int(link.split("]")[0].replace("[", "").replace("p", ""))] = link.split("]")[1]
-            else:
-                manifest_links[2160] = link.split("]")[1]
-        return manifest_links
 
     def show(self, uri):
         response = self.make_response('GET', uri)
@@ -438,10 +395,8 @@ class HdrezkaTV:
             content = [response.text]
             if self.translator == "select":
                 content, idt, subtitles = self.select_translator(content[0], content, post_id, uri, idt, "get_movie")
-
-            links = self.get_links(
-                parse_streams(content[0])
-            )
+            streams_block = re.search(r'"streams":"([^"]+)', response.text).group(1)
+            links = parse_streams(streams_block)
             self.select_quality(links, title, image, subtitles)
 
         xbmcplugin.setContent(self.handle, 'episodes')
@@ -571,9 +526,8 @@ class HdrezkaTV:
             }
             response = self.make_response('POST', "/ajax/get_cdn_series/", data=data, headers=headers).json()
             data = response["url"]
-        links = self.get_links(
-            parse_streams(data)
-        )
+
+        links = parse_streams(data)
         self.select_quality(links, title, image, None)
         xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
