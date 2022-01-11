@@ -9,12 +9,12 @@ import sys
 import socket
 import urllib.parse
 
-import SearchHistory as history
-import XbmcHelpers
 import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
+import XbmcHelpers
+import SearchHistory as history
 from Translit import Translit
 
 import requests
@@ -48,6 +48,16 @@ class HdrezkaTV:
 
         self.url = self.addon.getSetting('dom_protocol') + '://' + self.domain
         self.proxies = self._load_proxy_settings()
+        self.session = self._load_session()
+
+    def _load_session(self):
+        session = requests.Session()
+        session.headers = {
+                'Host': self.domain,
+                'Referer': self.domain,
+                'User-Agent': USER_AGENT,
+            }
+        return session
 
     def _load_proxy_settings(self):
         if self.addon.getSetting('use_proxy') == 'false':
@@ -60,13 +70,7 @@ class HdrezkaTV:
         }
 
     def make_response(self, method, uri, params=None, data=None, cookies=None, headers=None):
-        if not headers:
-            headers = {
-                "Host": self.domain,
-                "Referer": self.domain,
-                "User-Agent": USER_AGENT,
-            }
-        return requests.request(method, self.url + uri, params=params, data=data, headers=headers, cookies=cookies)
+        return self.session.request(method, self.url + uri, params=params, data=data, headers=headers, cookies=cookies)
 
     def main(self):
         params = router.parse_uri(sys.argv[2])
