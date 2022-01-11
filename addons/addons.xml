@@ -78,7 +78,7 @@
   <extension point='xbmc.python.module' library='lib' />
 </addon>
 
-<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="3.0.4" provider-name="MrStealth, dandy, DesSolo">
+<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="3.0.5" provider-name="MrStealth, dandy, DesSolo">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.xbmc.helpers" version="3.0.0"/>
