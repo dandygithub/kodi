@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# Writer (c) 2012-2019, MrStealplugindandy
-# Rev. 2.3.0
+# Writer (c) 2012-2022, MrStealth, dandy, DesSolo
+# Rev. 2.5.0
 
 import json
 import os
@@ -228,7 +228,11 @@ class HdrezkaTV:
             "is_touch": 1
         }
         response = get_response(self.url + '/engine/ajax/quick_content.php', data)
-        description = common.parseDOM(response.text, 'div', attrs={'class': 'b-content__bubble_text'})[0]
+        description = ''
+        try:
+            description = common.parseDOM(response.text, 'div', attrs={'class': 'b-content__bubble_text'})[0]
+        except:
+            pass
 
         try:
             imbd_rating = common.parseDOM(response.text, 'span', attrs={'class': 'imdb'})[0]
