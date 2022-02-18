@@ -47,10 +47,10 @@ class Translit():
         russian = str(in_string)
         for symb_out, symb_in in self.transtable:
           russian = russian.replace(symb_in, symb_out)
-        return russian.encode(self.encoding)
+        return russian
 
     def eng(self, in_string):
         translit = str(in_string)
         for symb_out, symb_in in self.transtable:
           translit = translit.replace(symb_out, symb_in)
-        return translit.encode(self.encoding)
+        return translit
