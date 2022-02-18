@@ -267,19 +267,30 @@ class Tivix():
         return template
 
     def getPlaylist(self, html): 
-        v1 = re.search(re.compile(r"firstIpProtect.+\'(.+?)\'"), html).group(1)
-        v2 = re.search(re.compile(r"secondIpProtect.+\'(.+?)\'"), html).group(1)
+#                                                   var helloBoyzzzOne  = atob('czIudHRyYW5zbGl0LmNvbQo=');
+#                                                           var  helloBoyzzzTwo = atob('czEudHRyYW5zbGl0LmNvbQ==');
+#                                                   
+#                                                   var firstIpProtect  = helloBoyzzzOne;
+#                                                           var secondIpProtect  = helloBoyzzzTwo;
+#                                                           var portProtect = '8081';
+    
+        v1 = re.search(re.compile(r"firstIpProtect  = (.+?);"), html).group(1)
+        v2 = re.search(re.compile(r"secondIpProtect  = (.+?);"), html).group(1)
         v3 = re.search(re.compile(r"portProtect.+\'(.+?)\'"), html).group(1)
+        v1 = re.search(re.compile(v1 + ".+\'(.+?)\'"), html).group(1)
+        v2 = re.search(re.compile(v2 + ".+\'(.+?)\'"), html).group(1)
 
-        uri = re.search(re.compile(r'Playerjs\(.+file : "(.+?)"}'), html)
+#        var player = new Playerjs({id:"myTabContent",  file  : "#2aHR0cDovL3t2MX06e3YzfS90MTAwMGEvaW5kZXgu//MzIxNDI5ZDktYmQ2ZC00ODVhLTgwZTctNGFmM2V//NWEyNzU1NGItMTU5MS00MGIyLWExZGEtNjIyYThiMDQwYjc4iNWUzOGJibTN1OD93//M2E5MDQwYTQtN2ZhMS00ZjA4LTlkNGEtODljMGExOTM5NGY3bXNBdXRoU2lnbj0xNjQ1MjEwMTE4U2JjZDU5YWMwZTZiZGViZjIzNDUwZjhjY2EwNmRkM2Qy//Y2JkYzcwMTUtODk2Yi00NjRkLTgwYTYtNmUwOGUxZjdhYjBjUzY1aDQ0a//ZjU1Y2EzOGYtMzViZS00YWQ0LWFlYTAtYjk5M2IwNjhlMzM3DUxMmg3Mw=="});
+
+        uri = re.search(re.compile(r'Playerjs\(.+file  : "(.+?)"}'), html)
         url = None
-        
+
         if uri:
             uri = uri.group(1)
             if uri[:2] == '#2':
                 template = self.tivixDecode(uri)
             if template[:4] == 'http':
-                url = template.replace('{v1}',v1).replace('{v2}', v2).replace('{v3}', v3)
+                url = template.replace('{v1}', base64.standard_b64decode(v1).decode("utf-8")).replace('{v2}', base64.standard_b64decode(v2).decode("utf-8")).replace('{v3}', v3)
                 url = url.split('\n')[0]
         return url
 
