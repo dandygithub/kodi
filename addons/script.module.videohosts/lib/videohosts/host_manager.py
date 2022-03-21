@@ -32,16 +32,20 @@ def select_vhost(hm):
         return list(hm)[index_]
 
 def get_playlist_by_vhost(vhost, iframe):
-    if vhost == "HDVB":
-        return hdvb.get_playlist(iframe)
-    elif vhost == "COLLAPS":
-        return collaps.get_playlist(iframe)
-    elif vhost == "VIDEOCDN":
-        return videocdn.get_playlist(iframe)
-    elif vhost == "VIDEOFRAME":
-        return iframe.get_playlist(iframe)
-    else:
-        return None, None, None, None    
+    try:
+        if vhost == "HDVB":
+            return hdvb.get_playlist(iframe)
+        elif vhost == "COLLAPS":
+            return collaps.get_playlist(iframe)
+        elif vhost == "VIDEOCDN":
+            return videocdn.get_playlist(iframe)
+        elif vhost == "VIDEOFRAME":
+            return iframe.get_playlist(iframe)
+        else:
+            return None, None, None, None
+    except:
+        return None, None, None, None
+
 
 def get_playlist(data):
     manifest_links = {}
@@ -59,8 +63,8 @@ def get_playlist(data):
             iframes_hm["HDVB"] = item
         elif re.search("api\d+", item):
             iframes_hm["COLLAPS"] = item
-#        elif "videocdn" in item:
-#            iframes_hm["VIDEOCDN"] = item
+        elif "kinokong" in item:
+            iframes_hm["VIDEOCDN"] = item
         elif "videoframe" in item:
             iframes_hm["VIDEOFRAME"] = item
 
@@ -79,7 +83,7 @@ def get_playlist(data):
 
     if mode == "auto":
         for k, v in list(iframes_hm.items()):
-            if (len(manifest_links) > 0):
+            if manifest_links and (len(manifest_links) > 0):
                break 
             manifest_links, subtitles, season, episode = get_playlist_by_vhost(k, v)
     else:
