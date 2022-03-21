@@ -171,7 +171,7 @@
   </extension>
 </addon>
 
-<addon id="script.module.videohosts" name="VideoHosts" version="1.6.3" provider-name="dandy">
+<addon id="script.module.videohosts" name="VideoHosts" version="1.6.4" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmc.helpers" version="2.1.0"/>
