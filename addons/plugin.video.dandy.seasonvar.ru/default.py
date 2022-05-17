@@ -476,7 +476,7 @@ class Seasonvar():
             sidebar_item = {
                 "title": title,
                 "title_full": title_,
-                "image": common.parseDOM(item, "img", ret="data-src")[0],
+                "image": common.parseDOM(item, "img", ret="src")[0],
                 "link": self.url + urls[i]
             }
 
