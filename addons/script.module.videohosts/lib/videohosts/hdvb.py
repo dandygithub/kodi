@@ -15,6 +15,12 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
 }
 
+HEADERS2 = {
+    "Referer": "{0}", 
+    "x-csrf-token": "{1}",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
+}
+
 #?e=1&s=6&t=6850beae94e8cad707ed7d1915c8076d9ec50d4f3679b123c9f6ff7c82d1484b&d=yohoho.cc
 
 VALUES = {
