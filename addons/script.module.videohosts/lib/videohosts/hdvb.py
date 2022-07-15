@@ -119,20 +119,34 @@ def get_playlist(url):
     except:
         return manifest_links, subtitles, season, episode 
 
-    data = common.parseDOM(response, "div", attrs={"id": "nativeplayer"}, ret="data-config")[0]
-    jdata = json.loads(data)
-    type_content = jdata["type"]
+    #data = common.parseDOM(response, "div", attrs={"id": "nativeplayer"}, ret="data-config")[0]
+    #jdata = json.loads(data)
+    #type_content = jdata["type"]
 
     #tvshow
-    if (type_content == "serial"):
-        response, season, episode = select_episode(response, url)
-        if response == "":
-            return manifest_links, subtitles, season, episode
-        data = common.parseDOM(response, "div", attrs={"id": "nativeplayer"}, ret="data-config")[0]
-        jdata = json.loads(data)
+    #if (type_content == "serial"):
+    #    response, season, episode = select_episode(response, url)
+    #    if response == "":
+    #        return manifest_links, subtitles, season, episode
+    #    data = common.parseDOM(response, "div", attrs={"id": "nativeplayer"}, ret="data-config")[0]
+    #    jdata = json.loads(data)
 
-    url_= "https:" + jdata["hls"].replace("\/", "/")
-    
+    #url_= "https:" + jdata["hls"].replace("\/", "/")
+
+    url_ = "https://" + url.split("https://")[1].split("/")[0]
+    file_ = response.split('let playerConfigs = {"file":"~')[1].split('",')[0]
+    url_ = url_ + "/playlist/" + file_ + ".txt"
+    #let playerConfigs = {"file":"~Ign13TBN3H-uQxLuMfVgeS5YOPAHk$bWS0GjiHsXWXEAwemdq$ITeHgyZJx3cZdOXPk-IIRmCG3X4er9HSCSw$yK7YHEaZB0ZPcCm0haAye1UrcYjd8rB$SO0fmRVP7RJBsDv9OkKVRb5eovRDgXJyOaOqfCPasrpHA8XkDz0fysY5EyLPkh9LfspydgrEITtZUltwtZpvGb13BPq5EV4-ZVpw1XNbB8voghZTdUYFyKtO0aWZHg7QAMli55Q$akEHesQd5dlKrUjzAOtDebYw!!","hls":0,"id":"player-58c0f859e19f05b3330a7b3f05fa8a71","cuid":"58c0f859e19f05b3330a7b3f05fa8a71","key":"mabC4aDYQe9gzALPUqH1B4va5Ate$A7UO9uXRKX0Yhz8p$zoVOdGHQgHUQmmnQ+U","movie":"58c0f859e19f05b3330a7b3f05fa8a71","host":"kinokong.pro","masterId":"260","masterHash":"7aa8008830e2b0fe5afe809c416a82cd","userIp":"134.17.27.106","poster":"","p2p":true,"rek":{"preroll":["https:\/\/aj1907.online\/zNY_gKnZ54xwOJs-q4qJYrgxq9i4e_emtgNUvxOZU136EUm89vOfcZMl1nYY4lLoEYIEltK1nYMDEf4CApBPiCTgrcBGgAkg","https:\/\/aj1907.online\/zSG4y9GEEI5b0WL2_LtawSP_KrgJ65wCZF5gS2RAuxZfg9bxzx_q3d82al_XRqEa6iov3R_tDIbycTfhzPtfnjftE9TjxDwI"],"midroll":[{"time":"25%","url":"https:\/\/aj1907.online\/z3wWm6ZC9P0kqxfkaWAu2dTelAan98GJpGDsaa7rbzeGKtkJNeH4JqN-f9iLc9EfRF8OBfnjgntm6V-nBkPjBWh_sCZ3dLH4"}],"pausebanner":{"key":"bbe8fc89d1b4ec0363fafb361a1f5ab9","script":"https:\/\/aj1907.online\/63c0d7d8.js","show":true},"endtag":{"key":"6c4661276978c9c87d15d0ba61646a8c","script":"https:\/\/aj1907.online\/63c0d7d8.js","conf":{"show_time":60,"skip_time":15,"movie_et":"0","banner_show":true,"banner_time":600}},"pushbanner":[]},"href":"vb17121coramclean.pw","kp":"1115098","uniq_hash":"9e8d563f8ae3b592d4d4e8743ba4399e"};	
+
+    HEADERS2["Referer"] = url
+    HEADERS2["x-csrf-token"] = response.split('"key":"')[1].split('",')[0]
+
+    try: 
+        response = tools.get_response(url_, HEADERS2, {}, "POST")
+    except:
+        return manifest_links, subtitles, season, episode 
+
+    url_ = response
     try: 
         response = tools.get_response(url_, HEADERS, {}, "GET")
     except:
