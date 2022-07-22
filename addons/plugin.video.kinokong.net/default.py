@@ -324,12 +324,12 @@ class Kinokong():
         genres = common.parseDOM(menu, "li")
 
         links = [
-          self.url + '/filmy/',
+          self.url + '/filmes/',
           self.url + '/' + self.news + '/',
-          self.url + '/series/',
+          self.url + '/seriez/',
           self.url + '/cartoons/',
           self.url + '/animes/',
-          self.url + '/documentary/'
+          self.url + '/doc/'
         ]
 
         for i, genre in enumerate(genres[:-1]):
