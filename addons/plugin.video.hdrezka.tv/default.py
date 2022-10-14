@@ -337,7 +337,7 @@ class HdrezkaTV:
         image = common.parseDOM(content, "img", attrs={"itemprop": "image"}, ret="src")[0]
         log("*** Show video image %s" % image)
         mainTitle = common.parseDOM(content, "h1")[0]
-        post_id = common.parseDOM(content, "input", attrs={"id": "post_id"}, ret="value")[0]
+        post_id = common.parseDOM(response.text, "input", attrs={"id": "post_id"}, ret="value")[0]
         idt = "0"
         try:
            idt = common.parseDOM(content, "li", attrs={"class": "b-translator__item active"}, ret="data-translator_id")[0]
