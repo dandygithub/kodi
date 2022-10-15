@@ -347,7 +347,7 @@ class HdrezkaTV:
         content = common.parseDOM(response.text, "div", attrs={"class": "b-content__main"})[0]
         image = common.parseDOM(content, "img", attrs={"itemprop": "image"}, ret="src")[0]
         title = common.parseDOM(content, "h1")[0]
-        post_id = common.parseDOM(content, "input", attrs={"id": "post_id"}, ret="value")[0]
+        post_id = common.parseDOM(response.text, "input", attrs={"id": "post_id"}, ret="value")[0]
         idt = "0"
         try:
             idt = common.parseDOM(
