@@ -86,8 +86,7 @@ class HdrezkaTV:
                 params.get('episode_id'),
                 urllib.parse.unquote_plus(params['title']),
                 params.get('image'),
-                params.get('idt'),
-                urllib.parse.unquote_plus(params['data'])
+                params.get('idt')
             )
         elif mode == 'show':
             self.show(params.get('uri'))
@@ -372,7 +371,6 @@ class HdrezkaTV:
             ids = common.parseDOM(tv_show, "li", ret='data-id')
             seasons = common.parseDOM(tv_show, "li", ret='data-season_id')
             episodes = common.parseDOM(tv_show, "li", ret='data-episode_id')
-            data = common.parseDOM(tv_show, "li", ret='data-cdn_url')
 
             for i, title_ in enumerate(titles):
                 title_ = f"{title_} ({self.language(30005)} {seasons[i]})"
@@ -386,8 +384,7 @@ class HdrezkaTV:
                     episode_id=episodes[i],
                     title=title_,
                     image=image,
-                    idt=idt,
-                    data=data[i]
+                    idt=idt
                 )
                 item = xbmcgui.ListItem(title_)
                 item.setArt({'thumb': image, 'icon': image})
@@ -512,24 +509,23 @@ class HdrezkaTV:
             item.setSubtitles([subtitles])
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
-    def play_episode(self, url, post_id, season_id, episode_id, title, image, idt, data):
-        if data == "null":
-            data = {
-                "id": post_id,
-                "translator_id": idt,
-                "season": season_id,
-                "episode": episode_id,
-                "action": "get_stream"
-            }
-            headers = {
-                "Host": self.domain,
-                "Origin": self.url,
-                "Referer": url,
-                "User-Agent": USER_AGENT,
-                "X-Requested-With": "XMLHttpRequest"
-            }
-            response = self.make_response('POST', "/ajax/get_cdn_series/", data=data, headers=headers).json()
-            data = response["url"]
+    def play_episode(self, url, post_id, season_id, episode_id, title, image, idt):
+        data = {
+            "id": post_id,
+            "translator_id": idt,
+            "season": season_id,
+            "episode": episode_id,
+            "action": "get_stream"
+        }
+        headers = {
+            "Host": self.domain,
+            "Origin": self.url,
+            "Referer": url,
+            "User-Agent": USER_AGENT,
+            "X-Requested-With": "XMLHttpRequest"
+        }
+        response = self.make_response('POST', "/ajax/get_cdn_series/", data=data, headers=headers).json()
+        data = response["url"]
 
         links = parse_streams(data)
         self.select_quality(links, title, image, None)
