@@ -21,25 +21,26 @@
 	</extension>
 </addon>
 
-<addon id="script.dandy.strm.marker" name="STRM Marker" version="2.0.0" provider-name="dandy">
+<addon id="plugin.video.kinokong.net" name="Kinokong.net" version="2.0.5" provider-name="MrStealth, dandy">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>
-    <import addon="script.module.simplejson" version="3.17.0"/>
+    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
+    <import addon="script.module.translit" version="3.0.0"/>
+    <import addon="script.module.videohosts" version="3.0.0"/>
+    <import addon="script.module.dandy.search.history" version="3.0.0"/>
   </requires>
-  <extension point="xbmc.python.script" library="default.py">
-  	<provides>executable</provides>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+    <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
+    <summary>Kinokong.net</summary>
+    <description>For personal use only</description>
     <platform>all</platform>
-    <summary lang="en">STRM Marker</summary>
-    <description lang="en">Mark STRM content in Libraries</description>
-    <disclaimer lang="en"></disclaimer>
-    <language></language>
-    <license>GNU GPL v.3</license>
     <assets>
         <icon>icon.png</icon>
+        <fanart>fanart.jpg</fanart>
     </assets>
-  </extension>  
+  </extension>
 </addon>
 
 <addon id='script.module.translit' version='3.0.1' name='Translit for xbmc plugins' provider-name='mrstealth, dandy'>
@@ -94,24 +95,45 @@
   <extension point='xbmc.python.module' library='lib' />
 </addon>
 
-<addon id="plugin.audio.music.yandex" name="Яндекс Музыка" version="0.1.4" provider-name="DesSolo, dandy, Eviloid">
+<addon id="plugin.video.dandy.seasonvar.ru" name="seasonvar.ru" version="2.0.3" provider-name="dandy">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>
-    <import addon="script.module.requests"/>
+    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
+    <import addon="script.module.translit" version="3.0.0"/>
   </requires>
-  <extension point="xbmc.python.pluginsource" provides="audio" library="default.py">>
-    <provides>audio</provides>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+    <provides>video</provides>
   </extension>
-  <extension point= "xbmc.addon.metadata">
-    <summary>Яндекс Музыка</summary>
-    <description>Яндекс.Музыка — стриминговый сервис компании «Яндекс», позволяющий прослушивать музыкальные композиции, альбомы, подборки музыкальных треков и получать персональные рекомендации. Также существуют приложения для iOS, Android, Windows и Windows Phone.</description>
+  <extension point="xbmc.addon.metadata">
+    <summary>seasonvar.ru</summary>
     <description>For personal use only</description>
     <platform>all</platform>
     <assets>
-      <icon>icon.png</icon>
-      <fanart>fanart.jpg</fanart>
+        <icon>icon.png</icon>
+        <fanart>fanart.jpg</fanart>
     </assets>
   </extension>
+</addon>
+
+<addon id="script.dandy.strm.marker" name="STRM Marker" version="2.0.0" provider-name="dandy">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+    <import addon="script.module.simplejson" version="3.17.0"/>
+  </requires>
+  <extension point="xbmc.python.script" library="default.py">
+  	<provides>executable</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">STRM Marker</summary>
+    <description lang="en">Mark STRM content in Libraries</description>
+    <disclaimer lang="en"></disclaimer>
+    <language></language>
+    <license>GNU GPL v.3</license>
+    <assets>
+        <icon>icon.png</icon>
+    </assets>
+  </extension>  
 </addon>
 
 <addon id="context.dandy.kinopoisk.sc" name="Kinopoisk Search Content" version="3.0.1" provider-name="dandy">
@@ -146,26 +168,6 @@
   </extension>
 </addon>
 
-<addon id="plugin.audio.iplayer.fm" name="iPlayer.fm" version="3.0.0" provider-name="mrstealth, dandy">
-  <requires>
-    <import addon="xbmc.python" version="3.0.0"/>
-    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
-    <import addon="script.module.translit" version="3.0.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource" provides="audio" library="default.py">
-    <provides>audio</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>iPlayer.fm - Самые популярые песни</summary>
-    <description>For personal use only</description>
-    <platform>all</platform>
-    <assets>
-        <icon>icon.png</icon>
-        <fanart>fanart.jpg</fanart>
-    </assets>
-  </extension>
-</addon>
-
 <addon id="plugin.video.tivix.net" name="Tivix.net" version="3.0.2" provider-name="mrstealth, dandy">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
@@ -184,6 +186,71 @@
             <fanart>fanart.jpg</fanart>
         </assets>
     </extension>
+</addon>
+
+<addon id="script.dandy.domain.manager" name="Domain Manager" version="2.0.0" provider-name="dandy">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+    <import addon="script.module.simplejson" version="3.17.0"/>
+    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
+  </requires>
+  <extension point="xbmc.python.script" library="default.py">
+    <provides>executable</provides>
+  </extension>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">Domain Manager</summary>
+    <description lang="en">Manage domain setting in Kodi add-ons</description>
+    <disclaimer lang="en"></disclaimer>
+    <language></language>
+    <license>GNU GPL v.3</license>
+    <assets>
+        <icon>icon.png</icon>
+    </assets>
+  </extension>  
+</addon>
+
+<addon id="plugin.audio.music.yandex" name="Яндекс Музыка" version="0.1.4" provider-name="DesSolo, dandy, Eviloid">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+    <import addon="script.module.requests"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" provides="audio" library="default.py">>
+    <provides>audio</provides>
+  </extension>
+  <extension point= "xbmc.addon.metadata">
+    <summary>Яндекс Музыка</summary>
+    <description>Яндекс.Музыка — стриминговый сервис компании «Яндекс», позволяющий прослушивать музыкальные композиции, альбомы, подборки музыкальных треков и получать персональные рекомендации. Также существуют приложения для iOS, Android, Windows и Windows Phone.</description>
+    <description>For personal use only</description>
+    <platform>all</platform>
+    <assets>
+      <icon>icon.png</icon>
+      <fanart>fanart.jpg</fanart>
+    </assets>
+  </extension>
+</addon>
+
+<addon id="plugin.audio.iplayer.fm" name="iPlayer.fm" version="3.0.0" provider-name="mrstealth, dandy">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
+    <import addon="script.module.translit" version="3.0.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" provides="audio" library="default.py">
+    <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>iPlayer.fm - Самые популярые песни</summary>
+    <description>For personal use only</description>
+    <platform>all</platform>
+    <assets>
+        <icon>icon.png</icon>
+        <fanart>fanart.jpg</fanart>
+    </assets>
+  </extension>
 </addon>
 
 <addon id="script.module.dandy.search.history" name="Search History" version="3.0.2" provider-name="dandy">
@@ -217,6 +284,64 @@
   </extension>
 </addon>
 
+<addon id="plugin.audio.dandy.amdm.ru" name="AmDm.ru" version="2.0.1" provider-name="dandy">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"  provides="audio" library="default.py">
+  <provides>audio</provides></extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Аккорды от AmDm.ru</summary>
+    <description>Аккорды от AmDm.ru</description>
+    <platform>all</platform>
+    <assets>
+        <icon>icon.png</icon>
+        <fanart>fanart.jpg</fanart>
+    </assets>
+  </extension>
+</addon>
+
+<addon id="script.module.videohosts" name="VideoHosts" version="3.0.3" provider-name="dandy">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
+  </requires>
+  <extension point='xbmc.service' library="default.py" />
+  <extension point="xbmc.python.module" library="lib" />
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">VideoHosts</summary>
+    <description lang="en">VideoHosts</description>
+    <disclaimer lang="en"></disclaimer>
+    <language></language>
+    <license>GNU GPL v.3</license>
+  </extension>
+</addon>
+
+<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="3.1.0" provider-name="MrStealth, dandy, DesSolo">
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="script.module.xbmc.helpers" version="3.0.0"/>
+        <import addon="script.module.translit" version="3.0.0"/>
+        <import addon="script.module.dandy.search.history" version="3.0.0"/>
+        <import addon="script.module.requests"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">>
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Hdrezka.tv</summary>
+        <description>HDREZKA.TV - Фильмы, мультфильмы и сериалы в высоком качестве</description>
+        <description>For personal use only</description>
+        <platform>all</platform>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
+    </extension>
+</addon>
+
 <addon id="script.module.favorites" name="Favorites for Kodi plugins"  provider-name="mrstealth, dandy" version="3.0.0">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
@@ -232,46 +357,6 @@
     <platform>all</platform>
     <assets>
         <icon>icon.png</icon>
-    </assets>
-  </extension>
-</addon>
-
-<addon id="plugin.video.kinoprosmotr.net" name="Kinoprosmotr.net" version="3.0.0" provider-name="MrStealth, dandy">
-  <requires>
-    <import addon="xbmc.python" version="3.0.0"/>
-    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
-    <import addon="script.module.translit" version="3.0.0"/>
-    <import addon="script.module.videohosts" version="3.0.0"/>
-    <import addon="script.module.dandy.search.history" version="3.0.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Kinoprosmotr.net</summary>
-    <description>For personal use only</description>
-    <platform>all</platform>
-    <assets>
-        <icon>icon.png</icon>
-        <fanart>fanart.jpg</fanart>
-    </assets>
-  </extension>
-</addon>
-
-<addon id="plugin.audio.dandy.amdm.ru" name="AmDm.ru" version="2.0.1" provider-name="dandy">
-  <requires>
-    <import addon="xbmc.python" version="3.0.0"/>
-    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"  provides="audio" library="default.py">
-  <provides>audio</provides></extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Аккорды от AmDm.ru</summary>
-    <description>Аккорды от AmDm.ru</description>
-    <platform>all</platform>
-    <assets>
-        <icon>icon.png</icon>
-        <fanart>fanart.jpg</fanart>
     </assets>
   </extension>
 </addon>
@@ -304,44 +389,7 @@
   </extension>
 </addon>
 
-<addon id="script.module.videohosts" name="VideoHosts" version="3.0.3" provider-name="dandy">
-  <requires>
-    <import addon="xbmc.python" version="3.0.0"/>
-    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
-  </requires>
-  <extension point='xbmc.service' library="default.py" />
-  <extension point="xbmc.python.module" library="lib" />
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary lang="en">VideoHosts</summary>
-    <description lang="en">VideoHosts</description>
-    <disclaimer lang="en"></disclaimer>
-    <language></language>
-    <license>GNU GPL v.3</license>
-  </extension>
-</addon>
-
-<addon id="plugin.video.dandy.seasonvar.ru" name="seasonvar.ru" version="2.0.3" provider-name="dandy">
-  <requires>
-    <import addon="xbmc.python" version="3.0.0"/>
-    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
-    <import addon="script.module.translit" version="3.0.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>seasonvar.ru</summary>
-    <description>For personal use only</description>
-    <platform>all</platform>
-    <assets>
-        <icon>icon.png</icon>
-        <fanart>fanart.jpg</fanart>
-    </assets>
-  </extension>
-</addon>
-
-<addon id="plugin.video.kinokong.net" name="Kinokong.net" version="2.0.5" provider-name="MrStealth, dandy">
+<addon id="plugin.video.kinoprosmotr.net" name="Kinoprosmotr.net" version="3.0.0" provider-name="MrStealth, dandy">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>
     <import addon="script.module.xbmc.helpers" version="3.0.0"/>
@@ -353,7 +401,7 @@
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Kinokong.net</summary>
+    <summary>Kinoprosmotr.net</summary>
     <description>For personal use only</description>
     <platform>all</platform>
     <assets>
@@ -361,53 +409,5 @@
         <fanart>fanart.jpg</fanart>
     </assets>
   </extension>
-</addon>
-
-<addon id="plugin.video.hdrezka.tv" name="Hdrezka.tv" version="3.0.6" provider-name="MrStealth, dandy, DesSolo">
-    <requires>
-        <import addon="xbmc.python" version="3.0.0"/>
-        <import addon="script.module.xbmc.helpers" version="3.0.0"/>
-        <import addon="script.module.translit" version="3.0.0"/>
-        <import addon="script.module.dandy.search.history" version="3.0.0"/>
-        <import addon="script.module.requests"/>
-    </requires>
-    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">>
-        <provides>video</provides>
-    </extension>
-    <extension point="xbmc.addon.metadata">
-        <summary>Hdrezka.tv</summary>
-        <description>HDREZKA.TV - Фильмы, мультфильмы и сериалы в высоком качестве</description>
-        <description>For personal use only</description>
-        <platform>all</platform>
-        <assets>
-            <icon>icon.png</icon>
-            <fanart>fanart.jpg</fanart>
-        </assets>
-    </extension>
-</addon>
-
-<addon id="script.dandy.domain.manager" name="Domain Manager" version="2.0.0" provider-name="dandy">
-  <requires>
-    <import addon="xbmc.python" version="3.0.0"/>
-    <import addon="script.module.simplejson" version="3.17.0"/>
-    <import addon="script.module.xbmc.helpers" version="3.0.0"/>
-  </requires>
-  <extension point="xbmc.python.script" library="default.py">
-    <provides>executable</provides>
-  </extension>
-  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary lang="en">Domain Manager</summary>
-    <description lang="en">Manage domain setting in Kodi add-ons</description>
-    <disclaimer lang="en"></disclaimer>
-    <language></language>
-    <license>GNU GPL v.3</license>
-    <assets>
-        <icon>icon.png</icon>
-    </assets>
-  </extension>  
 </addon>
 </addons>
