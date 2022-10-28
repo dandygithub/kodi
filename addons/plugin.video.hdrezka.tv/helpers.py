@@ -23,5 +23,11 @@ def color_rating(rating):
         return '[COLOR=green][%s][/COLOR]' % rating
 
 
+def built_title(name, country_years, **kwargs):
+    colored_rating = color_rating(kwargs["rating"]["site"])
+    colored_info = f'[COLOR=55FFFFFF]{kwargs["age_limit"]} ({country_years})[/COLOR]'
+    return f'{name} {colored_rating} {colored_info}'
+
+
 def log(msg, level=xbmc.LOGINFO):
     xbmc.log(f'hdrezka: {msg}', level)
