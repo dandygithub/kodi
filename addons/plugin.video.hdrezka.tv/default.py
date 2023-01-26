@@ -398,7 +398,16 @@ class HdrezkaTV:
             content = [response.text]
             if self.translator == "select":
                 content, idt, subtitles = self.select_translator(content[0], content, post_id, uri, idt, "get_movie")
-            streams_block = content[0]
+                if subtitles is None:
+                    # when action == get_movie, None is returned only when some exception occurs,
+                    # so we set the streams_block to default
+                    streams_block = re.search(r'"streams":"([^"]+)', response.text).group(1)
+                else:
+                    # success, get selected translator streams
+                    streams_block = content[0]
+            else:
+                # use default streams_block if translator is not in "select"
+                streams_block = re.search(r'"streams":"([^"]+)', response.text).group(1)
             links = parse_streams(streams_block)
             self.select_quality(links, title, image, subtitles)
 
