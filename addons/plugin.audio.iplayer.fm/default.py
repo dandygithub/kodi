@@ -22,7 +22,7 @@ class iPlayer():
 
         self.language = self.addon.getLocalizedString
         self.handle = int(sys.argv[1])
-        self.url = 'https://ipleer.fm'
+        self.url = 'https://zvyki.com'
 
         self.icover = os.path.join(self.path, 'resources/icons/cover.png')
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
