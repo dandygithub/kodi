@@ -16,10 +16,10 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Get python's version
-        run: python --version
+        run: python27 --version
 
       - name: Run release
-        run: cd $HOME/work/kodi/kodi/addons/ && rm addons.xml.md5 && python postprocess.py && python release.py
+        run: cd $HOME/work/kodi/kodi/addons/ && rm addons.xml.md5 && python27 postprocess.py && python27 release.py
         
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
