@@ -36,6 +36,7 @@ class AmDm():
         self.params = sys.argv[2]
 
         self.url = 'https://amdm.ru'
+        self.curl = 'https://cs.amdm.ru'
 
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
 
@@ -105,7 +106,7 @@ class AmDm():
             for i, item in enumerate(labels):
                 if (i > 3):
                     break
-                uri = sys.argv[0] + "?mode=items&item=%s&url=%s" % (str(i), "https:" + links[i])
+                uri = sys.argv[0] + "?mode=items&item=%s&url=%s" % (str(i), links[i])
                 item_ = xbmcgui.ListItem(self.strip(item), iconImage=self.icon, thumbnailImage=self.icon)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item_, True)
 
@@ -151,9 +152,9 @@ class AmDm():
             links = common.parseDOM(tds, "a", ret="href")
 
             for i, item in enumerate(labels):
-                uri = sys.argv[0] + '?mode=items2&url=%s' % ("https:" + links[i])
+                uri = sys.argv[0] + '?mode=items2&url=%s' % (links[i])
                 try:
-                    photo = ("https:" + photos[i]).replace("33x33", "250")
+                    photo = (photos[i]).replace("33x33", "250")
                 except:
                     photo = self.icon
                 sub = tds[i]
@@ -179,9 +180,9 @@ class AmDm():
             links = common.parseDOM(tds, "a", ret="href")
 
             for i, item in enumerate(labels):
-                uri = sys.argv[0] + '?mode=items2&url=%s' % ("https:" + links[i])
+                uri = sys.argv[0] + '?mode=items2&url=%s' % (links[i])
                 try:
-                    photo = ("https:" + photos[i]).replace("33x33", "250")
+                    photo = (photos[i]).replace("33x33", "250")
                 except:
                     photo = self.icon
                 sub = tds[i]
@@ -230,7 +231,7 @@ class AmDm():
             label = ""            
             for i, item in enumerate(labels):
                 if (i % 2) == 1:
-                    uri = sys.argv[0] + '?mode=show&url=%s' % ("https:" + links[i])
+                    uri = sys.argv[0] + '?mode=show&url=%s' % (links[i])
                     try:
                         photo = (self.url + photos[(i-1)/2]).replace("33x33", "250")
                     except:
@@ -255,14 +256,14 @@ class AmDm():
         response =  common.fetchPage({"link": url})
         if response["status"] == 200:
             photo_div = common.parseDOM(response["content"], "div", attrs={"class": "artist-profile__photo debug1"})[0]
-            photo = "https:" + common.parseDOM(photo_div, "img", ret="src")[0]
+            photo = common.parseDOM(photo_div, "img", ret="src")[0]
             content = common.parseDOM(response["content"], "table", attrs={"id": "tablesort"})
             items = common.parseDOM(content, "tr")
             labels = common.parseDOM(items, "a")
             links = common.parseDOM(items, "a", ret="href")
  
             for i, item in enumerate(items):
-                uri = sys.argv[0] + '?mode=show&url=%s' % ("https:" + links[i])
+                uri = sys.argv[0] + '?mode=show&url=%s' % (links[i])
                 item_ = xbmcgui.ListItem(self.strip("%s" % labels[i]), iconImage=photo, thumbnailImage=photo)
                 xbmcplugin.addDirectoryItem(self.handle, uri, item_, True)
                     
@@ -361,7 +362,7 @@ class AmDm():
                 chord_ = chords[chord]
             except:
                 chord_ = chord    
-            image = self.url + "/images/chords/" + chord_.replace('+', 'p').replace('-', 'z').replace('#', 'w').replace('/', 's') + "_0.gif"
+            image = self.curl + "/images/chords/" + chord_.replace('+', 'p').replace('-', 'z').replace('#', 'w').replace('/', 's') + "_0.gif"
             uri = sys.argv[0] + "?mode=empty"
             item = xbmcgui.ListItem(chord_, thumbnailImage=image)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
