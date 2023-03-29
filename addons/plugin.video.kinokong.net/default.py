@@ -184,7 +184,7 @@ class Kinokong():
         image = self.url + common.parseDOM(container, "img", attrs={"id": "imgbigp"}, ret="src")[0]
         quality = common.parseDOM(container, "div", attrs={"class": "full-quality"})[0]
 
-        manifest_links, subtitles, season, episode = host_manager.get_playlist(response["content"])
+        manifest_links, subtitles, season, episode = host_manager.get_playlist(common.parseDOM(content, "ul", attrs={"class": "newTabs"})[0])
 
         if manifest_links:
              list = sorted(manifest_links.iteritems(), key=itemgetter(0))

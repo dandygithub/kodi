@@ -57,6 +57,7 @@ def get_playlist(data):
     preferred = ADDON.getSetting("preferred")
 
     iframes = common.parseDOM(data, "iframe", ret="src")
+    iframes += common.parseDOM(data, "li", ret="data-iframe")
     
     if (iframes is None or len(iframes)==0):
         iframes = common.parseDOM(data, "iframe", ret="data-src")
