@@ -178,8 +178,9 @@ class Kinokong():
     def getFilmInfo(self, url):
         xbmc.log("*** getFilmInfo for url %s " % url)
         response = common.fetchPage({"link": url})
+        content = response["content"]
 
-        container = common.parseDOM(response["content"], "div", attrs={"id": "container"})
+        container = common.parseDOM(content, "div", attrs={"id": "container"})
         title = self.encode(common.parseDOM(container, "h1")[0])
         image = self.url + common.parseDOM(container, "img", attrs={"id": "imgbigp"}, ret="src")[0]
         quality = common.parseDOM(container, "div", attrs={"class": "full-quality"})[0]
