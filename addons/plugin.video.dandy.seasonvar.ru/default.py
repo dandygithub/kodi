@@ -225,34 +225,34 @@ class Seasonvar():
     def mainMenu(self, itemsSourse = None):
         #self.addon.setSetting('cookie', '')
         self.login()
-        self.cookie=self.addon.getSetting('cookie') if self.addon.getSetting('cookie') else None 
+        self.cookie = self.addon.getSetting('cookie') if self.addon.getSetting('cookie') else None
         if self.cookie and (self.cookie > ''):
             self.authcookie = "svid1=" + self.cookie
             self.vip = True
 
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", self.url)
-        item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(2000))
+        item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(32000))
         item.setArt({ 'thumb': self.icon, 'icon' : self.icon })
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=%s' % ("filter")
-        item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(3000))
+        item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(33000))
         item.setArt({ 'thumb': self.icon, 'icon' : self.icon })        
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         if self.vip:
             uri = sys.argv[0] + '?mode=%s' % ("paused")
-            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(7000))
+            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(37000))
             item.setArt({ 'thumb': self.icon, 'icon' : self.icon })
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
             uri = sys.argv[0] + '?mode=%s' % ("wishlist")
-            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(7001))
+            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(37001))
             item.setArt({ 'thumb': self.icon, 'icon' : self.icon })
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
             uri = sys.argv[0] + '?mode=%s' % ("history")
-            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(7002))
+            item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(37002))
             item.setArt({ 'thumb': self.icon, 'icon' : self.icon })            
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
@@ -301,7 +301,7 @@ class Seasonvar():
             item.setInfo(type='Video', infoLabels={'title': title_})
             commands = []
             uricmd = sys.argv[0] + '?mode=search&keyword=%s&strong=1' % (title.split('/')[0].strip())
-            commands.append((self.language(2000), "Container.Update(%s)" % (uricmd), ))
+            commands.append((self.language(32000), "Container.Update(%s)" % (uricmd), ))
 
             self.addTranslationMenuItem(commands, self.url + link, title)
 
@@ -310,7 +310,7 @@ class Seasonvar():
             
         if page > 0:
             uri = sys.argv[0] + '?page=%s' % ("0")
-            item = xbmcgui.ListItem('[COLOR=FFFFD700]' + self.language(9001) + '[/COLOR]')
+            item = xbmcgui.ListItem('[COLOR=FFFFD700]' + self.language(39001) + '[/COLOR]')
             item.setArt({ 'thumb': self.inext, 'icon' : self.inext })            
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
             
@@ -318,7 +318,7 @@ class Seasonvar():
             dateitemnext = dateitems[page+1]       
             date = common.parseDOM(dateitemnext, "div", attrs={"class": "news-head"})[0]            
             uri = sys.argv[0] + '?mode=%s&page=%s' % ("nextdate", str(int(page) + 1))
-            item = xbmcgui.ListItem('[COLOR=FFFFD700]' + self.language(9000) % (date) + '[/COLOR]')
+            item = xbmcgui.ListItem('[COLOR=FFFFD700]' + self.language(39000) % (date) + '[/COLOR]')
             item.setArt({ 'thumb': self.inext, 'icon' : self.inext })
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
@@ -388,7 +388,7 @@ class Seasonvar():
 
             commands = []
             uricmd = sys.argv[0] + '?mode=search&url=%s&keyword=%s&strong=1' % (self.url, item["title"].split('/')[0].strip())                
-            commands.append((self.language(2000), "Container.Update(%s)" % (uricmd), ))
+            commands.append((self.language(32000), "Container.Update(%s)" % (uricmd), ))
 
             self.addTranslationMenuItem(commands, item["link"], item["title"])
 
@@ -499,7 +499,7 @@ class Seasonvar():
 
         uricmd = sys.argv[0] + '?mode=tranalation&url=%s&title=%s&wm=0' % (url, title)
 
-        cmd_title = self.language(6000)
+        cmd_title = self.language(36000)
         season_id = self.getSeasonIdFromLink(url)
         if season_id and self.translators.contains(season_id):
             cmd_title += " (%s)" % self.translators.get(season_id)
@@ -550,7 +550,7 @@ class Seasonvar():
 
             if int(index_) < 0:
                 dialog = xbmcgui.Dialog()
-                index_ = dialog.select(self.language(6000), titles)
+                index_ = dialog.select(self.language(36000), titles)
 
             if int(index_) < 0:
                 index_ = 0
@@ -871,7 +871,7 @@ class Seasonvar():
     def getUserInput(self):
         kbd = xbmc.Keyboard()
         kbd.setDefault('')
-        kbd.setHeading(self.language(4000))
+        kbd.setHeading(self.language(34000))
         kbd.doModal()
         keyword = None
 
@@ -1054,7 +1054,7 @@ class Seasonvar():
     def getFilterList(self):
         for i, filtertype in enumerate(FILTER_TYPES[0]):
             uri = sys.argv[0] + '?mode=%s&ft=%d' % ("filter", FILTER_TYPES[0][i])
-            item = xbmcgui.ListItem("%s" % self.language(4000 + FILTER_TYPES[0][i]))
+            item = xbmcgui.ListItem("%s" % self.language(34000 + FILTER_TYPES[0][i]))
             item.setArt({ 'thumb': self.icon })
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
         xbmcplugin.setContent(self.handle, 'files')
