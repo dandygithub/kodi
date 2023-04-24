@@ -8,6 +8,58 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: ru\n"
 
+msgctxt "#30100"
+msgid "Account"
+msgstr "Пользователь"
+
+msgctxt "#30101"
+msgid "Login"
+msgstr "Имя"
+
+msgctxt "#30102"
+msgid "Password"
+msgstr "Пароль"
+
+msgctxt "#30200"
+msgid "Advanced"
+msgstr "Дополнительно"
+
+msgctxt "#30201"
+msgid "Site URL"
+msgstr "Сайт"
+
+msgctxt "#30202"
+msgid "Translit"
+msgstr "Транслит"
+
+msgctxt "#30203"
+msgid "Unified search"
+msgstr "Универсальный поиск"
+
+msgctxt "#30204"
+msgid "Begin render type"
+msgstr "Тип рендеринга"
+
+msgctxt "#30205"
+msgid "Load thumbnails"
+msgstr "Загружать иконки"
+
+msgctxt "#30206"
+msgid "New search method"
+msgstr "Новый способ поиска"
+
+msgctxt "#30207"
+msgid "Use translator"
+msgstr "Использовать переводчик"
+
+msgctxt "#30208"
+msgid "Video quality"
+msgstr "Качество видео"
+
+msgctxt "#30209"
+msgid "Adapt for AddToLib addon"
+msgstr "Адаптировать к плагину AddToLib"
+
 msgctxt "#31000"
 msgid "Genres"
 msgstr "Жанры кино"

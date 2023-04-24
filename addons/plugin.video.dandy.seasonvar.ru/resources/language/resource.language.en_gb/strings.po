@@ -8,6 +8,58 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: en_GB\n"
 
+msgctxt "#30100"
+msgid "Account"
+msgstr "Account"
+
+msgctxt "#30101"
+msgid "Login"
+msgstr "Login"
+
+msgctxt "#30102"
+msgid "Password"
+msgstr "Password"
+
+msgctxt "#30200"
+msgid "Advanced"
+msgstr "Advanced"
+
+msgctxt "#30201"
+msgid "Site URL"
+msgstr "Site URL"
+
+msgctxt "#30202"
+msgid "Translit"
+msgstr "Translit"
+
+msgctxt "#30203"
+msgid "Unified search"
+msgstr "Unified search"
+
+msgctxt "#30204"
+msgid "Begin render type"
+msgstr "Begin render type"
+
+msgctxt "#30205"
+msgid "Load thumbnails"
+msgstr "Load thumbnails"
+
+msgctxt "#30206"
+msgid "New search method"
+msgstr "New search method"
+
+msgctxt "#30207"
+msgid "Use translator"
+msgstr "Use translator"
+
+msgctxt "#30208"
+msgid "Video quality"
+msgstr "Video quality"
+
+msgctxt "#30209"
+msgid "Adapt for AddToLib addon"
+msgstr "Adapt for AddToLib addon"
+
 msgctxt "#31000"
 msgid "Genres"
 msgstr "Genres"

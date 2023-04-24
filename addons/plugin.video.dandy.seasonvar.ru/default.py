@@ -19,9 +19,11 @@ import xbmcplugin
 import xbmcgui
 import xbmcaddon
 import XbmcHelpers
+
 common = XbmcHelpers
 
 import Translit as translit
+
 translit = translit.Translit()
 
 socket.setdefaulttimeout(120)
@@ -29,10 +31,11 @@ socket.setdefaulttimeout(120)
 Addon = xbmcaddon.Addon(id='plugin.video.dandy.seasonvar.ru')
 
 import xppod
+
 Decoder = xppod.XPpod(Addon)
 
 try:
-    sys.path.append(os.path.dirname(__file__)+ '/../plugin.video.unified.search')
+    sys.path.append(os.path.dirname(__file__) + '/../plugin.video.unified.search')
     from unified_search import UnifiedSearch
 except:
     pass
@@ -44,11 +47,12 @@ FILTER_TYPE_YEARS = 2
 FILTER_TYPES = ((0, 1, 2), ('genre', 'country', 'year'), ('quotG', 'quotC', 'quotY'))
 WINDOW_VIDEO_NAV = 10025
 
+
 class SeasonvarTranslators():
 
     def __init__(self, data_path):
         self.data_path = data_path
-        
+
         self.data = {}
         if os.path.exists(self.data_path):
             try:
@@ -59,7 +63,7 @@ class SeasonvarTranslators():
     def remove(self, item_id):
         if not item_id in self.data:
             return
-            
+
         del self.data[item_id]
 
         self.save()
@@ -78,6 +82,7 @@ class SeasonvarTranslators():
     def get(self, item_id):
         return self.data[item_id]
 
+
 class Seasonvar():
 
     def __init__(self):
@@ -86,7 +91,9 @@ class Seasonvar():
         self.icon = self.addon.getAddonInfo('icon')
         self.path = self.addon.getAddonInfo('path')
         self.profile = self.addon.getAddonInfo('profile')
-        self.data_path = os.path.join(self.path, 'data')
+        self.data_path = os.path.join(xbmc.translatePath(
+            self.addon.getAddonInfo('profile')),
+            'data')
 
         if not (os.path.exists(self.data_path) and os.path.isdir(self.data_path)):
             os.makedirs(self.data_path)
@@ -101,38 +108,41 @@ class Seasonvar():
         self.inext = os.path.join(self.path, 'resources/icons/next.png')
         self.debug = False
 
-        self.begin_render_type = self.addon.getSetting('begin_render_type') if self.addon.getSetting('begin_render_type') else None        
-        self.load_thumbnails = self.addon.getSetting('load_thumbnails') if self.addon.getSetting('load_thumbnails') else None
-        self.new_search_method = self.addon.getSetting('new_search_method') if self.addon.getSetting('new_search_method') else None
+        self.begin_render_type = self.addon.getSetting('begin_render_type') if self.addon.getSetting(
+            'begin_render_type') else None
+        self.load_thumbnails = self.addon.getSetting('load_thumbnails') if self.addon.getSetting(
+            'load_thumbnails') else None
+        self.new_search_method = self.addon.getSetting('new_search_method') if self.addon.getSetting(
+            'new_search_method') else None
         self.quality = self.addon.getSetting('quality') if self.addon.getSetting('quality') else "sd"
         self.translator = self.addon.getSetting('translator') if self.addon.getSetting('translator') else "standard"
         self.addtolib = self.addon.getSetting('addtolib') if self.addon.getSetting('addtolib') else None
 
-        self.authcookie = ''        
+        self.authcookie = ''
         self.vip = False
-        self.cookie=self.addon.getSetting('cookie') if self.addon.getSetting('cookie') else None 
+        self.cookie = self.addon.getSetting('cookie') if self.addon.getSetting('cookie') else None
         if self.cookie and (self.cookie > ''):
             self.authcookie = "svid1=" + self.cookie
             self.vip = True
-        
+
         self.headers = {
-                "Host" : self.url.split("://")[1],
-                "Connection" : "keep-alive",
-                "X-Requested-With" : "XMLHttpRequest",
-                "Referer" : self.url,
-                "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0"
-                }    
-                
+            "Host": self.url.split("://")[1],
+            "Connection": "keep-alive",
+            "X-Requested-With": "XMLHttpRequest",
+            "Referer": self.url,
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0"
+        }
+
         # cache
-        self.contentMain   = ''
-        self.contentBegin  = None                
-        self.contentFilter = None     
+        self.contentMain = ''
+        self.contentBegin = None
+        self.contentFilter = None
 
         self.addplaylists = []
-        
+
         self.translators = SeasonvarTranslators(os.path.join(self.data_path, "translators.json"))
-        
-        #self.login()
+
+        # self.login()
 
     def getMainContent(self):
         if self.contentMain == "":
@@ -147,30 +157,30 @@ class Seasonvar():
         if login:
             password = self.addon.getSetting('password')
             headers = {
-                "Host" : self.url.split("://")[1],
-                "Referer" : self.url + '/',
-                "Origin" : self.url,
-                "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36"
-                }                    
+                "Host": self.url.split("://")[1],
+                "Referer": self.url + '/',
+                "Origin": self.url,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36"
+            }
             values = {
                 "login": login,
                 "password": password
-                }
-        
+            }
+
             cj = http.cookiejar.CookieJar()
             opener = build_opener(HTTPCookieProcessor(cj), HTTPHandler())
             req = Request(self.url + "/?mod=login", urllib.parse.urlencode(values).encode("utf-8"), headers)
             f = opener.open(req)
-            
+
             for cookie in cj:
                 cookie = str(cookie).split('svid1=')[-1].split(' ')[0].strip()
                 if cookie and (cookie > ""):
                     self.addon.setSetting('cookie', cookie)
-                    #self.authcookie = "svid1=" + cookie
-                    #self.vip = True
+                    # self.authcookie = "svid1=" + cookie
+                    # self.vip = True
 
     def main(self):
-        self.log("Addon: %s"  % self.id)
+        self.log("Addon: %s" % self.id)
         self.log("Handle: %d" % self.handle)
         self.log("Params: %s" % self.params)
 
@@ -182,7 +192,7 @@ class Seasonvar():
         keyword = urllib.parse.unquote_plus(params['keyword']) if 'keyword' in params else None
         external = 'unified' if 'unified' in params else None
         if external == None:
-            external = 'usearch' if 'usearch' in params else None    
+            external = 'usearch' if 'usearch' in params else None
         transpar = params['translit'] if 'translit' in params else None
         strong = params['strong'] if 'strong' in params else None
 
@@ -190,15 +200,15 @@ class Seasonvar():
         idPlaylist = int(params['idpl']) if 'idpl' in params else 0
 
         page = int(params['page']) if 'page' in params else None
-        if page == 0:	
+        if page == 0:
             xbmc.executebuiltin('Container.Update(%s, replace)' % sys.argv[0])
 
         filterType = int(params['ft']) if 'ft' in params else None
         filterValue = params['fv'] if 'fv' in params else None
-        alphaBeta = int(params['ab']) if 'ab' in params else 0   
-      
-        title =  urllib.parse.unquote_plus(params['title']) if 'title' in params else None
-        
+        alphaBeta = int(params['ab']) if 'ab' in params else 0
+
+        title = urllib.parse.unquote_plus(params['title']) if 'title' in params else None
+
         if mode == 'play':
             self.playItem(params['serial'], params['season'], params['episode'])
         elif mode == 'tranalation':
@@ -222,8 +232,8 @@ class Seasonvar():
         else:
             self.mainMenu()
 
-    def mainMenu(self, itemsSourse = None):
-        #self.addon.setSetting('cookie', '')
+    def mainMenu(self, itemsSourse=None):
+        # self.addon.setSetting('cookie', '')
         self.login()
         self.cookie = self.addon.getSetting('cookie') if self.addon.getSetting('cookie') else None
         if self.cookie and (self.cookie > ''):
@@ -232,42 +242,43 @@ class Seasonvar():
 
         uri = sys.argv[0] + '?mode=%s&url=%s' % ("search", self.url)
         item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(32000))
-        item.setArt({ 'thumb': self.icon, 'icon' : self.icon })
+        item.setArt({'thumb': self.icon, 'icon': self.icon})
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         uri = sys.argv[0] + '?mode=%s' % ("filter")
         item = xbmcgui.ListItem("[COLOR=FF00FF00]%s[/COLOR]" % self.language(33000))
-        item.setArt({ 'thumb': self.icon, 'icon' : self.icon })        
+        item.setArt({'thumb': self.icon, 'icon': self.icon})
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         if self.vip:
             uri = sys.argv[0] + '?mode=%s' % ("paused")
             item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(37000))
-            item.setArt({ 'thumb': self.icon, 'icon' : self.icon })
+            item.setArt({'thumb': self.icon, 'icon': self.icon})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
             uri = sys.argv[0] + '?mode=%s' % ("wishlist")
             item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(37001))
-            item.setArt({ 'thumb': self.icon, 'icon' : self.icon })
+            item.setArt({'thumb': self.icon, 'icon': self.icon})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
             uri = sys.argv[0] + '?mode=%s' % ("history")
             item = xbmcgui.ListItem("[COLOR=FF7B68EE]%s[/COLOR]" % self.language(37002))
-            item.setArt({ 'thumb': self.icon, 'icon' : self.icon })            
+            item.setArt({'thumb': self.icon, 'icon': self.icon})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         self.getItems(itemsSourse)
 
         xbmcplugin.setContent(self.handle, 'tvshows')
         xbmcplugin.endOfDirectory(self.handle, True)
-        
+
     def getSerialImage(self, url):
         if (not self.load_thumbnails) or (self.load_thumbnails == "false"):
             return self.icon
-        else:    
-            #response = common.fetchPage({"link": url})            
-            #image = response["content"].split('<meta property="og:image" content="')[-1].split('">')[0]
-            image = "http://cdn." + self.url.split("://")[1] + "/oblojka/%s.jpg" % (url.split("serial-")[-1].split("-")[0])
+        else:
+            # response = common.fetchPage({"link": url})
+            # image = response["content"].split('<meta property="og:image" content="')[-1].split('">')[0]
+            image = "http://cdn." + self.url.split("://")[1] + "/oblojka/%s.jpg" % (
+            url.split("serial-")[-1].split("-")[0])
             return image if image else self.icon
 
     def getItemsByDate(self, page):
@@ -280,52 +291,53 @@ class Seasonvar():
         dateitems = common.parseDOM(data, "div", attrs={"class": "news"})
         count = len(dateitems)
         dateitemnext = None
-        
+
         try:
             dateitem = dateitems[page]
         except:
             return
 
         filmitems = common.parseDOM(dateitem, "a")
-        urls = common.parseDOM(dateitem, "a", ret = "href")
+        urls = common.parseDOM(dateitem, "a", ret="href")
         for i, filmitem in enumerate(filmitems):
             titlediv = common.parseDOM(filmitem, "div", attrs={"class": "news-w"})[0]
             title = self.strip(common.parseDOM(titlediv, "div", attrs={"class": "news_n"})[0])
             titleadd = common.parseDOM(titlediv, "span", attrs={"class": "news_s"})[0]
-            title_ = title + ' [COLOR=FF00FFF0][' + titlediv.split('</div>')[-1].split('<span')[0].strip() + " " + titleadd + '][/COLOR]'
+            title_ = title + ' [COLOR=FF00FFF0][' + titlediv.split('</div>')[-1].split('<span')[
+                0].strip() + " " + titleadd + '][/COLOR]'
             link = urls[i]
             uri = sys.argv[0] + '?mode=show&url=%s&title=%s&wm=0' % (self.url + link, title)
             image = self.getSerialImage(self.url + link)
             item = xbmcgui.ListItem(title_)
-            item.setArt({ 'thumb': image, 'icon' : image })
+            item.setArt({'thumb': image, 'icon': image})
             item.setInfo(type='Video', infoLabels={'title': title_})
             commands = []
             uricmd = sys.argv[0] + '?mode=search&keyword=%s&strong=1' % (title.split('/')[0].strip())
-            commands.append((self.language(32000), "Container.Update(%s)" % (uricmd), ))
+            commands.append((self.language(32000), "Container.Update(%s)" % (uricmd),))
 
             self.addTranslationMenuItem(commands, self.url + link, title)
 
             item.addContextMenuItems(commands)
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-            
+
         if page > 0:
             uri = sys.argv[0] + '?page=%s' % ("0")
             item = xbmcgui.ListItem('[COLOR=FFFFD700]' + self.language(39001) + '[/COLOR]')
-            item.setArt({ 'thumb': self.inext, 'icon' : self.inext })            
+            item.setArt({'thumb': self.inext, 'icon': self.inext})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-            
+
         if (page + 1) < count:
-            dateitemnext = dateitems[page+1]       
-            date = common.parseDOM(dateitemnext, "div", attrs={"class": "news-head"})[0]            
+            dateitemnext = dateitems[page + 1]
+            date = common.parseDOM(dateitemnext, "div", attrs={"class": "news-head"})[0]
             uri = sys.argv[0] + '?mode=%s&page=%s' % ("nextdate", str(int(page) + 1))
             item = xbmcgui.ListItem('[COLOR=FFFFD700]' + self.language(39000) % (date) + '[/COLOR]')
-            item.setArt({ 'thumb': self.inext, 'icon' : self.inext })
+            item.setArt({'thumb': self.inext, 'icon': self.inext})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmcplugin.setContent(self.handle, 'tvshows')
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def getItems(self, itemsSourse = None, page = 0):
+    def getItems(self, itemsSourse=None, page=0):
         print("*** Get items")
         content = None
 
@@ -356,15 +368,15 @@ class Seasonvar():
             return
         else:
             url_ = self.url + '/ajax.php?mode=new'
-            
+
         headers = {
             "Cookie": self.getCookies(),
-            "Host" : self.url.split("://")[1],
+            "Host": self.url.split("://")[1],
             "Origin": self.url,
-            "Connection" : "keep-alive",
-            "X-Requested-With" : "XMLHttpRequest",
-            "Referer" : self.url + "/",
-            "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0"
+            "Connection": "keep-alive",
+            "X-Requested-With": "XMLHttpRequest",
+            "Referer": self.url + "/",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:35.0) Gecko/20100101 Firefox/35.0"
         }
 
         request = urllib.request.Request(url_, urllib.parse.urlencode(values).encode("utf-8"), headers)
@@ -380,25 +392,25 @@ class Seasonvar():
             items = self.parseSidebar(content)
 
         for item in items:
-
             uri = sys.argv[0] + '?mode=show&url=%s&title=%s&wm=0' % (item["link"], item["title"])
             list_item = xbmcgui.ListItem(item["title_full"])
-            list_item.setArt({ 'thumb': item["image"], 'icon' : item["image"] })
+            list_item.setArt({'thumb': item["image"], 'icon': item["image"]})
             list_item.setInfo(type='Video', infoLabels={'title': item["title_full"]})
 
             commands = []
-            uricmd = sys.argv[0] + '?mode=search&url=%s&keyword=%s&strong=1' % (self.url, item["title"].split('/')[0].strip())                
-            commands.append((self.language(32000), "Container.Update(%s)" % (uricmd), ))
+            uricmd = sys.argv[0] + '?mode=search&url=%s&keyword=%s&strong=1' % (
+            self.url, item["title"].split('/')[0].strip())
+            commands.append((self.language(32000), "Container.Update(%s)" % (uricmd),))
 
             self.addTranslationMenuItem(commands, item["link"], item["title"])
 
             list_item.addContextMenuItems(commands)
 
             xbmcplugin.addDirectoryItem(self.handle, uri, list_item, True)
-        
+
         xbmcplugin.setContent(self.handle, 'tvshows')
         xbmcplugin.endOfDirectory(self.handle, True)
-            
+
     def parseHistory(self, content):
 
         if not content:
@@ -414,7 +426,6 @@ class Seasonvar():
         urls = common.parseDOM(items_container[0], "a", ret="href")
 
         for i, item in enumerate(items):
-            
             title = common.parseDOM(item, "b")[0]
             titleadd = item.split('</b>')[1]
             title_ = self.strip(title + ' [COLOR=FF00FFF0][' + titleadd + '][/COLOR]')
@@ -445,11 +456,11 @@ class Seasonvar():
         items = common.parseDOM(items_container[0], "div", attrs={"class": "pgs-marks-el"})
 
         for i, item in enumerate(items):
-            
             urls = common.parseDOM(item, "a", ret="href")
             titlediv = common.parseDOM(item, "div", attrs={"class": "pgs-marks-txt"})[0]
             title = common.parseDOM(titlediv, "div", attrs={"class": "pgs-marks-name"})[0]
-            titleadd = self.strip(common.parseDOM(titlediv, "div", attrs={"class": "pgs-marks-current"})[0].replace('<br>', ','))
+            titleadd = self.strip(
+                common.parseDOM(titlediv, "div", attrs={"class": "pgs-marks-current"})[0].replace('<br>', ','))
             title_ = self.strip(title + ' [COLOR=FF00FFF0][' + titleadd + '][/COLOR]')
             title_ = ' '.join(title_.split()).strip()
 
@@ -474,7 +485,6 @@ class Seasonvar():
         urls = common.parseDOM(content, "a", attrs={"class": "pst rside-p"}, ret="href")
 
         for i, item in enumerate(items):
-            
             titlediv = common.parseDOM(item, "div", attrs={"class": "rside-d"})[0]
             title = common.parseDOM(titlediv, "div", attrs={"class": "rside-t"})[0]
             titleadd = self.strip(common.parseDOM(titlediv, "div", attrs={"class": "rside-ss"})[0].replace('<br>', ','))
@@ -504,7 +514,7 @@ class Seasonvar():
         if season_id and self.translators.contains(season_id):
             cmd_title += " (%s)" % self.translators.get(season_id)
 
-        commands.append((cmd_title, "Container.Update(%s)" % (uricmd), ))
+        commands.append((cmd_title, "Container.Update(%s)" % (uricmd),))
 
     def getSeasonIdFromLink(self, link):
         chunks = link.split('-')
@@ -512,7 +522,7 @@ class Seasonvar():
         if len(chunks) < 2:
             return None
 
-        return chunks[1] 
+        return chunks[1]
 
     def getCookies(self):
         sc = ""
@@ -535,7 +545,7 @@ class Seasonvar():
         try:
             div = common.parseDOM(content, 'ul', attrs={'class': 'pgs-trans'})[0]
         except:
-            return playlist0 
+            return playlist0
         titles = common.parseDOM(div, 'li', attrs={'data-click': 'translate'})
         playlists = common.parseDOM(div, 'script')
 
@@ -558,8 +568,8 @@ class Seasonvar():
                 self.translators.add(id_season, titles[index_])
         else:
             index_ = 0
-            
-        playlist = playlist0 if index_ == 0 else playlists[index_-1]
+
+        playlist = playlist0 if index_ == 0 else playlists[index_ - 1]
         playlist = playlist.split('] = "')[-1].split('";')[0]
 
         return playlist
@@ -569,17 +579,17 @@ class Seasonvar():
             if self.translator == "standard":
                 playlist = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
             else:
-                playlist = self.selectTranslator(content, idseason) 
+                playlist = self.selectTranslator(content, idseason)
         elif (kind == 2):
             playlist = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
         else:
             playlist = content.split('<script>pl[68] = "')[-1].split('";</script>')[0]
-        return self.url + playlist   
-        
+        return self.url + playlist
+
     def getURLPlayList(self, url, content, kind):
 
         idseason, idserial, secure = self.getParamsForRequestPlayList(content)
-        
+
         headers = {
             "Cookie": self.getCookies(),
             "Host": self.url.split("://")[1],
@@ -596,19 +606,25 @@ class Seasonvar():
             "secure": secure
         }
 
-        request = Request(self.url + "/player.php", urllib.parse.urlencode(values).encode("utf-8") , headers)
+        request = Request(self.url + "/player.php", urllib.parse.urlencode(values).encode("utf-8"), headers)
         content = urllib.request.urlopen(request).read().decode("utf-8")
 
         return self.getURLPlayListFromContent(content, kind, idseason)
-        
+
     def partPlaylist(self, url, idPlaylist):
         response = common.fetchPage({"link": url, "cookie": self.getCookies()})
-        image = common.parseDOM(response["content"].decode("UTF-8"), 'link', attrs={'rel': 'image_src'}, ret='href')[0] if common.parseDOM(response["content"].decode("UTF-8"), 'link', attrs={'rel': 'image_src'}, ret='href') else None
-        description = common.parseDOM(response["content"].decode("UTF-8"), 'meta', attrs={'name': 'description'}, ret='content')[0] if common.parseDOM(response["content"].decode("UTF-8"), 'meta', attrs={'name': 'description'}, ret='content') else ''
-        
+        image = common.parseDOM(response["content"].decode("UTF-8"), 'link', attrs={'rel': 'image_src'}, ret='href')[
+            0] if common.parseDOM(response["content"].decode("UTF-8"), 'link', attrs={'rel': 'image_src'},
+                                  ret='href') else None
+        description = \
+        common.parseDOM(response["content"].decode("UTF-8"), 'meta', attrs={'name': 'description'}, ret='content')[
+            0] if common.parseDOM(response["content"].decode("UTF-8"), 'meta', attrs={'name': 'description'},
+                                  ret='content') else ''
+
         idseason, idserial, secure = self.getParamsForRequestPlayList(response["content"].decode("UTF-8"))
-        response = common.fetchPage({"link": self.getURLPlayList(url, response["content"].decode("UTF-8"), 2), "cookie": self.getCookies()})
-        
+        response = common.fetchPage(
+            {"link": self.getURLPlayList(url, response["content"].decode("UTF-8"), 2), "cookie": self.getCookies()})
+
         json_playlist = json.loads(response["content"].decode("UTF-8"))
         playlist = json_playlist[idPlaylist]
         playlist_ = playlist['folder']
@@ -618,9 +634,10 @@ class Seasonvar():
         xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
 
-    def getTitle(self, title1, title2, title3, season, mode = 0):
+    def getTitle(self, title1, title2, title3, season, mode=0):
         if self.addtolib != "false":
-            return title3 + " S" + season.zfill(2) + "E" + title2.split(" ")[0].zfill(2) + " [" + title2.replace(title2.split(" ")[0], "").strip().replace(title2.split(" ")[1], "").strip() + "]"
+            return title3 + " S" + season.zfill(2) + "E" + title2.split(" ")[0].zfill(2) + " [" + title2.replace(
+                title2.split(" ")[0], "").strip().replace(title2.split(" ")[1], "").strip() + "]"
         elif mode == 0:
             return title2
         else:
@@ -633,7 +650,7 @@ class Seasonvar():
         for episode in playlist:
             etitle = self.strip(episode['title'].replace("<br>", "  "))
             playlist_ = None
-            
+
             url = self.decodeEpisodeFileURL(episode)
 
             if not url:
@@ -641,14 +658,14 @@ class Seasonvar():
 
             if playlist_:
                 self.addplaylists.append(playlist_)
-                uri = sys.argv[0] + '?mode=playlist&url=%s&idpl=%d' % (season_url, (len(self.addplaylists)-1))
+                uri = sys.argv[0] + '?mode=playlist&url=%s&idpl=%d' % (season_url, (len(self.addplaylists) - 1))
                 item = xbmcgui.ListItem('[COLOR=FFFFD700]' + etitle + '[/COLOR]')
-                item.setArt({ 'thumb': image, 'icon' : image })
+                item.setArt({'thumb': image, 'icon': image})
                 item.setInfo(type='Video', infoLabels={'title': etitle})
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-            else:    
+            else:
 
-                itemid = episode['galabel'] # ИД сериала + ИД серии, глобально уникальный 
+                itemid = episode['galabel']  # ИД сериала + ИД серии, глобально уникальный
                 season_doc = season_url.split("/")[-1]
                 season_doc = season_doc.split("#")[0]
 
@@ -661,17 +678,17 @@ class Seasonvar():
                 except:
                     pass
                 item = xbmcgui.ListItem(label=self.getTitle(title, etitle, title_orig, season))
-                item.setArt({ 'thumb': image, 'icon' : image })
+                item.setArt({'thumb': image, 'icon': image})
 
                 labels = {'title': self.getTitle(title, etitle, title_orig, season, 1), 'plot': description}
-                
+
                 win.setProperty("seasonvar_real_url_" + itemid, url)
 
                 item.setInfo(type='Video', infoLabels=labels)
                 item.setProperty('IsPlayable', 'true')
                 if subtitle and (subtitle != ''):
                     item.setSubtitles([subtitle])
-                xbmcplugin.addDirectoryItem(self.handle, uri, item, False)            
+                xbmcplugin.addDirectoryItem(self.handle, uri, item, False)
 
     def getPlaylistByUppod(self, content):
         divplayer = common.parseDOM(content, 'div', attrs={'id': 'videoplayer719'})
@@ -684,32 +701,35 @@ class Seasonvar():
         if not playlist:
             hashdiv = common.parseDOM(divplayer, "div", attrs={"id": "translateDivParent"})[0]
             uhash = hashdiv.split('var pl68 = "')[-1].split('";')[0] if 'var pl68 = "' in hashdiv else None
-            pl_url = Decoder.Decode_String(uhash, 'JpvnsR03Tmwu9xgaGLUXztb7H=' + '\n' + 'fNW5elVDyZIiMoQ1B826cd4YkC')                
+            pl_url = Decoder.Decode_String(uhash, 'JpvnsR03Tmwu9xgaGLUXztb7H=' + '\n' + 'fNW5elVDyZIiMoQ1B826cd4YkC')
             response = common.fetchPage({"link": self.url + pl_url})
             json_playlist = json.loads(response["content"].decode("utf-8"))
-            
+
     def checkAccessContent(self, content):
-            bad = common.parseDOM(content, 'div', attrs={'class': 'pgs-player-block'})
-#            if not bad:
-#                bad = common.parseDOM(content, 'div', attrs={'class': 'pgs-msg'})
-            if bad:
-                self.showErrorMessage("Content unavailable")
-                return False
-            else:    
-                return True
+        bad = common.parseDOM(content, 'div', attrs={'class': 'pgs-player-block'})
+        #            if not bad:
+        #                bad = common.parseDOM(content, 'div', attrs={'class': 'pgs-msg'})
+        if bad:
+            self.showErrorMessage("Content unavailable")
+            return False
+        else:
+            return True
 
     def getMultiseasonDiv(self, content):
         return common.parseDOM(content, 'div', attrs={'class': 'pgs-seaslist'})
 
-    def show(self, url, title, withMSeason = True):
+    def show(self, url, title, withMSeason=True):
         print("*** show for url %s " % url)
 
         response = common.fetchPage({"link": url, "cookie": self.getCookies()})
-        
+
         content = response["content"].decode("UTF-8")
         titlemain = common.parseDOM(content, 'title')[0]
-        image = common.parseDOM(content, 'meta', attrs={'property': 'og:image'}, ret='content')[0] if common.parseDOM(content, 'meta', attrs={'property': 'og:image'}, ret='content') else None
-        description = common.parseDOM(content, 'meta', attrs={'name': 'description'}, ret='content')[0] if common.parseDOM(response["content"].decode("utf-8"), 'meta', attrs={'name': 'description'}, ret='content') else ''
+        image = common.parseDOM(content, 'meta', attrs={'property': 'og:image'}, ret='content')[0] if common.parseDOM(
+            content, 'meta', attrs={'property': 'og:image'}, ret='content') else None
+        description = common.parseDOM(content, 'meta', attrs={'name': 'description'}, ret='content')[
+            0] if common.parseDOM(response["content"].decode("utf-8"), 'meta', attrs={'name': 'description'},
+                                  ret='content') else ''
         multiseason = self.getMultiseasonDiv(content)
         title_orig_div = common.parseDOM(content, 'div', attrs={'class': 'pgs-sinfo_list'})[0]
         title_orig = common.parseDOM(title_orig_div, 'span')[0].replace("&#039;", "'")
@@ -718,7 +738,7 @@ class Seasonvar():
         season = None
         for i, part in enumerate(parts):
             if "сезон" in part:
-                season = parts[i-1]
+                season = parts[i - 1]
         if season == None:
             season = "1"
 
@@ -727,11 +747,13 @@ class Seasonvar():
             for serialitem in serialitems:
                 url = self.url + common.parseDOM(serialitem, "a", ret="href")[0]
                 title = common.parseDOM(serialitem, "a")[0]
-                title = title.replace('<span>', '[COLOR=FF00FFF0][').replace('</span>', '][/COLOR]').replace('<small>', '[COLOR=FF00FFF0][').replace('</small>', '][/COLOR]').replace("&#039;", "'")
+                title = title.replace('<span>', '[COLOR=FF00FFF0][').replace('</span>', '][/COLOR]').replace('<small>',
+                                                                                                             '[COLOR=FF00FFF0][').replace(
+                    '</small>', '][/COLOR]').replace("&#039;", "'")
                 title = ' '.join(title.split()).strip()
                 uri = sys.argv[0] + '?mode=show&url=%s&title=%s&wm=0' % (url, title)
                 item = xbmcgui.ListItem(self.strip(title))
-                item.setArt({ 'thumb': image, 'icon' : image })
+                item.setArt({'thumb': image, 'icon': image})
                 item.setInfo(type='Video', infoLabels={'title': title})
                 item.select(title.find('>>>') > -1)
 
@@ -742,7 +764,7 @@ class Seasonvar():
                 item.addContextMenuItems(commands)
 
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
-           
+
         else:
             playlist = self.extractPlaylist(url, content)
 
@@ -750,9 +772,9 @@ class Seasonvar():
             self.parsePlaylist(url, playlist, image, description, title, season, title_orig, idserial)
 
         if withMSeason and multiseason:
-           xbmcplugin.setContent(self.handle, 'files')
+            xbmcplugin.setContent(self.handle, 'files')
         else:
-           xbmcplugin.setContent(self.handle, 'episodes')
+            xbmcplugin.setContent(self.handle, 'episodes')
 
         xbmcplugin.endOfDirectory(self.handle, True)
 
@@ -769,7 +791,6 @@ class Seasonvar():
             ctl = win.getControl(cid)
             ctl.selectItem(int(focus_on))
 
-
     def decodeEpisodeFileURL(self, episode):
         try:
             regex = r"(\/\/.*?=)"
@@ -782,8 +803,7 @@ class Seasonvar():
             self.log("Exception: %s" % str(e))
             return ""
 
-
-    def extractPlaylist(self, url, content = None):
+    def extractPlaylist(self, url, content=None):
 
         if content is None:
             response = common.fetchPage({"link": url, "cookie": self.getCookies()})
@@ -794,7 +814,7 @@ class Seasonvar():
 
         self.addplaylists = []
 
-        try: 
+        try:
             response = common.fetchPage({"link": self.getURLPlayList(url, content, 0), "cookie": self.getCookies()})
             json_playlist = json.loads(response["content"].decode("UTF-8"))
         except Exception as e:
@@ -832,10 +852,11 @@ class Seasonvar():
             "file_id": file_id,
             "serial_id": serial_id,
             "svid1": self.cookie,
-            "idTrans": 0 # неважно
+            "idTrans": 0  # неважно
         }
 
-        request = urllib.request.Request(self.url + "/plStat.php", urllib.parse.urlencode(values).encode("utf-8"), headers)
+        request = urllib.request.Request(self.url + "/plStat.php", urllib.parse.urlencode(values).encode("utf-8"),
+                                         headers)
         content = urllib.request.urlopen(request).read().decode("utf-8")
 
     def playItem(self, serial, season, episode):
@@ -843,7 +864,7 @@ class Seasonvar():
 
         window = xbmcgui.Window(WINDOW_VIDEO_NAV)
 
-        season_url = self.url +  '/' +  season
+        season_url = self.url + '/' + season
 
         episode_url = window.getProperty("seasonvar_real_url_" + episode)
 
@@ -859,7 +880,7 @@ class Seasonvar():
                 return
 
         if self.vip:
-            (season_id, file_id) = episode.split("_")			
+            (season_id, file_id) = episode.split("_")
             self.updateSiteHistory(season_url, serial, season_id, file_id)
 
         item = xbmcgui.ListItem(path=episode_url)
@@ -884,10 +905,10 @@ class Seasonvar():
         return keyword
 
     def newSearchMethod(self, keyword, external, unified_search_results, strong):
-        url = self.url +  '/search?' +  urllib.parse.urlencode({"q" : keyword})
+        url = self.url + '/search?' + urllib.parse.urlencode({"q": keyword})
 
         response = common.fetchPage({"link": url})
-        data =  response["content"].decode("utf-8")
+        data = response["content"].decode("utf-8")
         searchitems = common.parseDOM(data, 'div', attrs={'class': 'pgs-search-wrap'})
         for searchitem in searchitems:
             url = self.url + common.parseDOM(searchitem, "a", ret="href")[0]
@@ -896,17 +917,17 @@ class Seasonvar():
             title = common.parseDOM(titlediv, "a")[0]
             seasons = common.parseDOM(titlediv, "span")
             descr = common.parseDOM(titlediv, "p")[0]
-            if (not strong) or (keyword.upper() == title.decode('utf-8').upper()): 
+            if (not strong) or (keyword.upper() == title.decode('utf-8').upper()):
                 if seasons:
-                    title = title + ' [COLOR=FF00FFF0][' + seasons[0] + '][/COLOR]'                  
-            
+                    title = title + ' [COLOR=FF00FFF0][' + seasons[0] + '][/COLOR]'
+
                 if (external == 'unified'):
                     self.log("Perform unified search and return results")
                     unified_search_results.append({'title': title, 'url': url, 'image': image, 'plugin': self.id})
                 else:
                     uri = sys.argv[0] + '?mode=show&url=%s&wm=1' % url
                     item = xbmcgui.ListItem(title)
-                    item.setArt({ 'thumb': image, 'icon' : image })
+                    item.setArt({'thumb': image, 'icon': image})
                     item.setInfo(type='Video', infoLabels={'title': title, 'plot': descr})
 
                     commands = []
@@ -917,23 +938,23 @@ class Seasonvar():
 
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-    def search(self, keyword, external, transpar = None, strong = None):
+    def search(self, keyword, external, transpar=None, strong=None):
         print("*** search for keyword %s " % keyword)
-        
+
         keyword_ = keyword if keyword else self.getUserInput()
-        if keyword_: 
+        if keyword_:
             keyword_ = self.USTranslit(keyword_, transpar) if (external == 'unified') else keyword_
             keyword_ = keyword_ if isinstance(keyword_, str) else str(keyword_)
         else:
-           return 
-        
+            return
+
         unified_search_results = []
-        
+
         if keyword_:
             if self.new_search_method and (self.new_search_method == "true"):
                 self.newSearchMethod(keyword_, external, unified_search_results, strong)
             else:
-                url = self.url + '/autocomplete.php?' + urllib.parse.urlencode({"query" : keyword_})
+                url = self.url + '/autocomplete.php?' + urllib.parse.urlencode({"query": keyword_})
                 response = common.fetchPage({"link": url})
                 count = 1
                 s = json.loads(response["content"].decode("utf-8"))
@@ -946,11 +967,12 @@ class Seasonvar():
                     if surl.find('.html') > -1:
                         url = self.url + '/' + s['data'][i]
                         if (external == 'unified'):
-                            unified_search_results.append({'title': title, 'url': url, 'image': self.icon, 'plugin': self.id})
+                            unified_search_results.append(
+                                {'title': title, 'url': url, 'image': self.icon, 'plugin': self.id})
                         else:
                             uri = sys.argv[0] + '?mode=show&url=%s&wm=1' % url
                             item = xbmcgui.ListItem(title)
-                            item.setArt({'tumb' : self.icon, 'icon' : self.icon })
+                            item.setArt({'tumb': self.icon, 'icon': self.icon})
 
                             commands = []
 
@@ -962,7 +984,7 @@ class Seasonvar():
 
             if (external == 'unified'):
                 UnifiedSearch().collect(unified_search_results)
-            else: 
+            else:
                 xbmcplugin.setContent(self.handle, 'tvshows')
                 xbmcplugin.endOfDirectory(self.handle, True)
 
@@ -976,47 +998,49 @@ class Seasonvar():
         if self.contentFilter:
             content = self.contentFilter
         else:
-            content = self.getMainContent().split('<div class="sidebar lside">')[-1].split('<script type="text/javascript">')[0]
+            content = \
+            self.getMainContent().split('<div class="sidebar lside">')[-1].split('<script type="text/javascript">')[0]
             self.contentFilter = content
-            
+
         kind = self.getFilterPrefix(filterType)
-        
+
         filterdiv = common.parseDOM(content, "select", attrs={"data-filter": kind})[0]
         filterlist = common.parseDOM(filterdiv, "option")
         filteridlist = common.parseDOM(filterdiv, "option", ret="value")
-        for i, filteritem in enumerate(filterlist):        
+        for i, filteritem in enumerate(filterlist):
             fv = filteridlist[i]
             fvn = filteritem
 
             uri = sys.argv[0] + '?mode=filter&ft=%d&fv=%s' % (filterType, fv)
 
             item = xbmcgui.ListItem(fvn)
-            item.setArt({ 'thumb': self.icon, 'icon' : self.icon })
+            item.setArt({'thumb': self.icon, 'icon': self.icon})
             item.setInfo(type='Video', infoLabels={'title': fvn})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
         xbmc.executebuiltin('Container.SetViewMode(52)')
         xbmcplugin.endOfDirectory(self.handle, True)
-        
+
     def getFilterToValues(self, filterType, filterValue):
         values = {}
         if filterValue != "all":
             values["filter[" + FILTER_TYPES[2][filterType] + "][]"] = urllib.parse.unquote_plus(filterValue)
         values["filter[sortTo][]"] = "name"
-        values["filter[rait]"] = "kp"                     
+        values["filter[rait]"] = "kp"
         return values
 
-    def getFilterValueList(self, filterType, filterValue, alphaBeta = 0):
+    def getFilterValueList(self, filterType, filterValue, alphaBeta=0):
         values = self.getFilterToValues(filterType, filterValue)
-        
-        request = urllib.request.Request(self.url + "/index.php", urllib.parse.urlencode(values).encode("utf-8"), self.headers)
+
+        request = urllib.request.Request(self.url + "/index.php", urllib.parse.urlencode(values).encode("utf-8"),
+                                         self.headers)
         content = urllib.request.urlopen(request).read().decode("utf-8")
 
         abheaders = common.parseDOM(content, "div", attrs={"class": "letter"})
         abitems = common.parseDOM(content, "div", attrs={"data-tabgr": "letter"})
         for i, abheader in enumerate(abheaders):
             ab = common.parseDOM(abheader, "span")[0]
-            if i == alphaBeta:             
+            if i == alphaBeta:
                 filmitems = common.parseDOM(abitems[i], "a")
                 filmlinks = common.parseDOM(abitems[i], "a", ret="href")
                 for j, filmitem in enumerate(filmitems):
@@ -1028,7 +1052,7 @@ class Seasonvar():
                     uri = sys.argv[0] + '?mode=show&url=%s&wm=1' % (self.url + filmlinks[j])
                     image = self.getSerialImage(self.url + filmlinks[j])
                     item = xbmcgui.ListItem(title)
-                    item.setArt({ 'thumb': image, 'icon' : image })
+                    item.setArt({'thumb': image, 'icon': image})
                     item.setInfo(type='Video', infoLabels={'title': title})
                     if titleadd > "":
                         item.setProperty('IsAvailable', 'false')
@@ -1038,13 +1062,13 @@ class Seasonvar():
                     self.addTranslationMenuItem(commands, self.url + filmlinks[j], title)
 
                     item.addContextMenuItems(commands)
-                        
+
                     xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
             else:
                 uri = sys.argv[0] + '?mode=filter&ft=%d&fv=%s&ab=%s' % (filterType, filterValue, i)
                 image = self.icon
                 item = xbmcgui.ListItem('[COLOR=FFFFD700]' + ab + '[/COLOR]')
-                item.setArt({ 'thumb': image, 'icon' : image })
+                item.setArt({'thumb': image, 'icon': image})
                 item.setInfo(type='Video', infoLabels={'title': ab})
                 xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
@@ -1055,7 +1079,7 @@ class Seasonvar():
         for i, filtertype in enumerate(FILTER_TYPES[0]):
             uri = sys.argv[0] + '?mode=%s&ft=%d' % ("filter", FILTER_TYPES[0][i])
             item = xbmcgui.ListItem("%s" % self.language(34000 + FILTER_TYPES[0][i]))
-            item.setArt({ 'thumb': self.icon })
+            item.setArt({'thumb': self.icon})
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
         xbmcplugin.setContent(self.handle, 'files')
         xbmcplugin.endOfDirectory(self.handle, True)
@@ -1067,7 +1091,7 @@ class Seasonvar():
             self.getFilterTypeList(filterType)
         else:
             self.getFilterList()
-            
+
     # *** Add-on helpers
     def log(self, message):
         if self.debug:
@@ -1085,6 +1109,7 @@ class Seasonvar():
 
     def encode(self, string):
         return string
+
 
 Seasonvar = Seasonvar()
 Seasonvar.main()
