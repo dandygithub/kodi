@@ -1,17 +1,33 @@
 <settings>
-  <setting id="domain" type="text" label="Site URL" default="http://seasonvar.ru"/>
-  <setting id="translit" type="bool" label="Translit" default="false"/>
-  <setting id="unified_search" type="bool" label="Unified search" default="false"/>
-  <setting type="bool" id="united_search" visible="false" default="true" />
-  <setting type="text" id="us_command" visible="false" default="mode=search&keyword=" />
-  <setting type="sep"/>
-  <setting id="begin_render_type" type="labelenum" label="Begin render type" values="paused|history|new|popular|newest|bydate|wishlist" default="new"/>
-  <setting id="load_thumbnails" type="bool" label="Load thumbnails" default="true"/>
-  <setting id="new_search_method" type="bool" label="New search method" default="true"/>
-  <setting id="translator" type="labelenum" label="Use translator" values="standard|select" default="standard"/>
-  <setting id="quality" type="labelenum" label="Video quality" enable="!eq(3,)" values="sd|hd" default="sd"/>
-  <setting id="addtolib" type="bool" label="Adapt for AddToLib addon" default="false"/>
-  <setting type="sep"/>
-  <setting id="login" type="text" label="Login" default=""/>
-  <setting id="password" type="text" label="Password" enable="!eq(-1,)" option="hidden" default=""/>
+  <category id="account" label="30100">
+    <setting id="login" type="text" label="30101" default=""/>
+    <setting id="password" type="text" label="30102"
+             enable="!eq(-1,)"
+             option="hidden" default=""/>
+  </category>
+  <category id="account" label="30200">
+    <setting id="domain" type="text" label="30201"
+             default="http://seasonvar.ru"/>
+    <setting id="translit" type="bool" label="30202"
+             default="false"/>
+    <setting id="unified_search" type="bool" label="30203"
+             default="false"/>
+    <setting type="bool" id="united_search" visible="false"
+             default="true" />
+    <setting type="text" id="us_command" visible="false"
+             default="mode=search&keyword=" />
+    <setting id="begin_render_type" type="labelenum" label="30204"
+             values="paused|history|new|popular|newest|bydate|wishlist"
+             default="new"/>
+    <setting id="load_thumbnails" type="bool" label="30205"
+             default="true"/>
+    <setting id="new_search_method" type="bool" label="30206"
+             default="true"/>
+    <setting id="translator" type="labelenum" label="30207"
+             values="standard|select" default="standard"/>
+    <setting id="quality" type="labelenum" label="30208" enable="!eq(3,)"
+             values="sd|hd" default="sd"/>
+    <setting id="addtolib" type="bool" label="30209"
+             default="false"/>
+  </category>
 </settings>

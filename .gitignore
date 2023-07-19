@@ -1,6 +1,6 @@
 # editor
 .vscode
-
+.idea
 # temp
 .DS_Store
 Thumbs.db
