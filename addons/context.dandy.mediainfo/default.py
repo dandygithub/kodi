@@ -11,7 +11,8 @@ import urllib.request, urllib.parse, urllib.error
 import simplejson as json
 
 sys.path.append(os.path.dirname(__file__)+ '/../script.extendedinfo')
-sys.path.append(os.path.dirname(__file__)+ '/../script.extendedinfo/lib')
+sys.path.append(os.path.dirname(__file__)+ '/../script.extendedinfo/resources')
+sys.path.append(os.path.dirname(__file__)+ '/../script.extendedinfo/resources/lib')
 try:
     sys.path.append(os.path.dirname(__file__)+ '/../script.module.urllib3/lib')
     sys.path.append(os.path.dirname(__file__)+ '/../script.module.chardet/lib')
@@ -25,7 +26,7 @@ try:
     sys.path.append(os.path.dirname(__file__)+ '/../script.module.kodi-six/libs')
 except:
     pass
-import TheMovieDB as tmdb
+import themoviedb as tmdb
 
 ID = "context.dandy.mediainfo"
 ADDON = xbmcaddon.Addon(ID)
