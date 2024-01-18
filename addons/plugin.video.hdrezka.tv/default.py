@@ -402,7 +402,7 @@ class HdrezkaTV:
     def play_episode(self, url, referer, post_id, season_id, episode_id, title, image, idt, data):
         log("*** play_episode")
         subtitles = None
-        if (data == "null"):
+        if data == "null" or data == "":
             data = {
                 "id": post_id,
                 "translator_id": idt,
