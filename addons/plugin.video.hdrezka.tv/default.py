@@ -301,12 +301,27 @@ class HdrezkaTV:
     def get_links(data):
         log("*** get_links")
         links = data.replace("\/", "/").split(",")
+        if len(links) == 0:
+            log("*** empty links")
+            return {}
         manifest_links = {}
+        known_quality = {
+            '360p': 360,
+            '480p': 480,
+            '720p': 720,
+            '1080p': 1080,
+            '1080p Quad': 1440,
+            '1080p Ultra': 2160,
+            '2K': 2048,
+            '4K': 4096,
+        }
         for link in links:
-            if not ("Ultra" in link):
-                manifest_links[int(link.split("]")[0].replace("[", "").replace("p", ""))] = link.split("]")[1]
+            quality_name, href = link[1:].split("]", 1)
+            if quality_name in known_quality:
+                quality = known_quality[quality_name]
+                manifest_links[quality] = href
             else:
-                manifest_links[2160] = link.split("]")[1]
+                log("*** unknown quality in links %s" % quality_name)
         return manifest_links
         
     @staticmethod
