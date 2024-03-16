@@ -12,31 +12,45 @@ from pluginSettings import *
 
 common = XbmcHelpers
 
+
 def selectQuality(plugin, links, title, image, subtitles=None):
-    lst = sorted(links.iteritems(), key=itemgetter(0))
-    i = 0
-    quality_prev = 360
-    qualitySetting = getQualitySettings()
-    for quality, link in lst:
-        i += 1
-        if qualitySetting != 'select':
-            if quality > int(qualitySetting[:-1]):
-                plugin.play(links[quality_prev], subtitles)
-                break
-            elif len(lst) == i:
-                plugin.play(links[quality], subtitles)
+    if len(links) == 0:
+        raise Exception("Empty Links")
+    if len(links) == 1:
+        quality, link = next(links.iteritems())
+        plugin.play(link, subtitles)
+        return
+    setting = getQualitySettings()
+    if setting in QUALITY_TYPES:
+        items = links.iteritems()
+        items_f = filter(lambda it: QUALITY_TYPES[it[0]] <= QUALITY_TYPES[setting], items)
+        items_s = sorted(items_f, key=lambda it: QUALITY_TYPES[it[0]], reverse=True)
+        if len(items_s) > 0:
+            quality, link = items_s[0]
+            plugin.play(link, subtitles)
+            return
         else:
-            film_title = "%s (%s)" % (title, str(quality) + 'p')
-            uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote(link)
-            item = xbmcgui.ListItem(film_title, iconImage=image)
-            item.setInfo(
-                type='Video',
-                infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0}
-            )
-            item.setProperty('IsPlayable', 'true')
-            plugin.set_item_subtitles(item, subtitles)
-            xbmcplugin.addDirectoryItem(getHandleSettings(), uri, item, False)
-        quality_prev = quality
+            log("*** selectQuality: no matching quality link found, invoke select")
+    elif setting != 'select':
+        log("*** selectQuality: unknown quality setting %s, invoke select" % setting)
+    for quality, link in sorted(links.iteritems(), key=lambda it: QUALITY_TYPES[it[0]]):
+        quality_title = "%s (%s)" % (title, quality)
+        addQualityItem(plugin, link, quality_title, image, subtitles)
+
+
+def addQualityItem(plugin, link, title, image, subtitles=None):
+    uri = sys.argv[0] + '?mode=play&url=%s' % urllib.quote(link)
+    infoLabels={
+        'title': title,
+        'overlay': xbmcgui.ICON_OVERLAY_WATCHED,
+        'playCount': 0,
+    }
+    item = xbmcgui.ListItem(title, iconImage=image)
+    item.setInfo(type='Video', infoLabels=infoLabels)
+    item.setProperty('IsPlayable', 'true')
+    plugin.set_item_subtitles(item, subtitles)
+    xbmcplugin.addDirectoryItem(getHandleSettings(), uri, item, False)
+
 
 def selectTranslator3(plugin, content, tvshow, post_id, url, idt, action):
     try:
