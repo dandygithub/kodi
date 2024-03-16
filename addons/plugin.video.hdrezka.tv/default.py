@@ -297,32 +297,22 @@ class HdrezkaTV:
         r_decoded = base64.b64decode(''.join(templist).replace('#h','',1))
         #--Result preparing      -- finish#
         return r_decoded
+
     @staticmethod
     def get_links(data):
-        log("*** get_links")
-        links = data.replace("\/", "/").split(",")
-        if len(links) == 0:
-            log("*** empty links")
+        if len(data) == 0:
             return {}
-        manifest_links = {}
-        known_quality = {
-            '360p': 360,
-            '480p': 480,
-            '720p': 720,
-            '1080p': 1080,
-            '1080p Quad': 1440,
-            '1080p Ultra': 2160,
-            '2K': 2048,
-            '4K': 4096,
-        }
-        for link in links:
-            quality_name, href = link[1:].split("]", 1)
-            if quality_name in known_quality:
-                quality = known_quality[quality_name]
-                manifest_links[quality] = href
-            else:
-                log("*** unknown quality in links %s" % quality_name)
-        return manifest_links
+        links = {}
+        for item in data.split(","):
+            try:
+                quality, link = item[1:].split("]", 1)
+                if quality in QUALITY_TYPES:
+                    links[quality] = link.replace("\/", "/")
+                else:
+                    log("*** get_links: unknown quality (%s)" % quality)
+            except Exception as e:
+                log("*** get_links: parse failed (%s): %s" % (item, str(e)))
+        return links
         
     @staticmethod
     def get_subtitles(response):
