@@ -3,13 +3,13 @@
 ## Download zip repo file
 [18 Lea](https://github.com/dandygithub/kodi/blob/master/addons/zip/repository.dandy.kodi/repository.dandy.kodi-1.4.2.zip?raw=true)  
 [19 Matrix](https://github.com/dandygithub/kodi/blob/matrix/addons/zip/repository.dandy.kodi/repository.dandy.kodi-2.0.0.zip?raw=true)  
-[20 Nexus](https://github.com/dandygithub/kodi/blob/matrix/addons/zip/repository.dandy.kodi/repository.dandy.kodi-2.1.0.zip?raw=true)
+[20 Nexus](https://github.com/dandygithub/kodi/blob/matrix/addons/zip/repository.dandy.kodi/repository.dandy.kodi-2.1.0.zip?raw=true)  
 [21 Omega](https://github.com/dandygithub/kodi/blob/matrix/addons/zip/repository.dandy.kodi/repository.dandy.kodi-2.1.0.zip?raw=true)
 
 ## View source code
 [18 Lea](https://github.com/dandygithub/kodi/tree/master)  
 [19 Matrix](https://github.com/dandygithub/kodi/tree/matrix)  
-[20 Nexus](https://github.com/dandygithub/kodi/tree/matrix)
+[20 Nexus](https://github.com/dandygithub/kodi/tree/matrix)  
 [21 Omega](https://github.com/dandygithub/kodi/tree/matrix)
 
 ## Contribute
