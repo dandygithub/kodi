@@ -228,10 +228,10 @@ class HdrezkaTV:
 
         for i, name in enumerate(titles):
             info = self.get_item_additional_info(post_ids[i])
-            title = helpers.built_title(name, country_years[i], **info)
+            title = helpers.built_title(name, country_years[i*2], **info)
             image = self._normalize_url(common.parseDOM(div_covers[i], "img", ret='src')[0])
             item_uri = router.build_uri('show', uri=router.normalize_uri(links[i]))
-            year, country, genre = get_media_attributes(country_years[i])
+            year, country, genre = get_media_attributes(country_years[i*2])
             item = xbmcgui.ListItem(title)
             item.setArt({'thumb': image, 'icon': image})
             item.setInfo(
@@ -432,12 +432,15 @@ class HdrezkaTV:
             "is_touch": 1
         })
 
-        additional['description'] = common.parseDOM(response.text, 'div', attrs={'class': 'b-content__bubble_text'})[0]
+        try:
+            additional['description'] = common.parseDOM(response.text, 'div', attrs={'class': 'b-content__bubble_text'})[0]
+        except IndexError:
+            log(f'fault parse description post_id: {post_id}')
 
         try:
             additional['age_limit'] = re.search(r'<b style="color: #333;">(\d+\+)</b>', response.text).group(1)
         except AttributeError:
-            log(f'fault parse age_limit post_id: "{post_id}"')
+            log(f'fault parse age_limit post_id: {post_id}')
 
         try:
             site_rating = common.parseDOM(response.text, 'div', attrs={'class': 'b-content__bubble_rating'})[0]
