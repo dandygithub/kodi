@@ -792,12 +792,13 @@ class Seasonvar():
             ctl.selectItem(int(focus_on))
 
     def decodeEpisodeFileURL(self, episode):
+        schema = "http:"
         try:
             regex = r"(\/\/.*?=)"
             url = re.sub(regex, '', episode['file'])
             import base64
             url = base64.b64decode(url[2:]).decode("utf-8")
-            url = url.split(" ")[0]
+            url = schema + url.split(" ")[0]
             return url
         except Exception as e:
             self.log("Exception: %s" % str(e))
