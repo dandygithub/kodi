@@ -15,6 +15,7 @@ from urllib.request import Request, build_opener, HTTPCookieProcessor, HTTPHandl
 import http.cookiejar
 
 import xbmc
+import xbmcvfs
 import xbmcplugin
 import xbmcgui
 import xbmcaddon
@@ -93,8 +94,7 @@ class Seasonvar():
         self.profile = self.addon.getAddonInfo('profile')
         self.media_path = os.path.join(self.path, "resources", "media")
         self.poster = os.path.join(self.media_path, "poster.jpg")
-        self.data_path = os.path.join(xbmc.translatePath(self.profile), 'data')
-
+        self.data_path = os.path.join(xbmcvfs.translatePath(self.profile), 'data')
         if not (os.path.exists(self.data_path) and os.path.isdir(self.data_path)):
             os.makedirs(self.data_path)
 
