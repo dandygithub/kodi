@@ -577,13 +577,13 @@ class Seasonvar():
     def getURLPlayListFromContent(self, content, kind, idseason):
         if (kind == 0):
             if self.translator == "standard":
-                playlist = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
+                playlist = content.split('var pl = {\'0\': "')[-1].split('"};')[0]
             else:
                 playlist = self.selectTranslator(content, idseason)
         elif (kind == 2):
-            playlist = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
+            playlist = content.split('var pl = {\'0\': "')[-1].split('"};')[0]
         else:
-            playlist = content.split('<script>pl[68] = "')[-1].split('";</script>')[0]
+            playlist = content.split('pl[68] = "')[-1].split('";')[0]
         return self.url + playlist
 
     def getURLPlayList(self, url, content, kind):
@@ -710,7 +710,7 @@ class Seasonvar():
         #            if not bad:
         #                bad = common.parseDOM(content, 'div', attrs={'class': 'pgs-msg'})
         if bad:
-            self.showErrorMessage("Content unavailable")
+            self.showErrorMessage("Content unavailable (1)")
             return False
         else:
             return True
@@ -819,7 +819,7 @@ class Seasonvar():
             response = common.fetchPage({"link": self.getURLPlayList(url, content, 0), "cookie": self.getCookies()})
             json_playlist = json.loads(response["content"].decode("UTF-8"))
         except Exception as e:
-            self.showErrorMessage("Content unavailable")
+            self.showErrorMessage("Content unavailable (2)")
             return []
 
         playlist = json_playlist
@@ -834,10 +834,10 @@ class Seasonvar():
                 elif type(json_playlist) is list:
                     playlist = json_playlist
                 else:
-                    raise ValueError("Content unavailable")
+                    raise ValueError("Content unavailable (3)")
 
             except Exception as e:
-                self.showErrorMessage("Content unavailable")
+                self.showErrorMessage("Content unavailable (4)")
                 return []
 
         return playlist
