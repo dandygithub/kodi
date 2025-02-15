@@ -39,3 +39,21 @@ def load_cookies(src):
 
 def log(msg, level=xbmc.LOGINFO):
     xbmc.log(f'hdrezka: {msg}', level)
+
+def get_subtitles(response):
+    subtitles = None
+    try:
+        subtitles = response["subtitle"].split(',')
+        for si in range(len(subtitles)):
+            parts = subtitles[si].split(']');
+            subtitles[si] = parts[1].replace("\/", "/")
+    except Exception as ex:
+        log(f'fault decode subtitles ex: {ex}')
+    return subtitles
+
+def set_item_subtitles(item, subtitles):
+    if subtitles:
+        if not isinstance(subtitles, list):
+            subtitles = [ subtitles ]
+
+        item.setSubtitles(subtitles) 
