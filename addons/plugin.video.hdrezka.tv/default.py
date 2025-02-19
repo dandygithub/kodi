@@ -21,7 +21,7 @@ import requests
 import helpers
 import router
 from voidboost import parse_streams
-from helpers import log, get_media_attributes, color_rating
+from helpers import log, get_media_attributes, color_rating, get_subtitles, set_item_subtitles
 
 common = XbmcHelpers
 transliterate = Translit()
@@ -289,8 +289,7 @@ class HdrezkaTV:
                     infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0}
                 )
                 item.setProperty('IsPlayable', 'true')
-                if subtitles:
-                    item.setSubtitles([subtitles])
+                set_item_subtitles(item, subtitles)
                 xbmcplugin.addDirectoryItem(self.handle, item_uri, item, False)
 
     def select_translator(self, content, tv_show, post_id, url, idt, action):
@@ -339,10 +338,7 @@ class HdrezkaTV:
         subtitles = None
         if action == "get_movie":
             playlist = [response["url"]]
-            try:
-                subtitles = response["subtitle"].split(']')[1].split(',')[0].replace(r"\/", "/")
-            except Exception as ex:
-                log(f'fault decode subtitles ex: {ex}')
+            subtitles = get_subtitles(response)
         else:
             episodes = response["episodes"]
             playlist = common.parseDOM(episodes, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
@@ -551,8 +547,7 @@ class HdrezkaTV:
     def play(self, url, subtitles=None):
         log(f'*** play url: {url} subtitles: {subtitles}')
         item = xbmcgui.ListItem(path=url)
-        if subtitles:
-            item.setSubtitles([subtitles])
+        set_item_subtitles(item, subtitles)
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
     def play_episode(self, url, post_id, season_id, episode_id, title, image, idt):
@@ -572,9 +567,9 @@ class HdrezkaTV:
         }
         response = self.make_response('POST', "/ajax/get_cdn_series/", data=data, headers=headers).json()
         data = response["url"]
-
+        subtitles = get_subtitles(response)
         links = parse_streams(data)
-        self.select_quality(links, title, image, None)
+        self.select_quality(links, title, image, subtitles)
         xbmcplugin.setContent(self.handle, 'episodes')
         xbmcplugin.endOfDirectory(self.handle, True)
 
