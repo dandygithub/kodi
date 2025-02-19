@@ -578,6 +578,10 @@ class HdrezkaTV:
             item = self.url + item
         return item
 
+def correct_cookies(cookies):
+  cookies['hdmbbs'] = '1'
+  return cookies
+
 def authorize(plugin):
     log('*** authorize')
 
@@ -591,7 +595,7 @@ def authorize(plugin):
     if not data.get('success'):
         raise Exception('Authorization failed status: %s text: %s' % (login_response.status_code, login_response.text))
 
-    plugin.addon.setSetting('cookies', helpers.dump_cookies(login_response.cookies))
+    plugin.addon.setSetting('cookies', helpers.dump_cookies(correct_cookies(login_response.cookies)))
 
 def main():
     plugin = HdrezkaTV()
