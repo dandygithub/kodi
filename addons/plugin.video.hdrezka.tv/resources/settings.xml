@@ -14,11 +14,17 @@
         <setting id="username" type="text" label="Username" />
         <setting id="password" type="text" label="Password" />
         <setting id="cookies" type="text" visible="false" label="Authorization cookies" />
+        <setting type="sep"/>
         <setting type="action" label="Authorize" action="RunScript(plugin.video.hdrezka.tv, 0, authorize)" />
     </category>
     <category label="Proxy settings">
         <setting id="use_proxy" type="bool" label="Use proxy settings" default="false" />
         <setting id="protocol" type="labelenum" label="Protocol" values="http|https|socks5" default="http"/>
         <setting id="proxy_url" type="text" label="URL" default="USERNAME:PASSWORD@IPADDRESS:PORT"/>
+    </category>
+    <category label="External config">
+        <setting id="external_config_url" type="text" label="URL"/>
+        <setting type="sep"/>
+        <setting type="action" label="Update" action="RunScript(plugin.video.hdrezka.tv, 0, external_config_update)" />
     </category>
 </settings>

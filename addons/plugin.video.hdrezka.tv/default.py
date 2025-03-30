@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# Writer (c) 2012-2021, MrStealth, dandy
+# Writer (c) 2012-2025, MrStealth, dandy
+
 import os
 import re
 import sys
@@ -18,10 +19,10 @@ from Translit import Translit
 
 import requests
 
+import actions
 import helpers
 import router
 from voidboost import parse_streams
-from helpers import log, get_media_attributes, color_rating, get_subtitles, set_item_subtitles
 
 common = XbmcHelpers
 transliterate = Translit()
@@ -77,12 +78,13 @@ class HdrezkaTV:
             'https': proxy_protocol + '://' + proxy_url
         }
 
-    def make_response(self, method, uri, params=None, data=None, cookies=None, headers=None):
-        return self.session.request(method, self.url + uri, params=params, data=data, headers=headers, cookies=cookies)
+    def make_response(self, method, uri, params=None, data=None, cookies=None, headers=None, **kwargs):
+        return self.session.request(method, self.url + uri, params=params, data=data, headers=headers, cookies=cookies, **kwargs)
 
-    def main(self):
-        params = router.parse_uri(sys.argv[2])
-        log(f'*** main params: {params}')
+    def main(self, action):
+        params = router.parse_uri(action)
+        helpers.log(f'*** main params: {params}')
+
         mode = params.get('mode')
         if mode == 'play':
             self.play(params.get('url'))
@@ -237,7 +239,7 @@ class HdrezkaTV:
             title = helpers.built_title(name, country_years[i*2], **info)
             image = self._normalize_url(common.parseDOM(div_covers[i], "img", ret='src')[0])
             item_uri = router.build_uri('show', uri=router.normalize_uri(links[i]))
-            year, country, genre = get_media_attributes(country_years[i*2])
+            year, country, genre = helpers.get_media_attributes(country_years[i*2])
             item = xbmcgui.ListItem(title)
             item.setArt({'thumb': image, 'icon': image})
             item.setInfo(
@@ -276,7 +278,7 @@ class HdrezkaTV:
         for name, quality, url in streams:
             if self.quality != 'select':
                 if (name == self.quality) or (int(self.quality.split('p')[0]) >= quality):
-                    log(f'selected quality name: {name}')
+                    helpers.log(f'selected quality name: {name}')
                     self.play(url, subtitles)
                     break
             else:
@@ -289,14 +291,14 @@ class HdrezkaTV:
                     infoLabels={'title': film_title, 'overlay': xbmcgui.ICON_OVERLAY_WATCHED, 'playCount': 0}
                 )
                 item.setProperty('IsPlayable', 'true')
-                set_item_subtitles(item, subtitles)
+                helpers.set_item_subtitles(item, subtitles)
                 xbmcplugin.addDirectoryItem(self.handle, item_uri, item, False)
 
     def select_translator(self, content, tv_show, post_id, url, idt, action):
         try:
             div = common.parseDOM(content, 'ul', attrs={'id': 'translators-list'})[0]
         except Exception as ex:
-            log(f'select_translator fault parse dom ex: {ex}')
+            helpers.log(f'select_translator fault parse dom ex: {ex}')
             return tv_show, idt, None
         titles = common.parseDOM(div, 'li', ret='title')
         ids = common.parseDOM(div, 'li', ret="data-translator_id")
@@ -338,7 +340,7 @@ class HdrezkaTV:
         subtitles = None
         if action == "get_movie":
             playlist = [response["url"]]
-            subtitles = get_subtitles(response)
+            subtitles = helpers.get_subtitles(response)
         else:
             episodes = response["episodes"]
             playlist = common.parseDOM(episodes, "ul", attrs={"class": "b-simple_episodes__list clearfix"})
@@ -360,12 +362,12 @@ class HdrezkaTV:
                 ret="data-translator_id"
             )[0]
         except Exception as ex:
-            log(f'fault parseDOM ex: {ex}')
+            helpers.log(f'fault parseDOM ex: {ex}')
             try:
                 idt = response.text.split("sof.tv.initCDNSeriesEvents")[-1].split("{")[0]
                 idt = idt.split(",")[1].strip()
             except Exception as ex:
-                log(f'fault search CDN ex: {ex}')
+                helpers.log(f'fault search CDN ex: {ex}')
         subtitles = None
         tv_show = common.parseDOM(response.text, "div", attrs={"id": "simple-episodes-tabs"})
         if tv_show:
@@ -437,18 +439,18 @@ class HdrezkaTV:
         try:
             additional['description'] = common.parseDOM(response.text, 'div', attrs={'class': 'b-content__bubble_text'})[0]
         except IndexError:
-            log(f'fault parse description post_id: {post_id}')
+            helpers.log(f'fault parse description post_id: {post_id}')
 
         try:
             additional['age_limit'] = re.search(r'<b style="color: #333;">(\d+\+)</b>', response.text).group(1)
         except AttributeError:
-            log(f'fault parse age_limit post_id: {post_id}')
+            helpers.log(f'fault parse age_limit post_id: {post_id}')
 
         try:
             site_rating = common.parseDOM(response.text, 'div', attrs={'class': 'b-content__bubble_rating'})[0]
             additional['rating']['site'] = common.parseDOM(site_rating, 'b')[0]
         except IndexError:
-            log(f'fault parse site rating post_id: {post_id}')
+            helpers.log(f'fault parse site rating post_id: {post_id}')
 
         try:
             imdb_rating_block = common.parseDOM(response.text, 'span', attrs={'class': 'imdb'})[0]
@@ -456,7 +458,7 @@ class HdrezkaTV:
             additional['rating']['imdb'] = imdb_rating
             additional['description'] = f'IMDb: {helpers.color_rating(imdb_rating)}\n{additional["description"]}'
         except IndexError:
-            log(f'fault parse imdb rating post_id: {post_id}')
+            helpers.log(f'fault parse imdb rating post_id: {post_id}')
 
         try:
             kp_rating_block = common.parseDOM(response.text, 'span', attrs={'class': 'kp'})[0]
@@ -464,7 +466,7 @@ class HdrezkaTV:
             additional['rating']['kp'] = kp_rating
             additional['description'] = f' Кинопоиск: {helpers.color_rating(kp_rating)}\n{additional["description"]}'
         except IndexError:
-            log(f'fault parse kp rating post_id: {post_id}')
+            helpers.log(f'fault parse kp rating post_id: {post_id}')
 
         return additional
 
@@ -495,7 +497,8 @@ class HdrezkaTV:
         return keyword
 
     def search(self, keyword, external):
-        log(f'*** search keyword: {keyword} external: {external}')
+        helpers.log(f'*** search keyword: {keyword} external: {external}')
+
         keyword = urllib.parse.unquote_plus(keyword) if (external is not None) else self.get_user_input()
         if not keyword:
             return self.menu()
@@ -520,7 +523,7 @@ class HdrezkaTV:
             title = helpers.built_title(name, country_years[i], **info)
             image = self._normalize_url(common.parseDOM(items[i], "img", ret='src')[0])
             item_uri = router.build_uri('show', uri=router.normalize_uri(links[i]))
-            year, country, genre = get_media_attributes(country_years[i])
+            year, country, genre = helpers.get_media_attributes(country_years[i])
             item = xbmcgui.ListItem(title)
             item.setArt({'thumb': image, 'icon': image})
             item.setInfo(
@@ -545,9 +548,10 @@ class HdrezkaTV:
         xbmcplugin.endOfDirectory(self.handle, True)
 
     def play(self, url, subtitles=None):
-        log(f'*** play url: {url} subtitles: {subtitles}')
+        helpers.log(f'*** play url: {url} subtitles: {subtitles}')
+
         item = xbmcgui.ListItem(path=url)
-        set_item_subtitles(item, subtitles)
+        helpers.set_item_subtitles(item, subtitles)
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
     def play_episode(self, url, post_id, season_id, episode_id, title, image, idt):
@@ -567,7 +571,7 @@ class HdrezkaTV:
         }
         response = self.make_response('POST', "/ajax/get_cdn_series/", data=data, headers=headers).json()
         data = response["url"]
-        subtitles = get_subtitles(response)
+        subtitles = helpers.get_subtitles(response)
         links = parse_streams(data)
         self.select_quality(links, title, image, subtitles)
         xbmcplugin.setContent(self.handle, 'episodes')
@@ -578,32 +582,17 @@ class HdrezkaTV:
             item = self.url + item
         return item
 
-def correct_cookies(cookies):
-  cookies['hdmbbs'] = '1'
-  return cookies
-
-def authorize(plugin):
-    log('*** authorize')
-
-    login_response = plugin.make_response('POST', '/ajax/login/', data={
-        'login_name': plugin.addon.getSetting('username'),
-        'login_password': plugin.addon.getSetting('password'),
-        'login_not_save': '0'
-    })
-
-    data = login_response.json()
-    if not data.get('success'):
-        raise Exception('Authorization failed status: %s text: %s' % (login_response.status_code, login_response.text))
-
-    plugin.addon.setSetting('cookies', helpers.dump_cookies(correct_cookies(login_response.cookies)))
 
 def main():
     plugin = HdrezkaTV()
 
-    if sys.argv[2] == 'authorize':
-        authorize(plugin)
+    action = sys.argv[2]
+    if action == 'authorize':
+        actions.authorize(plugin)
+    elif action == 'external_config_update':
+        actions.external_config_update(plugin)
     else:
-        plugin.main()
+        plugin.main(action)
 
 if __name__ == '__main__':
     main()
