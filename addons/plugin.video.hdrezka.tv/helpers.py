@@ -1,7 +1,21 @@
 import json
+from contextlib import contextmanager
 
 from requests.cookies import cookiejar_from_dict
+
 import xbmc
+
+
+def log(msg, level=xbmc.LOGINFO):
+    xbmc.log(f'hdrezka: {msg}', level)
+
+@contextmanager
+def busy_dialog():
+    xbmc.executebuiltin('ActivateWindow(busydialognocancel)')
+    try:
+        yield
+    finally:
+        xbmc.executebuiltin('Dialog.Close(busydialognocancel)')
 
 
 def get_media_attributes(source):
@@ -37,15 +51,12 @@ def dump_cookies(cookies):
 def load_cookies(src):
     return cookiejar_from_dict(json.loads(src))
 
-def log(msg, level=xbmc.LOGINFO):
-    xbmc.log(f'hdrezka: {msg}', level)
-
 def get_subtitles(response):
     subtitles = None
     try:
         subtitles = response["subtitle"].split(',')
         for si in range(len(subtitles)):
-            parts = subtitles[si].split(']');
+            parts = subtitles[si].split(']')
             subtitles[si] = parts[1].replace("\/", "/")
     except Exception as ex:
         log(f'fault decode subtitles ex: {ex}')
