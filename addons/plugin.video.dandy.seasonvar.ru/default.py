@@ -541,7 +541,8 @@ class Seasonvar():
 
     def selectTranslator(self, content, id_season):
 
-        playlist0 = content.split('<script>var pl = {\'0\': "')[-1].split('"};</script>')[0]
+        playlist0 = content.split('var pl = {\'0\': "')[-1].split('"};')[0]
+
         try:
             div = common.parseDOM(content, 'ul', attrs={'class': 'pgs-trans'})[0]
         except:
@@ -606,8 +607,8 @@ class Seasonvar():
             "secure": secure
         }
 
-        request = Request(self.url + "/player.php", urllib.parse.urlencode(values).encode("utf-8"), headers)
-        content = urllib.request.urlopen(request).read().decode("utf-8")
+        #request = Request(self.url + "/player.php", urllib.parse.urlencode(values).encode("utf-8"), headers)
+        #content = urllib.request.urlopen(request).read().decode("utf-8")
 
         return self.getURLPlayListFromContent(content, kind, idseason)
 
@@ -816,7 +817,8 @@ class Seasonvar():
         self.addplaylists = []
 
         try:
-            response = common.fetchPage({"link": self.getURLPlayList(url, content, 0), "cookie": self.getCookies()})
+            url__ = self.getURLPlayList(url, content, 0)
+            response = common.fetchPage({"link": url__, "cookie": self.getCookies()})
             json_playlist = json.loads(response["content"].decode("UTF-8"))
         except Exception as e:
             self.showErrorMessage("Content unavailable (2)")
