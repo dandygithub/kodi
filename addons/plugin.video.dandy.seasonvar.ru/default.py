@@ -308,6 +308,7 @@ class Seasonvar():
             link = urls[i]
             uri = sys.argv[0] + '?mode=show&url=%s&title=%s&wm=0' % (self.url + link, title)
             image = self.getSerialImage(self.url + link)
+
             item = xbmcgui.ListItem(title_)
             item.setArt({'thumb': image, 'icon': image})
             item.setInfo(type='Video', infoLabels={'title': title_})
@@ -494,7 +495,7 @@ class Seasonvar():
             sidebar_item = {
                 "title": title,
                 "title_full": title_,
-                "image": common.parseDOM(item, "img", ret="src")[0],
+                "image": "http://" + common.parseDOM(item, "img", ret="src")[0],
                 "link": self.url + urls[i]
             }
 
