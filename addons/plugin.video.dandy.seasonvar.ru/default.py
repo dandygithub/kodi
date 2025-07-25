@@ -277,8 +277,9 @@ class Seasonvar():
         else:
             # response = common.fetchPage({"link": url})
             # image = response["content"].split('<meta property="og:image" content="')[-1].split('">')[0]
-            image = "http://cdn." + self.url.split("://")[1] + "/oblojka/%s.jpg" % (
-                url.split("serial-")[-1].split("-")[0])
+            
+            image = "http://cdn.bigsv.ru/oblojka/%s.jpg" % (url.split("serial-")[-1].split("-")[0])
+
             return image if image else self.icon
 
     def getItemsByDate(self, page):
