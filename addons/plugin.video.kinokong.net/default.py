@@ -113,7 +113,7 @@ class Kinokong():
 
         if response["status"] == 200:
             content = common.parseDOM(response["content"].decode("cp1251"), "div", attrs={"id": "container"})
-            items = common.parseDOM(content, "div", attrs={"class": "owl-item"})
+            items = common.parseDOM(content, "div", attrs={"class": "owl-item item-main"})
 
             link_container = common.parseDOM(items, "h2", attrs={"class": "main-sliders-title"})
             titles = common.parseDOM(link_container, "a")

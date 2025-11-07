@@ -13,8 +13,6 @@ from . import iframe
 from . import videocdn
 from . import hdvb
 
-from . import tools
-
 socket.setdefaulttimeout(120)
 
 ID = 'script.module.videohosts'
@@ -48,6 +46,11 @@ def get_playlist_by_vhost(vhost, iframe):
     except:
         return None, None, None, None
 
+def get_iframes(data):
+    iframes = common.parseDOM(data, "iframe", ret="src")
+    if len(iframes) == 0:
+        iframes = common.parseDOM(data, "li", ret="data-iframe")
+    return iframes
 
 def get_playlist(data):
     manifest_links = {}
@@ -58,8 +61,7 @@ def get_playlist(data):
     mode = ADDON.getSetting("mode")
     preferred = ADDON.getSetting("preferred")
 
-    iframes = common.parseDOM(data, "iframe", ret="src")
-    iframes += common.parseDOM(data, "li", ret="data-iframe")
+    iframes = get_iframes(data)
     
     for item in iframes:
         if re.search("vid\d+", item):
