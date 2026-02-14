@@ -353,7 +353,7 @@ class Kinokong():
             link = url.split(' or ')[-1]
         else:
             link = url
-        item = xbmcgui.ListItem(path=link)
+        item = xbmcgui.ListItem(path=link + "|Referer=" + self.url)
         xbmcplugin.setResolvedUrl(self.handle, True, item)
 
     def getUserInput(self):
