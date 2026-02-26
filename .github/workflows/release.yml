@@ -25,7 +25,7 @@ jobs:
       #  run: echo "${{toJson(github)}}"
         
       - name: Run make release
-        run: cd $HOME/work/kodi/kodi/ && make release
+        run: cd $GITHUB_WORKSPACE && make release
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
