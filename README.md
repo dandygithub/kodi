@@ -2,7 +2,7 @@
 ### Addons
 |Icon|Name|Id|Description|Latest version|MD5|
 |---|---|---|---|---|---|
-|![](addons/zip/plugin.video.kinokong.net/icon.png?raw=true)|Kinokong.net|plugin.video.kinokong.net|Kinokong.net|[2.0.8](addons/zip/plugin.video.kinokong.net/plugin.video.kinokong.net-2.0.8.zip?raw=true)|`6c98117bbd866ff784ae3af9dba63f37`|
+|![](addons/zip/plugin.video.kinokong.net/icon.png?raw=true)|Kinokong.net|plugin.video.kinokong.net|Kinokong.net|[2.0.9](addons/zip/plugin.video.kinokong.net/plugin.video.kinokong.net-2.0.9.zip?raw=true)|`f862b9b3945c46d7e6b984b88ba27fb2`|
 |![](addons/zip/repository.dandy.kodi/icon.png?raw=true)|Dandy's Kodi Repository (Matrix)|repository.dandy.kodi|Install Add-ons from Dandy add-on repository|[2.1.0](addons/zip/repository.dandy.kodi/repository.dandy.kodi-2.1.0.zip?raw=true)|`14640627d4ee36d5e4df8f7f2e0b8bdd`|
 |![](addons/zip/script.dandy.strm.marker/icon.png?raw=true)|STRM Marker|script.dandy.strm.marker|STRM Marker|[2.0.0](addons/zip/script.dandy.strm.marker/script.dandy.strm.marker-2.0.0.zip?raw=true)|`7d560c96ff9b08e2dec0add0db0409d2`|
 |![](addons/zip/plugin.video.dandy.seasonvar.ru/icon.png?raw=true)|seasonvar.ru|plugin.video.dandy.seasonvar.ru|Seasovar.ru Kodi Video Addon|[2.0.9](addons/zip/plugin.video.dandy.seasonvar.ru/plugin.video.dandy.seasonvar.ru-2.0.9.zip?raw=true)|`b4137559b24671d1ee4ca9025bae1725`|
