@@ -69,8 +69,8 @@ class Kinokong():
             self.search(keyword, external)
         if mode == 'history':
             self.history()
-        if mode == 'genres':
-            self.listGenres(url)
+        if mode == 'categories':
+            self.listCategories(url)
         if mode == 'podborka':
             self.podborka(url)
         if mode == 'show':
@@ -91,7 +91,7 @@ class Kinokong():
         item.setArt({ 'thumb': self.icon, 'icon' : self.icon })        
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
 
-        uri = sys.argv[0] + '?mode=%s&url=%s' % ("genres", self.url)
+        uri = sys.argv[0] + '?mode=%s&url=%s' % ("categories", self.url)
         item = xbmcgui.ListItem("[COLOR=FF00FFF0]%s[/COLOR]" % self.language(1000))
         item.setArt({ 'thumb': self.icon, 'icon' : self.icon })        
         xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
@@ -317,26 +317,26 @@ class Kinokong():
         xbmcplugin.endOfDirectory(self.handle, True)
 
 
-    def listGenres(self, url):
-        print("list genres")
+    def listCategories(self, url):
+        print("list categories")
         response = common.fetchPage({"link": url})
         menu = common.parseDOM(response["content"].decode("cp1251"), "ul", attrs={"class": "reset top-menu"})
-        genres = common.parseDOM(menu, "li")
+        categories = common.parseDOM(menu, "li")
 
         links = [
-          self.url + '/filmes/',
+          self.url + '/kino/',
           self.url + '/' + self.news + '/',
-          self.url + '/seriez/',
-          self.url + '/cartoons/',
+          self.url + '/serials/',
+          self.url + '/multiki/',
           self.url + '/animes/',
           self.url + '/doc/'
         ]
 
-        for i, genre in enumerate(genres[:-1]):
-            title = common.parseDOM(genre, "a")[0]
-            link = links[i]
+        for i, link in enumerate(links[:-1]):
+            category = categories[i]
+            title = common.parseDOM(category, "a")[0]
 
-            uri = sys.argv[0] + '?mode=category&url=%s' % links[i]
+            uri = sys.argv[0] + '?mode=category&url=%s' % link
             item = xbmcgui.ListItem(self.encode(title))
             item.setArt({ 'thumb': self.icon, 'icon' : self.icon })            
             xbmcplugin.addDirectoryItem(self.handle, uri, item, True)
