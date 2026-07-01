@@ -1,11 +1,18 @@
 import xbmc
-import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
+import urllib.request, urllib.error, urllib.parse
 import socket
 import XbmcHelpers as common
 
 socket.setdefaulttimeout(120)
 
 def get_response(url, headers, values, method):
+    return decode(get_response_full(url, headers, values, method).read())
+
+def get_response2(url, headers, values, method):
+    response = get_response_full(url, headers, values, method)
+    return decode(response.read()), response.geturl()
+
+def get_response_full(url, headers, values, method):
     if method == 'GET':
         encoded_kwargs = urllib.parse.urlencode(list(values.items()))
         argStr = ""
@@ -18,7 +25,7 @@ def get_response(url, headers, values, method):
     else:
         request = urllib.request.Request(url, encode(urllib.parse.urlencode(list(values.items()))), headers)
     request.get_method = lambda: method
-    return decode(urllib.request.urlopen(request).read())
+    return urllib.request.urlopen(request)
 
 def encode(param):
     try:
