@@ -24,6 +24,65 @@ import helpers
 import router
 from voidboost import parse_streams
 
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+import json
+import urllib.parse
+import time
+
+import hashlib
+import sys
+
+ADDON_PATH = os.path.dirname(__file__)
+LIB_PATH = os.path.join(ADDON_PATH, "resources", "lib")
+
+if LIB_PATH not in sys.path:
+    sys.path.insert(0, LIB_PATH)
+xbmc.log(str(sys.path), xbmc.LOGINFO)
+from bs4 import BeautifulSoup
+
+if LIB_PATH not in sys.path:
+    sys.path.insert(0, LIB_PATH)
+
+
+def anubis_pow(random_data, difficulty):
+
+    nonce = 0
+
+    zero_bytes = difficulty // 2
+    half = difficulty % 2
+
+    while True:
+
+        digest = hashlib.sha256(
+            (random_data + str(nonce)).encode()
+        ).digest()
+
+        ok = True
+
+        for i in range(zero_bytes):
+            if digest[i] != 0:
+                ok = False
+                break
+
+        if ok and half:
+            if digest[zero_bytes] >> 4 != 0:
+                ok = False
+
+        if ok:
+            return digest.hex(), nonce
+
+        nonce += 1
+
+
+retry = Retry(
+    total=3,
+    backoff_factor=1,
+    status_forcelist=[500,502,503,504]
+)
+
+
 common = XbmcHelpers
 transliterate = Translit()
 
@@ -33,6 +92,70 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:40.0) Gecko/20100101 Firefo
 
 
 class HdrezkaTV:
+
+    def solve_anubis(self, html, url):
+
+        soup = BeautifulSoup(html, "html.parser")
+
+        node = soup.find(
+            id="anubis_challenge"
+        )
+
+        if node is None:
+            helpers.log("No anubis_challenge found")
+            return False
+
+        data = json.loads(node.text)
+
+        challenge = data["challenge"]
+
+        start = time.time()
+
+        hash_value, nonce = anubis_pow(
+            challenge["randomData"],
+            challenge["difficulty"]
+        )
+
+        elapsed = int((time.time()-start)*1000)
+
+
+        helpers.log(
+            f"Anubis solved nonce={nonce}"
+        )
+
+
+        from urllib.parse import urljoin
+
+        pass_url = urljoin(
+            self.url,
+            "/.within.website/x/cmd/anubis/api/pass-challenge"
+        )
+
+        pass_url += "?" + urllib.parse.urlencode({
+            "id": challenge["id"],
+            "response": hash_value,
+            "nonce": nonce,
+            "elapsedTime": elapsed,
+            "redir": url
+        })
+
+
+        r = self.session.get(
+            pass_url,
+            allow_redirects=False
+        )
+
+
+        helpers.log(
+            f"Anubis pass status {r.status_code}"
+        )
+
+        helpers.log(
+            f"Cookies: {self.session.cookies}"
+        )
+
+        return True
+
     def __init__(self):
         self.id = 'plugin.video.hdrezka.tv'
         self.addon = xbmcaddon.Addon(self.id)
@@ -52,13 +175,28 @@ class HdrezkaTV:
         self.proxies = self._load_proxy_settings()
         self.session = self._load_session()
 
+    def _save_session(self):
+        try:
+            self.addon.setSetting("cookies",helpers.dump_cookies(self.session.cookies))
+        except Exception as e:
+            helpers.log("save cookies failed: %s" % e)
+
     def _load_session(self):
         session = requests.Session()
-        session.headers = {
-                'Host': self.domain,
-                'Referer': self.domain,
-                'User-Agent': USER_AGENT,
-            }
+
+        retry = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[500, 502, 503, 504]
+        )
+
+        adapter = HTTPAdapter(max_retries=retry)
+        session.mount("https://", adapter)
+        session.mount("http://", adapter)
+        session.headers.update({
+            "User-Agent": USER_AGENT,
+            "Referer": self.url + "/",
+        })
 
         saved_cookies = self.addon.getSetting('cookies')
         if saved_cookies:
@@ -78,8 +216,29 @@ class HdrezkaTV:
             'https': proxy_protocol + '://' + proxy_url
         }
 
-    def make_response(self, method, uri, params=None, data=None, cookies=None, headers=None, **kwargs):
-        return self.session.request(method, self.url + uri, params=params, data=data, headers=headers, cookies=cookies, **kwargs)
+    def make_response(self, method, uri, params=None, data=None,cookies=None, headers=None, **kwargs):
+
+        self.headers = {
+            "User-Agent":
+            "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0"
+        }
+        if cookies:
+            self.session.cookies.update(cookies)
+
+        response = self.session.request(
+            method,
+            self.url + uri,
+            params=params,
+            data=data,
+            headers=headers,
+            proxies=self.proxies,
+            timeout=120,
+            **kwargs
+        )
+
+        self._save_session()
+
+        return response
 
     def main(self, action):
         params = router.parse_uri(action)
@@ -349,7 +508,35 @@ class HdrezkaTV:
     def show(self, uri):
         response = self.make_response('GET', uri)
 
-        content = common.parseDOM(response.text, "div", attrs={"class": "b-content__main"})[0]
+        if "anubis_challenge" in response.text:
+            helpers.log("Anubis challenge detected")
+
+            if not self.solve_anubis(response.text, uri):
+                helpers.log("Anubis solve failed")
+                return
+
+            response = self.make_response('GET', uri)
+            helpers.log("received protection page instead of movie page")
+            helpers.log(response.text)
+            helpers.log("Solving Anubis")
+
+            if not self.solve_anubis(response.text, uri):
+                helpers.log("Anubis failed")
+                return
+
+            response = self.make_response('GET', uri)
+
+        content_list = common.parseDOM(
+            response.text,
+            "div",
+            attrs={"class": "b-content__main"}
+        )
+
+        if not content_list:
+            helpers.log("fault parse main content")
+            return
+
+        content = content_list[0]
         image = common.parseDOM(content, "img", attrs={"itemprop": "image"}, ret="src")[0]
         title = common.parseDOM(content, "h1")[0]
         post_id = common.parseDOM(response.text, "input", attrs={"id": "post_id"}, ret="value")[0]

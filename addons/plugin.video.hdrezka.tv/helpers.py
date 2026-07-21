@@ -5,7 +5,47 @@ from requests.cookies import cookiejar_from_dict
 
 import xbmc
 
+from requests.cookies import RequestsCookieJar, create_cookie
 
+
+def dump_cookies(cookies):
+    data = []
+
+    for cookie in cookies:
+        data.append({
+            "name": cookie.name,
+            "value": cookie.value,
+            "domain": cookie.domain,
+            "path": cookie.path,
+            "secure": cookie.secure,
+            "expires": cookie.expires,
+        })
+
+    return json.dumps(data)
+
+
+def load_cookies(src):
+    jar = RequestsCookieJar()
+
+    try:
+        cookies = json.loads(src)
+
+        for c in cookies:
+            jar.set_cookie(
+                create_cookie(
+                    name=c["name"],
+                    value=c["value"],
+                    domain=c.get("domain", ""),
+                    path=c.get("path", "/"),
+                    secure=c.get("secure", False),
+                    expires=c.get("expires")
+                )
+            )
+
+    except Exception as e:
+        log(f"load cookies failed: {e}")
+
+    return jar
 def log(msg, level=xbmc.LOGINFO):
     xbmc.log(f'hdrezka: {msg}', level)
 
@@ -45,11 +85,7 @@ def built_title(name, country_years, **kwargs):
     colored_info = f'[COLOR=55FFFFFF]{kwargs["age_limit"]} ({country_years})[/COLOR]'
     return f'{name} {colored_rating} {colored_info}'
 
-def dump_cookies(cookies):
-    return json.dumps(dict(cookies))
 
-def load_cookies(src):
-    return cookiejar_from_dict(json.loads(src))
 
 def get_subtitles(response):
     subtitles = None
