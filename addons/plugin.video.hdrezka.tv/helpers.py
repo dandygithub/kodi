@@ -1,8 +1,6 @@
 import json
 from contextlib import contextmanager
 
-from requests.cookies import cookiejar_from_dict
-
 import xbmc
 
 from requests.cookies import RequestsCookieJar, create_cookie
@@ -29,19 +27,25 @@ def load_cookies(src):
 
     try:
         cookies = json.loads(src)
-
+        if isinstance(cookies, dict):
+            # legacy format: plain {name: value} mapping
+            cookies = [{"name": name, "value": value} for name, value in cookies.items()]
         for c in cookies:
-            jar.set_cookie(
-                create_cookie(
-                    name=c["name"],
-                    value=c["value"],
-                    domain=c.get("domain", ""),
-                    path=c.get("path", "/"),
-                    secure=c.get("secure", False),
-                    expires=c.get("expires")
+            try:
+                if not isinstance(c, dict) or not c.get("name"):
+                    continue
+                jar.set_cookie(
+                    create_cookie(
+                        name=c["name"],
+                        value=c.get("value", ""),
+                        domain=c.get("domain", ""),
+                        path=c.get("path", "/"),
+                        secure=c.get("secure", False),
+                        expires=c.get("expires")
+                    )
                 )
-            )
-
+            except Exception as ex:
+                log(f"load cookie fault ex: {ex}")
     except Exception as e:
         log(f"load cookies failed: {e}")
 
@@ -59,12 +63,14 @@ def busy_dialog():
 
 
 def get_media_attributes(source):
-    items = source.split(',')
+    items = (source or '').split(',')
     if len(items) == 3:
         year, country, genre = items
-    else:
+    elif len(items) == 2:
         year, genre = items
         country = 'Unknown'
+    else:
+        year, country, genre = '', 'Unknown', ''
     return year, country, genre
 
 
@@ -95,7 +101,7 @@ def get_subtitles(response):
             parts = subtitles[si].split(']')
             subtitles[si] = parts[1].replace("\/", "/")
     except Exception as ex:
-        log(f'fault decode subtitles ex: {ex}')
+        log(f'fault decode subtitles ex: {ex}', xbmc.LOGDEBUG)
     return subtitles
 
 def set_item_subtitles(item, subtitles):

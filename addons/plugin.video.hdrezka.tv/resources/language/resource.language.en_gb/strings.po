@@ -68,3 +68,31 @@ msgstr ""
 msgctxt "#30012"
 msgid "Сейчас смотрят"
 msgstr ""
+
+msgctxt "#30013"
+msgid "Продолжить просмотр"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Перевод: %s"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Удалить из истории"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Удалить из Продолжить просмотр"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Успешно удалено из истории"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Успешно удалено из Продолжить просмотр"
+msgstr ""
+
+msgctxt "#30019"
+msgid "Премиум"
+msgstr ""

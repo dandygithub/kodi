@@ -4,6 +4,8 @@ import xbmcgui
 
 from helpers import log, busy_dialog, dump_cookies
 
+USER_AGENT = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0"
+
 
 def authorize(plugin):
     log('*** authorize')
@@ -35,7 +37,7 @@ def external_config_update(plugin):
         url = plugin.addon.getSetting('external_config_url')
 
         log(f'attempt fetch config from: {url}')
-        config_response = requests.get(url)
+        config_response = requests.get(url, timeout=30, headers={'User-Agent': USER_AGENT}, proxies=plugin.proxies)
         if not config_response.ok:
             xbmcgui.Dialog().ok('Error', f'status: {config_response.status_code}')
             return

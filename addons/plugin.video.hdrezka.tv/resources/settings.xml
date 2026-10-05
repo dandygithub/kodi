@@ -7,12 +7,13 @@
         <setting id="dom_protocol" type="labelenum" label="Protocol" values="http|https" default="https"/>        
         <setting id="domain" type="text" label="Site URL" default="rezka.ag"/>
         <setting id="show_description" type="bool" label="Get media description" default="true" />
+        <setting id="use_atl_names" type="bool" label="Use titles for 'Add To Lib'" default="false" />
         <setting type="bool" id="united_search" visible="false" default="true" />
         <setting type="text" id="us_command" visible="false" default="mode=search&keyword=" />
     </category>
     <category label="Authorization">
         <setting id="username" type="text" label="Username" />
-        <setting id="password" type="text" label="Password" />
+        <setting id="password" type="text" label="Password" option="hidden" />
         <setting id="cookies" type="text" visible="false" label="Authorization cookies" />
         <setting type="sep"/>
         <setting type="action" label="Authorize" action="RunScript(plugin.video.hdrezka.tv, 0, authorize)" />

@@ -16,7 +16,7 @@ BK_BLOCKS = [
 ]
 
 # Компилируем один раз
-QUALITY_PATTERN = re.compile(r'\[((\d+)[^]]+)].+?(http.+?mp4)', re.DOTALL)
+QUALITY_PATTERN = re.compile(r'\[((\d+)[^]]+)].*?(http.+?mp4)', re.DOTALL)
 
 
 def parse_streams(data: str) -> List[Tuple[str, int, str]]:
